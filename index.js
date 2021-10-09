@@ -18,6 +18,7 @@ let cpu = {
 };
 
 let lastRAMWrite = 0x00;
+let lastRAMRead  = 0x00;
 
 let stepInterval;
 
@@ -156,6 +157,16 @@ function drawRAMOutput(view, len) {
             }, 50);
         } else {
             $(byteElements[i]).removeClass("hilight");
+        }
+        
+        if(i == lastRAMRead) {
+            $(byteElements[i]).addClass("hilight-read");
+
+            $("#RAM-output-div").animate({
+                scrollTop: $(byteElements[i]).position().top - $(byteElements[i]).height()
+            }, 50);
+        } else {
+            $(byteElements[i]).removeClass("hilight-read");
         }
 
         if(i == (cpu.SP)) {
@@ -353,6 +364,7 @@ function writeRAM(addr, byte) {
 }
 
 function readRAM(addr) {
+    lastRAMWrite = addr;
     return cpu.memory.view[addr];
 }
 
