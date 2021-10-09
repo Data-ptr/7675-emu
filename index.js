@@ -48,6 +48,8 @@ $('#load-button-input').bind('click', function() {
     let base64String = $('#base64-textarea').val();
     let binary_string = window.atob(base64String);
     let len = binary_string.length;
+    
+    let view = new Uint8ClampedArray(buffer);
 
     for (let i = 0; i < len; i++) {
         view[i] = binary_string.charCodeAt(i);
