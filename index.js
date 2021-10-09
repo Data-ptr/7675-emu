@@ -602,18 +602,24 @@ let instructionTable = {
         //Clock
         cpu.clock.tickCount += this.cycles;
     }},
-    0x10: {name: "sba",    len: 1, type: "IMPLIED", cycles: 0},
-    0x11: {name: "cba",    len: 1, type: "IMPLIED", cycles: 0},
-    0x12: {name: "nop",    len: 3, type: "EXTENDED", cycles: 0},
-    0x13: {name: "brclr2", len: 4, type: "DIRECT3", cycles: 0},
-    0x14: {name: "idiv",    len: 2, type: "DIRECT", cycles: 6},
-    0x15: {name: "fdiv",    len: 2, type: "DIRECT", cycles: 6, microcode: function(view) {
+    0x10: {name: "sba",     len: 1, type: "IMPLIED",  cycles: 0},
+    0x11: {name: "cba",     len: 1, type: "IMPLIED",  cycles: 0},
+    0x12: {name: "nop",     len: 3, type: "EXTENDED", cycles: 0},
+    0x13: {name: "brclr2",  len: 4, type: "DIRECT3",  cycles: 0},
+    0x14: {name: "idiv",    len: 2, type: "DIRECT",   cycles: 6},
+    0x15: {name: "fdiv",    len: 2, type: "DIRECT",   cycles: 6, microcode: function(view) {
+//         15 57 FDIV  L0057 - 16bit x 8bit fractional divide 
+//         with the 
+//         parameters as you stated: D = numerator, direct mem location $57 = 
+//         denominator, B = result, A = remainder. sets carry if overflow, i.e. 
+//         numerator > denominator. if this is like the hc11 FDIV it will also 
+//         set the carry on a divide by 0. the denominator is not affected.
         let addr = view[cpu.PC - 0x8000 + 1];
-        let n = cpu.D;
-        let d = readRAM(addr);
+        let n = cpu.D;          //numerator
+        let d = readRAM(addr);  //denominator
 
-        let q = 0 == d ? 0xFFFF : (n / d);
-        let r = 0 == d ? 0x0 : (q - (n % d));
+        let q = 0 == d ? 0xFFFF : (n / d);      //quotient
+        let r = 0 == d ? 0x0 : (q - (n % d));   //remainder
 
         console.log("n/d = q, r: ", + n.toString(16) + " / " + d.toString(16) + " = " + q.toString(16) + ", " + r.toString(16));
 
@@ -621,8 +627,8 @@ let instructionTable = {
 
         console.log("n/d = q, r: ", + n.toString(16) + " / " + d.toString(16) + " = " + q.toString(16) + ", " + r.toString(16));
 
-        writeRAM(addr,d);
-        setD(r);
+        setA(r);
+        setB(q);
 
         // Do flag stuff
         if(0 == q) {
@@ -637,7 +643,7 @@ let instructionTable = {
             clearStatusFlag("V");
         }
 
-        if(0 == d) {
+        if(0 == d || n > d) {
             setStatusFlag("C");
         } else {
             clearStatusFlag("C");
