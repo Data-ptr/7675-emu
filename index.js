@@ -805,7 +805,18 @@ let instructionTable = {
     0x28: {name: "bvc",    len: 2, type: "RELATIVE", cycles: 0},
     0x29: {name: "bvs",    len: 2, type: "RELATIVE", cycles: 0},
     0x2A: {name: "bpl",    len: 2, type: "RELATIVE", cycles: 0},
-    0x2B: {name: "bmi",    len: 2, type: "RELATIVE", cycles: 0},
+    0x2B: {name: "bmi",    len: 2, type: "RELATIVE", cycles: 3, microcode: function(view) {
+        let jmpOffset = view[cpu.PC - 0x8000 + 1];
+
+        setPC(cpu.PC + this.len);
+
+        if(1 == cpu.status.N){
+            setPC(cpu.PC + jmpOffset);
+        }
+
+        //Clock
+        advanceClock(this.cycles);
+    }},
     0x2C: {name: "bge",    len: 2, type: "RELATIVE", cycles: 0},
     0x2D: {name: "blt",    len: 2, type: "RELATIVE", cycles: 0},
     0x2E: {name: "bgt",    len: 2, type: "RELATIVE", cycles: 0},
