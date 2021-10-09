@@ -1536,7 +1536,7 @@ let instructionTable = {
         let b1 = view[cpu.PC - 0x8000 + 1];
         let mem1 = readRAM(b1);
         let mem2 = readRAM(b1 + 1);
-        let mem = ((mem >> 8) + mem2 & 0xFF);
+        let mem = ((mem1 >> 8) + mem2 & 0xFF);
         let result = cpu.D - mem;
 
         setD(result);
