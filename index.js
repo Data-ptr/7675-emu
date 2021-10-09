@@ -379,6 +379,13 @@ function step() {
             console.log("Hit the breakpoint");
         }
     }
+    
+    if($("#op-break-input").is(":checked")) {
+        if(instructionTable[view[cpu.PC - 0x8000]].name.toLowerCase() == $('#op-breakpoint-input').val().toLowerCase() ) {
+            clearInterval(stepInterval);
+            console.log("Hit the op-breakpoint");
+        }
+    }
 }
 
 function advanceClock(ticks) {
