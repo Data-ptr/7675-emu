@@ -17,8 +17,6 @@ let cpu = {
     clock: { auto: false, tickCount: 0 }
 };
 
-let buffer;
-
 let lastRAMWrite = 0x00;
 
 let stepInterval;
@@ -39,7 +37,7 @@ $('#RAM-output-div').empty().append(elementString);
 
 //Initialize ROM
 cpu.ROM.data = new ArrayBuffer(0x8000);
-cpu.ROM.view = new Uint8ClampedArray(buffer);
+cpu.ROM.view = new Uint8ClampedArray(cpu.ROM.data);
 
 // iOS hack
 $('#load-button-input, #load-reset-button-input, #save-button-input, #restore-button-input, #execute-button-input').css('cursor', 'pointer');
