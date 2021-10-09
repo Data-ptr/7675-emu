@@ -340,6 +340,8 @@ function updatePCOutput() {
     }
 
     $("#instruction").text(fullInst);
+    
+    console.log(cpu.PC.toString(16) + ": " + fullInst);
 }
 
 
