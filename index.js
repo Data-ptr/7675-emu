@@ -1634,7 +1634,34 @@ let instructionTable = {
     }},
     0x99: {name: "adca",   len: 2, type: "DIRECT", cycles: 0},
     0x9A: {name: "oraa",   len: 2, type: "DIRECT", cycles: 0},
-    0x9B: {name: "adda",   len: 2, type: "DIRECT", cycles: 0},
+    0x9B: {name: "adda",   len: 2, type: "DIRECT", cycles: 3, microcode: function(view) {
+        let addr = view[cpu.PC - 0x8000 + 1];
+
+        let mem = readRAM(addr);
+
+        setA(cpu.A + mem);
+
+        // Do flag stuff
+        if(0 == cpu.A) {
+            setStatusFlag("Z");
+        } else {
+            clearStatusFlag("Z");
+        }
+
+        if((cpu.A & 0xF0) == 0xF0) {
+            setStatusFlag("N");
+        } else {
+            clearStatusFlag("N");
+        }
+
+        clearStatusFlag("V");
+
+        //Next
+        setPC(cpu.PC + this.len);
+
+        //Clock
+        advanceClock(this.cycles);
+    }},
     0x9C: {name: "cpx",    len: 2, type: "DIRECT", cycles: 5, microcode: function(view) {
         let b1 = view[cpu.PC - 0x8000 + 1];
         let mem = readRAM(b1);
