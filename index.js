@@ -71,7 +71,7 @@ $('#load-reset-button-input').bind('click', function() {
 
 
 $('#save-button-input').bind('click', function() {
-    let base64String = $('#base64-text-input').val();
+    let base64String = $('#base64-textarea').val();
     let binary_string = window.atob(base64String);
     let len = binary_string.length;
 
