@@ -49,9 +49,7 @@ $('#load-button-input').bind('click', function() {
     let binary_string = window.atob(base64String);
     let len = binary_string.length;
     
-    buffer = new ArrayBuffer(len);
-    
-    let view = new Uint8ClampedArray(buffer);
+    let view = cpu.ROM.view;
 
     for (let i = 0; i < len; i++) {
         view[i] = binary_string.charCodeAt(i);
@@ -60,6 +58,8 @@ $('#load-button-input').bind('click', function() {
     drawHexOutput(view, len);
 
     hideInput();
+    
+    setPcToEntrypoint();
 });
 
 
@@ -75,9 +75,7 @@ $('#save-button-input').bind('click', function() {
     let binary_string = window.atob(base64String);
     let len = binary_string.length;
 
-    buffer = new ArrayBuffer(len);
-
-    let view = new Uint8ClampedArray(buffer);
+    let view = cpu.ROM.view;
 
     for (let i = 0; i < len; i++) {
         view[i] = binary_string.charCodeAt(i);
@@ -92,9 +90,7 @@ $('#restore-button-input').bind('click', function() {
 
     if(undefined !== codeFromLS) {
         let len = codeFromLS.length;
-
-        buffer = new ArrayBuffer(len);
-        let view = new Uint8ClampedArray(buffer);
+        let view = cpu.ROM.view;
 
         for (let i = 0; i < len; i++) {
             view[i] = codeFromLS.charCodeAt(i);
@@ -324,7 +320,7 @@ function setPcToEntrypoint() {
 
 
 function updatePCOutput() {
-    let view = new Uint8ClampedArray(buffer);
+    let view = cpu.ROM.view;
     let textareaIndex = (cpu.PC - 0x8000) * 2;
 
     $('#register-PC-output').val(("0"+(Number(cpu.PC).toString(16))).slice(-4).toUpperCase());
@@ -361,7 +357,7 @@ function readRAM(addr) {
 }
 
 function step() {
-    let view = new Uint8ClampedArray(buffer);
+    let view = cpu.ROM.view;
 
     if("SUBOP" == instructionTable[view[cpu.PC - 0x8000]].type) {
         if(undefined == subOps[view[cpu.PC - 0x8000]][view[cpu.PC - 0x8000 + 1]].microcode) {
