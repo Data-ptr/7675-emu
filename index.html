@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>JS Bin</title>
+
+        <script src="https://code.jquery.com/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm">
+                    <div id="input-div">
+                        <label>
+                            Paste Base64 of binary here:
+                        </label>
+
+                        <br/>
+
+                        <textarea id="base64-textarea" cols="50" rows="10"></textarea>
+
+                        <br/>
+
+                        <input type="button" value="load" id="load-button-input" />
+                        <input type="button" value="save" id="save-button-input" />
+                        <input type="button" value="restore" id="restore-button-input" />
+                        Entrypoint: 0x<input type="text" value="CEFF" id="entrypoint-text-input" />
+                    </div>
+
+                    <div id="input-hidden-div" style="display: none;">
+                        Loaded <input id="load-reset-button-input" type="button" value="reset" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    <label for="register-A-output">A</label>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">0x</span>
+                        </div>
+
+                        <input id="register-A-output" class="form-control" type="text" maxlength="2" />
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <label for="register-B-output">B</label>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">0x</span>
+                        </div>
+
+                        <input id="register-B-output" class="form-control" type="text" maxlength="2" />
+                    </div>
+                </div>
+
+                <div class="col-sm">
+                    <label for="register-D-output">D</label>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">0x</span>
+                        </div>
+
+                        <input id="register-D-output" class="form-control" type="text" maxlength="4" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    <label for="register-X-output">X</label>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">0x</span>
+                        </div>
+
+                        <input id="register-X-output" class="form-control" type="text" maxlength="4" />
+                    </div>
+                </div>
+
+                <div class="col-sm">
+                    <label for="register-Y-output">Y</label>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">0x</span>
+                        </div>
+
+                        <input id="register-Y-output" class="form-control" type="text" maxlength="4" />
+                    </div>
+                </div>
+
+                <div class="col-sm">
+                    <label for="register-PC-output">PC</label>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">0x</span>
+                        </div>
+
+                        <input id="register-PC-output" class="form-control" type="text" maxlength="4" />
+                    </div>
+                </div>
+
+                <div class="col-sm">
+                    <label for="register-SP-output">SP</label>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">0x</span>
+                        </div>
+
+                        <input id="register-SP-output" class="form-control" type="text" maxlength="2" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3" style="width: 100%">
+
+                        <span class="input-group-text">H:</span>
+
+                        <input id="register-H-output" class="form-control" type="text" />
+
+                        <span class="input-group-text">I:</span>
+
+                        <input id="register-I-output" class="form-control" type="text" />
+
+                        <span class="input-group-text">N:</span>
+
+                        <input id="register-N-output" class="form-control" type="text" />
+
+                        <span class="input-group-text">Z:</span>
+
+                        <input id="register-Z-output" class="form-control" type="text" />
+
+                        <span class="input-group-text">V:</span>
+
+                        <input id="register-V-output" class="form-control" type="text" />
+
+                        <span class="input-group-text">C:</span>
+
+                        <input id="register-C-output" class="form-control" type="text" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    <label for="clock-tick-output">Cycles</label>
+                    <div class="input-group mb-3">
+                        <input id="clock-ticks-output" class="form-control" type="text" disabled="true" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    ROM:
+                    <textarea id="hex-output-textarea" style="font-family: monospace;" cols="50" rows="10"></textarea>
+                </div>
+
+                <div class="col-sm">
+                    RAM:
+                    <!-- <textarea id="RAM-output-textarea" style="font-family: monospace;" cols="50" rows="10"></textarea> -->
+                    <div id="RAM-output-div" style="font-family: monospace;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm">
+                    Instruction:
+                    <div id="instruction">
+                    </div>
+                </div>
+
+                <div class="col-sm">
+                    <input id="step-button-input" type="button" value="Step"/>
+                </div>
+
+                <div class="col-sm">
+                    <input id="run-button-input" type="button" value="Run"/>
+                </div>
+
+                <div class="col-sm">
+                    <input id="pause-button-input" type="button" value="Pause"/>
+                </div>
+
+                <div class="col-sm">
+                    <label for="clock-speed-input">Clock speed:</label>
+                    <div class="input-group mb-3">
+                        <input id="clock-speed-input" class="form-control" type="text" value="500" />
+                    </div>
+                </div>
+
+                <div class="col-sm">
+                    <label for="breakpoint-input">Breakpoint:</label>
+                    <div class="input-group mb-3">
+                        <input id="breakpoint-input" class="form-control" type="text" value="D06F" />
+                    </div>
+                </div>
+
+                <div class="col-sm">
+                    <label for="break-input">Break:</label>
+                    <div class="input-group mb-3">
+                        <input id="break-input" class="form-control" type="checkbox" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+
+            </div>
+        </div>
+    </body>
+</html>

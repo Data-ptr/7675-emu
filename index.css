@@ -1,0 +1,25 @@
+.input-group {
+    width: 110px;
+}
+
+#RAM-output-div {
+    width: 550px;
+    height: 350px;
+    overflow: scroll;
+}
+
+#RAM-output-div > span {
+    display: inline-block
+}
+
+.hilight.stack-pointer {
+     background-color: blue;
+}
+
+.hilight {
+    background-color: green;
+}
+
+.stack-pointer {
+    background-color: orange;
+}
