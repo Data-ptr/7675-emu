@@ -1531,7 +1531,52 @@ let instructionTable = {
     0x90: {name: "suba",   len: 2, type: "DIRECT", cycles: 0},
     0x91: {name: "cmpa",   len: 2, type: "DIRECT", cycles: 0},
     0x92: {name: "sbca",   len: 2, type: "DIRECT", cycles: 0},
-    0x93: {name: "subd",   len: 2, type: "DIRECT", cycles: 0},
+    0x93: {name: "subd",   len: 2, type: "DIRECT", cycles: 5, microcode: function(view) {
+        let acc = cpu.D;
+        let b1 = view[cpu.PC - 0x8000 + 1];
+        let mem1 = readRAM(b1);
+        let mem2 = readRAM(b1 + 1);
+        let mem = ((mem >> 8) + mem2 & 0xFF);
+        let result = cpu.D - mem;
+
+        setD(result);
+
+        // Do flag stuff
+        if(0 == cpu.D) {
+            setStatusFlag("Z");
+        } else {
+            clearStatusFlag("Z");
+        }
+
+        if((cpu.D & 0xF000) == 0xF000) {
+            setStatusFlag("N");
+        } else {
+            clearStatusFlag("N");
+        }
+        
+        // 2s compliment overflow test
+        // Get MSBs of the operands
+        let oa = acc & 0xF000;
+        let ob = mem & 0xF000;
+        
+        if(oa != ob) {
+            clearStatusFlag("V");
+        } else {
+            clearStatusFlag("V");
+        }
+        
+         if(mem > acc) {
+            clearStatusFlag("C");
+        } else {
+            clearStatusFlag("C");
+        }
+
+        //Next
+        setPC(cpu.PC + this.len);
+
+        //Clock
+        advanceClock(this.cycles);
+    }},
     0x94: {name: "anda",   len: 2, type: "DIRECT", cycles: 3, microcode: function(view) {
         let addr = view[cpu.PC - 0x8000 + 1];
 
@@ -1882,11 +1927,13 @@ let instructionTable = {
     }},
     0xC2: {name: "sbcb",   len: 2, type: "IMMEDIATE", cycles: 0},
     0xC3: {name: "addd",   len: 3, type: "IMMEDIATE16", cycles: 4, microcode: function(view) {
+        let acc = cpu.D;
         let firstByte = view[cpu.PC - 0x8000 + 1];
         let secondByte = view[cpu.PC - 0x8000 + 2];
         let word = ((firstByte << 8) + secondByte);
+        let result = cpu.D + word;
 
-        setD(word + cpu.D);
+        setD(result);
 
         // Do flag stuff
         if(0 == cpu.D) {
@@ -1900,8 +1947,23 @@ let instructionTable = {
         } else {
             clearStatusFlag("N");
         }
-
-        clearStatusFlag("V");
+        
+        // 2s compliment overflow test
+        // Get MSBs of the operands
+        let oa = acc & 0xF000;
+        let ob = word & 0xF000;
+        
+        if(oa != ob) {
+            clearStatusFlag("V");
+        } else {
+            clearStatusFlag("V");
+        }
+        
+         if(result >= 0x10000) {
+            clearStatusFlag("C");
+        } else {
+            clearStatusFlag("C");
+        }
 
         //Next
         setPC(cpu.PC + this.len);
