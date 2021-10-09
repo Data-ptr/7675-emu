@@ -23,3 +23,7 @@
 .stack-pointer {
     background-color: orange;
 }
+
+.hilight-read{
+    background-color: red;
+}
