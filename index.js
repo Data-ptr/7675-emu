@@ -49,6 +49,8 @@ $('#load-button-input').bind('click', function() {
     let binary_string = window.atob(base64String);
     let len = binary_string.length;
     
+    buffer = new ArrayBuffer(len);
+    
     let view = new Uint8ClampedArray(buffer);
 
     for (let i = 0; i < len; i++) {
