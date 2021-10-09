@@ -1291,7 +1291,43 @@ let instructionTable = {
         advanceClock(this.cycles);
     }},
     0x7F: {name: "clr",    len: 3, type: "EXTENDED", cycles: 0},
-    0x80: {name: "suba",   len: 2, type: "IMMEDIATE", cycles: 0},
+    0x80: {name: "suba",   len: 2, type: "IMMEDIATE", cycles: 2, microcode: function(view) {
+        let b1 = view[cpu.PC - 0x8000 + 1];
+        let result = cpu.A - b1;
+        
+        setA(result);
+
+        // Do flag stuff
+        if(0 === result) {
+            setStatusFlag("Z");
+        } else {
+            clearStatusFlag("Z");
+        }
+
+        if((cpu.A & 0xF0) == 0xF0) {
+            setStatusFlag("N");
+        } else {
+            clearStatusFlag("N");
+        }
+
+        if(result > 0xFFFF) {
+            clearStatusFlag("V");
+        } else {
+            clearStatusFlag("V");
+        }
+        
+        if(result > 0xFFFF) {
+            clearStatusFlag("C");
+        } else {
+            clearStatusFlag("C");
+        }
+
+        //Next
+        setPC(cpu.PC + this.len);
+
+        //Clock
+        advanceClock(this.cycles);
+    }},
     0x81: {name: "cmpa",   len: 2, type: "IMMEDIATE", cycles: 2, microcode: function(view) {
         let b1 = view[cpu.PC - 0x8000 + 1];
         let result = cpu.A - b1;
