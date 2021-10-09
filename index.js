@@ -365,6 +365,9 @@ function writeRAM(addr, byte) {
 
 function readRAM(addr) {
     lastRAMRead = addr;
+    
+    drawRAMOutput(cpu.memory.view, 0x8000 - 1);
+    
     return cpu.memory.view[addr];
 }
 
