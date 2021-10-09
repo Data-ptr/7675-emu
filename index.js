@@ -31,7 +31,7 @@ cpu.memory.view = new Uint8ClampedArray(cpu.memory.data);
 let elementString = "";
 
 for(let i = 0; i < RAMSize; i++) {
-    elementString += "<span>00</span>";
+    elementString += "<span title='" + i.toString(16) + "'>00</span>";
 }
 
 $('#RAM-output-div').empty().append(elementString);
