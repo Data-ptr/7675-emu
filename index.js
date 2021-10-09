@@ -364,8 +364,12 @@ function writeRAM(addr, byte) {
 }
 
 function readRAM(addr) {
-    lastRAMWrite = addr;
+    lastRAMRead = addr;
     return cpu.memory.view[addr];
+}
+
+function readROM(addr) {
+    return cpu.ROM.view[addr - 0x8000];
 }
 
 function step() {
@@ -1655,9 +1659,13 @@ let instructionTable = {
         let firstByte = view[cpu.PC - 0x8000 + 1];
         let secondByte = view[cpu.PC - 0x8000 + 2];
         let addr = ((firstByte << 8) + secondByte);
-
-
-        let mem = readRAM(addr);
+        let mem;
+        
+        if(RAMSize >= addr) {
+            mem = readRAM(addr);
+        } else {
+            mem = readROM(addr);
+        }
 
         setA(mem);
 
