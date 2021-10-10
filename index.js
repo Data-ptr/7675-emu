@@ -47,7 +47,7 @@ $('#load-button-input').bind('click', function() {
     let base64String = $('#base64-textarea').val();
     let binary_string = window.atob(base64String);
     let len = binary_string.length;
-    
+
     let view = cpu.ROM.view;
 
     for (let i = 0; i < len; i++) {
@@ -57,7 +57,7 @@ $('#load-button-input').bind('click', function() {
     drawHexOutput(view, len);
 
     hideInput();
-    
+
     setPcToEntrypoint();
 });
 
@@ -158,7 +158,7 @@ function drawRAMOutput(view, len) {
         } else {
             $(byteElements[i]).removeClass("hilight");
         }
-        
+
         if(i == lastRAMRead) {
             $(byteElements[i]).addClass("hilight-read");
 
@@ -175,6 +175,39 @@ function drawRAMOutput(view, len) {
             $(byteElements[i]).removeClass("stack-pointer");
         }
     }
+}
+
+
+function updateRegisters(i) {
+  let bin = ("00000000" + (cpu.memory.view[i].toString(2))).slice(-8);
+
+  $("#registers-table > tbody > tr:eq(" + i + ") table td").each(function(index, elem) {
+    $(elem).text(bin[index]);
+  });
+
+  // Special cases
+  switch(i) {
+    case 0:
+      $("#registers-table > tbody > tr:eq(2) table th").each(function(index, elem) {
+        $(elem).text("1" === bin[index] ? "O" : "I");
+      });
+    break;
+    case 1:
+      $("#registers-table > tbody > tr:eq(3) table th").each(function(index, elem) {
+        $(elem).text("1" === bin[index] ? "O" : "I");
+      });
+    break;
+    case 4:
+      $("#registers-table > tbody > tr:eq(6) table th").each(function(index, elem) {
+        $(elem).text("1" === bin[index] ? "O" : "I");
+      });
+    break;
+    case 5:
+      $("#registers-table > tbody > tr:eq(7) table th").each(function(index, elem) {
+        $(elem).text("1" === bin[index] ? "O" : "I");
+      });
+    break;
+  }
 }
 
 
@@ -351,8 +384,11 @@ function updatePCOutput() {
     }
 
     $("#instruction").text(fullInst);
-    
-    console.log(cpu.PC.toString(16) + ": " + fullInst);
+
+    //console.log(cpu.PC.toString(16) + ": " + fullInst);
+    $("#log-output-div > ul").append("<li>" + cpu.PC.toString(16) + ": " + fullInst + "</li>");
+    let d = $("#log-output-div");
+    d.scrollTop(d.prop("scrollHeight"));
 }
 
 
@@ -361,19 +397,27 @@ function writeRAM(addr, byte) {
     lastRAMWrite = addr * 2; //TODO: Why is this devided by 2?
 
     drawRAMOutput(cpu.memory.view, 0x8000 - 1);
+
+    //Refresh if register
+    if(0x08 > addr) {
+      updateRegisters(addr);
+    }
 }
+
 
 function readRAM(addr) {
     lastRAMRead = addr;
-    
+
     drawRAMOutput(cpu.memory.view, 0x8000 - 1);
-    
+
     return cpu.memory.view[addr];
 }
+
 
 function readROM(addr) {
     return cpu.ROM.view[addr - 0x8000];
 }
+
 
 function step() {
     let view = cpu.ROM.view;
@@ -400,7 +444,7 @@ function step() {
             console.log("Hit the breakpoint");
         }
     }
-    
+
     if($("#op-break-input").is(":checked")) {
         if(instructionTable[view[cpu.PC - 0x8000]].name.toLowerCase() == $('#op-breakpoint-input').val().toLowerCase() ) {
             clearInterval(stepInterval);
@@ -408,6 +452,7 @@ function step() {
         }
     }
 }
+
 
 function advanceClock(ticks) {
     cpu.clock.tickCount += ticks;
@@ -636,11 +681,11 @@ let instructionTable = {
     0x13: {name: "brclr2",  len: 4, type: "DIRECT3",  cycles: 0},
     0x14: {name: "idiv",    len: 2, type: "DIRECT",   cycles: 6},
     0x15: {name: "fdiv",    len: 2, type: "DIRECT",   cycles: 6, microcode: function(view) {
-//         15 57 FDIV  L0057 - 16bit x 8bit fractional divide 
-//         with the 
-//         parameters as you stated: D = numerator, direct mem location $57 = 
-//         denominator, B = result, A = remainder. sets carry if overflow, i.e. 
-//         numerator > denominator. if this is like the hc11 FDIV it will also 
+//         15 57 FDIV  L0057 - 16bit x 8bit fractional divide
+//         with the
+//         parameters as you stated: D = numerator, direct mem location $57 =
+//         denominator, B = result, A = remainder. sets carry if overflow, i.e.
+//         numerator > denominator. if this is like the hc11 FDIV it will also
 //         set the carry on a divide by 0. the denominator is not affected.
         let addr = view[cpu.PC - 0x8000 + 1];
         let n = cpu.D;          //numerator
@@ -1308,7 +1353,7 @@ let instructionTable = {
     0x80: {name: "suba",   len: 2, type: "IMMEDIATE", cycles: 2, microcode: function(view) {
         let b1 = view[cpu.PC - 0x8000 + 1];
         let result = cpu.A - b1;
-        
+
         setA(result);
 
         // Do flag stuff
@@ -1329,7 +1374,7 @@ let instructionTable = {
         } else {
             clearStatusFlag("V");
         }
-        
+
         if(result > 0xFFFF) {
             clearStatusFlag("C");
         } else {
@@ -1556,18 +1601,18 @@ let instructionTable = {
         } else {
             clearStatusFlag("N");
         }
-        
+
         // 2s compliment overflow test
         // Get MSBs of the operands
         let oa = acc & 0xF000;
         let ob = mem & 0xF000;
-        
+
         if(oa != ob) {
             clearStatusFlag("V");
         } else {
             clearStatusFlag("V");
         }
-        
+
          if(mem > acc) {
             clearStatusFlag("C");
         } else {
@@ -1782,7 +1827,7 @@ let instructionTable = {
         let secondByte = view[cpu.PC - 0x8000 + 2];
         let addr = ((firstByte << 8) + secondByte);
         let mem;
-        
+
         if(RAMSize >= addr) {
             mem = readRAM(addr);
         } else {
@@ -1950,18 +1995,18 @@ let instructionTable = {
         } else {
             clearStatusFlag("N");
         }
-        
+
         // 2s compliment overflow test
         // Get MSBs of the operands
         let oa = acc & 0xF000;
         let ob = word & 0xF000;
-        
+
         if(oa != ob) {
             clearStatusFlag("V");
         } else {
             clearStatusFlag("V");
         }
-        
+
          if(result >= 0x10000) {
             clearStatusFlag("C");
         } else {

@@ -12,6 +12,12 @@
     display: inline-block
 }
 
+#log-output-div {
+    width: 550px;
+    height: 350px;
+    overflow: scroll;
+}
+
 .hilight.stack-pointer {
      background-color: blue;
 }

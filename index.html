@@ -1,238 +1,780 @@
-<!DOCTYPE html>
-<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width">
-        <title>7675-emu</title>
+<meta charset="utf-8"></meta>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-        
-        <link rel="stylesheet" href="index.css">
-    </head>
-    <body>
-        <div class="container">
-            <div class="row">
-                <div class="col-sm">
-                    <div id="input-div">
-                        <label>
-                            Paste Base64 of binary here:
-                        </label>
+<meta
+  name="viewport"
+  content="width=device-width">
+</meta>
 
-                        <br/>
+<title>7675-emu</title>
 
-                        <textarea id="base64-textarea" cols="50" rows="10"></textarea>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+  integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer">
+</script>
 
-                        <br/>
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-uWxY/CJNBR+1zjPWmfnSnVxwRheevXITnMqoEIeG1LJrdI0GlVs/9cVSyPYXdcSF"
+  crossorigin="anonymous">
+</link>
 
-                        <input type="button" value="load" id="load-button-input" />
-                        <input type="button" value="save" id="save-button-input" />
-                        <input type="button" value="restore" id="restore-button-input" />
-                        Entrypoint: 0x<input type="text" value="CEFF" id="entrypoint-text-input" />
-                    </div>
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/js/bootstrap.min.js"
+  integrity="sha384-PsUw7Xwds7x08Ew3exXhqzbhuEYmA2xnwc8BuD6SEr+UmEHlX8/MCltYEodzWA4u"
+  crossorigin="anonymous">
+</script>
 
-                    <div id="input-hidden-div" style="display: none;">
-                        Loaded <input id="load-reset-button-input" type="button" value="reset" />
-                    </div>
-                </div>
+<script src="tab.js"></script>
+
+<link
+  href="index.css"
+  rel="stylesheet">
+</link>
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg">
+      <ul
+        id="myTab"
+        class="nav nav-tabs"
+        role="tablist">
+        <li
+          class="nav-item"
+          role="presentation">
+          <button
+            id="load-tab"
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#load"
+            type="button"
+            role="tab"
+            aria-controls="load"
+            aria-selected="false">
+            Load
+          </button>
+        </li>
+
+        <li
+          class="nav-item"
+          role="presentation">
+          <button
+            id="home-tab"
+            class="nav-link active"
+            data-bs-toggle="tab"
+            data-bs-target="#home"
+            type="button"
+            role="tab"
+            aria-controls="home"
+            aria-selected="true">
+            Home
+          </button>
+        </li>
+
+        <li
+          class="nav-item"
+          role="presentation">
+          <button
+            id="registers-tab"
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#registers"
+            type="button"
+            role="tab"
+            aria-controls="registers"
+            aria-selected="false">
+            Registers
+          </button>
+        </li>
+
+        <li
+          class="nav-item"
+          role="presentation">
+          <button
+            id="settings-tab"
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#settings"
+            type="button"
+            role="tab"
+            aria-controls="settings"
+            aria-selected="false">
+            Settings
+          </button>
+        </li>
+
+        <li
+          class="nav-item"
+          role="presentation">
+          <button
+            id="debug-tab"
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#debug"
+            type="button"
+            role="tab"
+            aria-controls="debug"
+            aria-selected="false">
+            Debug
+          </button>
+        </li>
+
+        <li
+          class="nav-item"
+          role="presentation">
+          <button
+            id="log-tab"
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#log"
+            type="button"
+            role="tab"
+            aria-controls="log"
+            aria-selected="false">
+            Log
+          </button>
+        </li>
+      </ul>
+
+      <div
+        id="myTabContent"
+        class="tab-content">
+        <div
+          id="load"
+          class="tab-pane fade"
+          role="tabpanel"
+          aria-labelledby="load-tab">
+          <div class="row">
+            <div class="col-sm">
+              <div id="input-div">
+                <label>Paste Base64 of binary here:</label>
+
+                <br/>
+
+                <textarea
+                  id="base64-textarea"
+                  cols="50"
+                  rows="10">
+                </textarea>
+
+                <br/>
+
+                <input
+                  id="load-button-input"
+                  type="button"
+                  value="load"/>
+                <input
+                  id="save-button-input"
+                  type="button"
+                  value="save"/>
+                <input
+                  id="restore-button-input"
+                  type="button"
+                  value="restore"/>
+                Entrypoint: 0x
+
+                <input
+                  id="entrypoint-text-input"
+                  type="text"
+                  value="CEFF"/>
+              </div>
+
+              <div
+                id="input-hidden-div"
+                style="display: none;">
+                Loaded
+
+                <input
+                  id="load-reset-button-input"
+                  type="button"
+                  value="reset"/>
+              </div>
             </div>
-
-            <div class="row">
-                <div class="col-sm">
-                    <label for="register-A-output">A</label>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">0x</span>
-                        </div>
-
-                        <input id="register-A-output" class="form-control" type="text" maxlength="2" />
-                    </div>
-                </div>
-                <div class="col-sm">
-                    <label for="register-B-output">B</label>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">0x</span>
-                        </div>
-
-                        <input id="register-B-output" class="form-control" type="text" maxlength="2" />
-                    </div>
-                </div>
-
-                <div class="col-sm">
-                    <label for="register-D-output">D</label>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">0x</span>
-                        </div>
-
-                        <input id="register-D-output" class="form-control" type="text" maxlength="4" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-sm">
-                    <label for="register-X-output">X</label>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">0x</span>
-                        </div>
-
-                        <input id="register-X-output" class="form-control" type="text" maxlength="4" />
-                    </div>
-                </div>
-
-                <div class="col-sm">
-                    <label for="register-Y-output">Y</label>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">0x</span>
-                        </div>
-
-                        <input id="register-Y-output" class="form-control" type="text" maxlength="4" />
-                    </div>
-                </div>
-
-                <div class="col-sm">
-                    <label for="register-PC-output">PC</label>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">0x</span>
-                        </div>
-
-                        <input id="register-PC-output" class="form-control" type="text" maxlength="4" />
-                    </div>
-                </div>
-
-                <div class="col-sm">
-                    <label for="register-SP-output">SP</label>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">0x</span>
-                        </div>
-
-                        <input id="register-SP-output" class="form-control" type="text" maxlength="2" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col">
-                    <div class="input-group mb-3" style="width: 100%">
-
-                        <span class="input-group-text">H:</span>
-
-                        <input id="register-H-output" class="form-control" type="text" />
-
-                        <span class="input-group-text">I:</span>
-
-                        <input id="register-I-output" class="form-control" type="text" />
-
-                        <span class="input-group-text">N:</span>
-
-                        <input id="register-N-output" class="form-control" type="text" />
-
-                        <span class="input-group-text">Z:</span>
-
-                        <input id="register-Z-output" class="form-control" type="text" />
-
-                        <span class="input-group-text">V:</span>
-
-                        <input id="register-V-output" class="form-control" type="text" />
-
-                        <span class="input-group-text">C:</span>
-
-                        <input id="register-C-output" class="form-control" type="text" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-sm">
-                    <label for="clock-tick-output">Cycles</label>
-                    <div class="input-group mb-3">
-                        <input id="clock-ticks-output" class="form-control" type="text" disabled="true" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-sm">
-                    ROM:
-                    <textarea id="hex-output-textarea" style="font-family: monospace;" cols="50" rows="10"></textarea>
-                </div>
-
-                <div class="col-sm">
-                    RAM:
-                    <!-- <textarea id="RAM-output-textarea" style="font-family: monospace;" cols="50" rows="10"></textarea> -->
-                    <div id="RAM-output-div" style="font-family: monospace;">
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-sm">
-                    Instruction:
-                    <div id="instruction">
-                    </div>
-                </div>
-
-                <div class="col-sm">
-                    <input id="step-button-input" type="button" value="Step"/>
-                </div>
-
-                <div class="col-sm">
-                    <input id="run-button-input" type="button" value="Run"/>
-                </div>
-
-                <div class="col-sm">
-                    <input id="pause-button-input" type="button" value="Pause"/>
-                </div>
-
-                <div class="col-sm">
-                    <label for="clock-speed-input">Clock speed:</label>
-                    <div class="input-group mb-3">
-                        <input id="clock-speed-input" class="form-control" type="text" value="500" />
-                    </div>
-                </div>
-
-                <div class="col-sm">
-                    <label for="breakpoint-input">Breakpoint:</label>
-                    <div class="input-group mb-3">
-                        <input id="breakpoint-input" class="form-control" type="text" value="D06F" />
-                    </div>
-                </div>
-
-                <div class="col-sm">
-                    <label for="break-input">Break:</label>
-                    <div class="input-group mb-3">
-                        <input id="break-input" class="form-control" type="checkbox" />
-                    </div>
-                </div>
-                
-                <div class="col-sm">
-                    <label for="op-breakpoint-input">Breakpoint:</label>
-                    <div class="input-group mb-3">
-                        <input id="op-breakpoint-input" class="form-control" type="text" value="FDIV" />
-                    </div>
-                </div>
-
-                <div class="col-sm">
-                    <label for="op-break-input">Break:</label>
-                    <div class="input-group mb-3">
-                        <input id="op-break-input" class="form-control" type="checkbox" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-
-            </div>
+          </div>
         </div>
-        
-        <script src="index.js"></script>
-    </body>
-</html>
+
+        <div
+          id="home"
+          class="tab-pane fade show active"
+          role="tabpanel"
+          aria-labelledby="home-tab">
+          <div class="row">
+            <div class="col-sm">
+              <label for="register-A-output">A</label>
+
+              <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
+
+                <input
+                  id="register-A-output"
+                  class="form-control"
+                  type="text"
+                  maxlength="2"/>
+              </div>
+            </div>
+
+            <div class="col-sm">
+              <label for="register-B-output">B</label>
+
+              <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
+
+                <input
+                  id="register-B-output"
+                  class="form-control"
+                  type="text"
+                  maxlength="2"/>
+              </div>
+            </div>
+
+            <div class="col-sm">
+              <label for="register-D-output">D</label>
+
+              <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
+
+                <input
+                  id="register-D-output"
+                  class="form-control"
+                  type="text"
+                  maxlength="4"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-sm">
+              <label for="register-X-output">X</label>
+
+              <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
+
+                <input
+                  id="register-X-output"
+                  class="form-control"
+                  type="text"
+                  maxlength="4"/>
+              </div>
+            </div>
+
+            <div class="col-sm">
+              <label for="register-Y-output">Y</label>
+
+              <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
+
+                <input
+                  id="register-Y-output"
+                  class="form-control"
+                  type="text"
+                  maxlength="4"/>
+              </div>
+            </div>
+
+            <div class="col-sm">
+              <label for="register-PC-output">PC</label>
+
+              <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
+
+                <input
+                  id="register-PC-output"
+                  class="form-control"
+                  type="text"
+                  maxlength="4"/>
+              </div>
+            </div>
+
+            <div class="col-sm">
+              <label for="register-SP-output">SP</label>
+
+              <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
+
+                <input
+                  id="register-SP-output"
+                  class="form-control"
+                  type="text"
+                  maxlength="2"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <div
+                class="input-group mb-3"
+                style="width: 100%">
+                <span class="input-group-text">H:</span>
+
+                <input
+                  id="register-H-output"
+                  class="form-control"
+                  type="text"/>
+                <span class="input-group-text">I:</span>
+
+                <input
+                  id="register-I-output"
+                  class="form-control"
+                  type="text"/>
+                <span class="input-group-text">N:</span>
+
+                <input
+                  id="register-N-output"
+                  class="form-control"
+                  type="text"/>
+                <span class="input-group-text">Z:</span>
+
+                <input
+                  id="register-Z-output"
+                  class="form-control"
+                  type="text"/>
+                <span class="input-group-text">V:</span>
+
+                <input
+                  id="register-V-output"
+                  class="form-control"
+                  type="text"/>
+                <span class="input-group-text">C:</span>
+
+                <input
+                  id="register-C-output"
+                  class="form-control"
+                  type="text"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-sm">
+              <label for="clock-tick-output">Cycles</label>
+
+              <div class="input-group mb-3">
+                <input
+                  id="clock-ticks-output"
+                  class="form-control"
+                  type="text"
+                  disabled="true"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-sm">
+              ROM:
+
+              <textarea
+                id="hex-output-textarea"
+                style="font-family: monospace;"
+                cols="50"
+                rows="10">
+              </textarea>
+            </div>
+
+            <div class="col-sm">
+              RAM:
+
+              <div
+                id="RAM-output-div"
+                style="font-family: monospace;">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-sm">Instruction:
+              <div id="instruction"></div>
+            </div>
+
+            <div class="col-sm">
+              <input
+                id="step-button-input"
+                type="button"
+                value="Step"/>
+            </div>
+
+            <div class="col-sm">
+              <input
+                id="run-button-input"
+                type="button"
+                value="Run"/>
+            </div>
+
+            <div class="col-sm">
+              <input
+                id="pause-button-input"
+                type="button"
+                value="Pause"/>
+            </div>
+
+            <div class="col-sm">
+              <label for="clock-speed-input">Clock speed:</label>
+
+              <div class="input-group mb-3">
+                <input
+                  id="clock-speed-input"
+                  class="form-control"
+                  type="text"
+                  value="500"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="registers"
+          class="tab-pane fade"
+          role="tabpanel"
+          aria-labelledby="registers-tab">
+          <table id="registers-table" class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Register</th>
+                <th scope="col">Values</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">0x00</th>
+                <td>DDR1</td>
+                <td>
+                  <table id="ddr1-table" class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">0x01</th>
+                <td>DDR2</td>
+                <td>
+                  <table id="ddr2-table" class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">0x02</th>
+                <td>PORT 1</td>
+                <td>
+                  <table id="port1-table" class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">b1</th>
+                        <th scope="col">b2</th>
+                        <th scope="col">b3</th>
+                        <th scope="col">b4</th>
+                        <th scope="col">b5</th>
+                        <th scope="col">b6</th>
+                        <th scope="col">b7</th>
+                        <th scope="col">b8</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">0x03</th>
+                <td>PORT 2</td>
+                <td>
+                  <table id="port2-table" class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">b1</th>
+                        <th scope="col">b2</th>
+                        <th scope="col">b3</th>
+                        <th scope="col">b4</th>
+                        <th scope="col">b5</th>
+                        <th scope="col">b6</th>
+                        <th scope="col">b7</th>
+                        <th scope="col">b8</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">0x04</th>
+                <td>DDR3</td>
+                <td>
+                  <table id="ddr3-table" class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">0x05</th>
+                <td>DDR4</td>
+                <td>
+                  <table id="ddr4-table" class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                        <th scope="col">I/O</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">0x06</th>
+                <td>PORT 3</td>
+                <td>
+                  <table id="port2-table" class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">b1</th>
+                        <th scope="col">b2</th>
+                        <th scope="col">b3</th>
+                        <th scope="col">b4</th>
+                        <th scope="col">b5</th>
+                        <th scope="col">b6</th>
+                        <th scope="col">b7</th>
+                        <th scope="col">b8</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">0x07</th>
+                <td>PORT 4</td>
+                <td>
+                  <table id="port4-table" class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">b1</th>
+                        <th scope="col">b2</th>
+                        <th scope="col">b3</th>
+                        <th scope="col">b4</th>
+                        <th scope="col">b5</th>
+                        <th scope="col">b6</th>
+                        <th scope="col">b7</th>
+                        <th scope="col">b8</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          id="settings"
+          class="tab-pane fade"
+          role="tabpanel"
+          aria-labelledby="settings-tab">
+          ...
+        </div>
+
+        <div
+          id="debug"
+          class="tab-pane fade"
+          role="tabpanel"
+          aria-labelledby="debug-tab">
+          <div class="col-sm">
+            <label for="breakpoint-input">Addr Breakpoint:</label>
+
+            <div class="input-group mb-3">
+              <input
+                id="breakpoint-input"
+                class="form-control"
+                type="text"
+                value="D06F"/>
+            </div>
+
+            <div class="input-group mb-3">
+              <input
+                id="break-input"
+                class="form-check-input"
+                type="checkbox"/>
+            </div>
+
+            <label
+              class="form-check-label"
+              for="break-input">
+              Break on addr
+            </label>
+          </div>
+
+          <div class="col-sm">
+            <label for="op-breakpoint-input">Op Breakpoint:</label>
+
+            <div class="input-group mb-3">
+              <input
+                id="op-breakpoint-input"
+                class="form-control"
+                type="text"
+                value="FDIV"/>
+            </div>
+
+            <div class="input-group mb-3">
+              <input
+                id="op-break-input"
+                class="form-check-input"
+                type="checkbox"/>
+              <label
+                class="form-check-label"
+                for="op-break-input">
+                Break on op
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="log"
+          class="tab-pane fade"
+          role="tabpanel"
+          aria-labelledby="log-tab">
+          <div
+            id="log-output-div"
+            style="font-family: monospace;">
+            <ul>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
+</div>
