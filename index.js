@@ -169,7 +169,7 @@ function drawRAMOutput(view, len, all) {
 
         if ($("#followRamWrite-input").is(":checked")) {
           $("#RAM-output-div").scrollTop(
-            $(byteElements[i]).position().top - $(byteElements[i]).height()
+            $(byteElements[i]).offset().top - $(byteElements[i]).parent().offset().top
           );
         }
       } else {
@@ -181,7 +181,7 @@ function drawRAMOutput(view, len, all) {
 
         if ($("#followRamRead-input").is(":checked")) {
           $("#RAM-output-div").scrollTop(
-            $(byteElements[i]).position().top - $(byteElements[i]).height()
+            $(byteElements[i]).offset().top - $(byteElements[i]).parent().offset().top
           );
         }
       } else {

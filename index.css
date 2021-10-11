@@ -22,18 +22,25 @@
      background-color: blue;
 }
 
-.hilight {
-    background-color: green;
+.hilight-read.stack-pointer {
+  background-color: pink;
 }
 
-.stack-pointer {
-    background-color: orange;
+.hilight.hilight-read {
+  background-color: yellow;
+}
+
+.hilight {
+    background-color: green;
 }
 
 .hilight-read{
     background-color: red;
 }
 
+.stack-pointer {
+    background-color: orange;
+}
 .table {
   margin-bottom: 0;
 }
