@@ -14,7 +14,7 @@
 
 #log-output-div {
     width: 550px;
-    height: 350px;
+    height: 700px;
     overflow: scroll;
 }
 
@@ -32,4 +32,21 @@
 
 .hilight-read{
     background-color: red;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table td {
+  padding: 0;
+}
+
+#registers-table {
+  width: 50%;
+}
+
+#registers {
+  height: 700px;
+  overflow: scroll;
 }
