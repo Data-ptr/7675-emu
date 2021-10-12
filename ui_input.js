@@ -74,3 +74,7 @@ $("#run-button-input").bind("click", function() {
 $("#pause-button-input").bind("click", function() {
   clearInterval(stepInterval);
 });
+
+$("#clear-log-button-input").bind("click", function() {
+  $("#log-output-div > ul").empty();
+});

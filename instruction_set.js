@@ -105,7 +105,7 @@ let instructionTable = {
     microcode: function(view) {
       let acc = cpu.D;
 
-      setB(cpu.D >> 1);
+      setD(cpu.D >> 1);
 
       // Do flag stuff
       if (0xf000 == (cpu.D & 0xf000)) {
@@ -144,7 +144,7 @@ let instructionTable = {
     microcode: function(view) {
       let acc = cpu.D;
 
-      setB(cpu.D << 1);
+      setD(cpu.D << 1);
 
       // Do flag stuff
       if (0xf000 == (cpu.D & 0xf000)) {
@@ -390,7 +390,52 @@ let instructionTable = {
   0x19: { name: "daa", len: 1, type: "IMPLIED", cycles: 0 },
   0x1a: { name: "xgdx", len: 1, type: "IMPLIED", cycles: 0 },
   0x1b: { name: "aba", len: 1, type: "IMPLIED", cycles: 0 },
-  0x1c: { name: "cpd", len: 3, type: "IMMEDIATE16", cycles: 0 },
+  0x1c: {
+    name: "cpd",
+    len: 3,
+    type: "IMMEDIATE16",
+    cycles: 5,
+    microcode: function(view) {
+      let firstByte = view[cpu.PC - 0x8000 + 1];
+      let secondByte = view[cpu.PC - 0x8000 + 2];
+      let addr = (firstByte << 8) + secondByte;
+
+      let mem;
+
+      if (RAMSize >= addr) {
+        mem = readRAM(addr);
+      } else {
+        mem = readROM(addr);
+      }
+
+      let result = cpu.D - mem;
+
+      // Do flag stuff
+      if (0 === result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if ((cpu.A & 0xf0) == 0xf0) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (result > 0xffff) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
   0x1d: { name: "cmpd1", len: 2, type: "DIRECT", cycles: 0 },
   0x1e: { name: "cpd", len: 2, type: "INDEXED", cycles: 0 },
   0x1f: { name: "cpd", len: 3, type: "EXTENDED", cycles: 0 },
@@ -681,7 +726,20 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x3b: { name: "rti", len: 1, type: "IMPLIED", cycles: 0 },
+  0x3b: {
+    name: "rti",
+    len: 1,
+    type: "IMPLIED",
+    cycles: 12,
+    microcode: function(view) {
+      stackFlags(1);
+      stackD(1);
+      stackX(1);
+      stackY(1);
+      stackPC(1);
+
+    }
+  },
   0x3c: { name: "pshx", len: 1, type: "IMPLIED", cycles: 0 },
   0x3d: {
     name: "mul",
@@ -708,8 +766,8 @@ let instructionTable = {
   0x3e: { name: "wai", len: 1, type: "IMPLIED", cycles: 0 },
   0x3f: { name: "swi", len: 1, type: "IMPLIED", cycles: 0 },
   0x40: { name: "nega", len: 1, type: "IMPLIED", cycles: 0 },
-  0x41: { name: "0x42", len: 1, type: "IMPLIED", cycles: 0 },
-  0x42: { name: "0x42", len: 0, type: "IMPLIED", cycles: 0 },
+  0x41: { name: "0x41", len: 0, type: "NONE", cycles: 0 },
+  0x42: { name: "0x42", len: 0, type: "NONE", cycles: 0 },
   0x43: {
     name: "coma",
     len: 1,
@@ -895,7 +953,37 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x4d: { name: "tsta", len: 1, type: "IMPLIED", cycles: 0 },
+  0x4d: {
+    name: "tsta",
+    len: 1,
+    type: "IMPLIED",
+    cycles: 2,
+    microcode: function(view) {
+      setA(cpu.A - 0);
+
+      // Do flag stuff
+      if (0 === cpu.A) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if ((cpu.A & 0xf0) == 0xf0) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      clearStatusFlag("V");
+      clearStatusFlag("C");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
   0x4e: { name: "0x4e", len: 0, type: "IMPLIED", cycles: 0 },
   0x4f: {
     name: "clra",
@@ -1257,7 +1345,42 @@ let instructionTable = {
     }
   },
   0x82: { name: "sbca", len: 2, type: "IMMEDIATE", cycles: 0 },
-  0x83: { name: "subd", len: 3, type: "IMMEDIATE16", cycles: 0 },
+  0x83: {
+    name: "subd",
+    len: 3,
+    type: "IMMEDIATE16",
+    cycles: 4,
+    microcode: function(view) {
+      let firstByte = view[cpu.PC - 0x8000 + 1];
+      let secondByte = view[cpu.PC - 0x8000 + 2];
+      let addr = (firstByte << 8) + secondByte;
+
+      let result = cpu.D - readRAM(addr);
+
+      setD(result);
+
+      // Do flag stuff
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if ((result & 0xf000) == 0xf000) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      clearStatusFlag("V");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
   0x84: {
     name: "anda",
     len: 2,
@@ -1459,7 +1582,44 @@ let instructionTable = {
     }
   },
   0x90: { name: "suba", len: 2, type: "DIRECT", cycles: 0 },
-  0x91: { name: "cmpa", len: 2, type: "DIRECT", cycles: 0 },
+  0x91: {
+    name: "cmpa",
+    len: 2,
+    type: "DIRECT",
+    cycles: 3,
+    microcode: function(view) {
+      let addr = view[cpu.PC - 0x8000 + 1];
+
+      let mem = readRAM(addr);
+
+      let result = cpu.A - mem;
+
+      // Do flag stuff
+      if (0 === result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if ((cpu.A & 0xf0) == 0xf0) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (result > 0xffff) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
   0x92: { name: "sbca", len: 2, type: "DIRECT", cycles: 0 },
   0x93: {
     name: "subd",
@@ -1724,22 +1884,22 @@ let instructionTable = {
   0x9d: { name: "jsr", len: 2, type: "DIRECT", cycles: 0 },
   0x9e: { name: "lds", len: 2, type: "DIRECT", cycles: 0 },
   0x9f: { name: "sts", len: 2, type: "DIRECT", cycles: 0 },
-  0xa0: { name: "suba", len: 2, type: "INDEXED", cycles: 0 },
-  0xa1: { name: "cmpa", len: 2, type: "INDEXED", cycles: 0 },
-  0xa2: { name: "sbca", len: 2, type: "INDEXED", cycles: 0 },
-  0xa3: { name: "subd", len: 2, type: "INDEXED", cycles: 0 },
-  0xa4: { name: "anda", len: 2, type: "INDEXED", cycles: 0 },
-  0xa5: { name: "bita", len: 2, type: "INDEXED", cycles: 0 },
-  0xa6: { name: "ldaa", len: 2, type: "INDEXED", cycles: 0 },
-  0xa7: { name: "staa", len: 2, type: "INDEXED", cycles: 0 },
-  0xa8: { name: "eora", len: 2, type: "INDEXED", cycles: 0 },
-  0xa9: { name: "adca", len: 2, type: "INDEXED", cycles: 0 },
-  0xaa: { name: "oraa", len: 2, type: "INDEXED", cycles: 0 },
-  0xab: { name: "adda", len: 2, type: "INDEXED", cycles: 0 },
-  0xac: { name: "cpx", len: 2, type: "INDEXED", cycles: 0 },
-  0xad: { name: "jsr", len: 2, type: "INDEXED", cycles: 0 },
-  0xae: { name: "lds", len: 2, type: "INDEXED", cycles: 0 },
-  0xaf: { name: "sts", len: 2, type: "INDEXED", cycles: 0 },
+  0xa0: { name: "suba", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xa1: { name: "cmpa", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xa2: { name: "sbca", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xa3: { name: "subd", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xa4: { name: "anda", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xa5: { name: "bita", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xa6: { name: "ldaa", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xa7: { name: "staa", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xa8: { name: "eora", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xa9: { name: "adca", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xaa: { name: "oraa", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xab: { name: "adda", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xac: { name: "cpx", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xad: { name: "jsr", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xae: { name: "lds", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xaf: { name: "sts", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xb0: { name: "suba", len: 3, type: "EXTENDED", cycles: 0 },
   0xb1: { name: "cmpa", len: 3, type: "EXTENDED", cycles: 0 },
   0xb2: { name: "sbca", len: 3, type: "EXTENDED", cycles: 0 },
@@ -2413,17 +2573,18 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0xe0: { name: "subb", len: 2, type: "INDEXED", cycles: 0 },
-  0xe1: { name: "cmpb", len: 2, type: "INDEXED", cycles: 0 },
-  0xe2: { name: "sbcb", len: 2, type: "INDEXED", cycles: 0 },
-  0xe3: { name: "addd", len: 2, type: "INDEXED", cycles: 0 },
-  0xe4: { name: "andb", len: 2, type: "INDEXED", cycles: 0 },
-  0xe5: { name: "bitb", len: 2, type: "INDEXED", cycles: 0 },
-  0xe6: { name: "ldab", len: 2, type: "INDEXED", cycles: 0 },
+  0xe0: { name: "subb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xe1: { name: "cmpb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xe2: { name: "sbcb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xe3: { name: "addd", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xe4: { name: "andb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xe5: { name: "bitb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xe6: { name: "ldab", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xe7: {
     name: "stab",
     len: 2,
     type: "INDEXED",
+    hasSubops: true,
     cycles: 4,
     microcode: function(view) {
       //Check index type
@@ -2435,14 +2596,15 @@ let instructionTable = {
       }
     }
   },
-  0xe8: { name: "eorb", len: 2, type: "INDEXED", cycles: 0 },
-  0xe9: { name: "adcb", len: 2, type: "INDEXED", cycles: 0 },
-  0xea: { name: "orab", len: 2, type: "INDEXED", cycles: 0 },
-  0xeb: { name: "addb", len: 2, type: "INDEXED", cycles: 0 },
+  0xe8: { name: "eorb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xe9: { name: "adcb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xea: { name: "orab", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xeb: { name: "addb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xec: {
     name: "ldd",
     len: 2,
     type: "INDEXED",
+    hasSubops: true,
     cycles: 5,
     microcode: function(view) {
       let b1 = view[cpu.PC - 0x8000 + 1];
@@ -2478,6 +2640,7 @@ let instructionTable = {
     name: "std",
     len: 2,
     type: "INDEXED",
+    hasSubops: true,
     cycles: 5,
     microcode: function(view) {
       let addr = view[cpu.PC - 0x8000 + 1] + cpu.Y;
@@ -2507,8 +2670,8 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0xee: { name: "ldx", len: 2, type: "INDEXED", cycles: 0 },
-  0xef: { name: "stx", len: 2, type: "INDEXED", cycles: 0 },
+  0xee: { name: "ldx", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xef: { name: "stx", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xf0: { name: "subb", len: 3, type: "EXTENDED", cycles: 0 },
   0xf1: { name: "cmpb", len: 3, type: "EXTENDED", cycles: 0 },
   0xf2: { name: "sbcb", len: 3, type: "EXTENDED", cycles: 0 },
@@ -2525,7 +2688,13 @@ let instructionTable = {
       let secondByte = view[cpu.PC - 0x8000 + 2];
       let word = (firstByte << 8) + secondByte;
 
-      let mem = readRAM(word);
+      let mem;
+
+      if (RAMSize >= word) {
+        mem = readRAM(word);
+      } else {
+        mem = readROM(word);
+      }
 
       setB(mem);
 
@@ -2838,6 +3007,8 @@ let subOps = {
 
         writeRAM(addr, cpu.B);
 
+        setY(cpu.Y + 1);
+
         // Do flag stuff
         if (0 == cpu.B) {
           setStatusFlag("Z");
@@ -2877,7 +3048,41 @@ let subOps = {
     0x80: { name: "ldd", len: 2, type: "INDEXEDY", cycles: 1 }
   },
   0xed: {
-    0x80: { name: "std", len: 2, type: "INDEXEDY", cycles: 1 }
+    0x80: {
+      name: "std",
+      len: 2,
+      type: "INDEXEDY",
+      cycles: 5,
+      microcode: function(view) {
+        let addr = cpu.Y;
+
+        writeRAM(addr, cpu.D >> 8);
+        writeRAM(addr + 1, cpu.D & 0xff);
+
+        setY(cpu.Y + 2);
+
+        // Do flag stuff
+        if (0 == cpu.D) {
+          setStatusFlag("Z");
+        } else {
+          clearStatusFlag("Z");
+        }
+
+        if ((cpu.D & 0xf0) == 0xf0) {
+          setStatusFlag("N");
+        } else {
+          clearStatusFlag("N");
+        }
+
+        clearStatusFlag("V");
+
+        //Next
+        setPC(cpu.PC + this.len);
+
+        //Clock
+        advanceClock(this.cycles);
+      }
+    }
   },
   0xee: {
     0x80: { name: "ldx", len: 2, type: "INDEXEDY", cycles: 1 }

@@ -34,13 +34,21 @@ function setPC(addr) {
   cpu.PC = addr;
 
   updatePCOutput();
+
+  $("#log-output-div > ul").append(
+    "<li>Set PC: " + ("000" + Number(cpu.PC).toString(16)).slice(-4).toUpperCase() + "</li>"
+  );
 }
 
 function setSP(addr) {
   cpu.SP = addr;
 
   $("#register-SP-output").val(
-    ("0" + Number(cpu.SP).toString(16)).slice(-4).toUpperCase()
+    ("000" + Number(cpu.SP).toString(16)).slice(-4).toUpperCase()
+  );
+
+  $("#log-output-div > ul").append(
+    "<li>Set SP: " + ("000" + Number(cpu.SP).toString(16)).slice(-4).toUpperCase() + "</li>"
   );
 }
 
@@ -51,8 +59,13 @@ function setA(bytes) {
   $("#register-A-output").val(
     ("0" + Number(cpu.A).toString(16)).slice(-2).toUpperCase()
   );
+
   $("#register-D-output").val(
-    ("0" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
+    ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
+  );
+
+  $("#log-output-div > ul").append(
+    "<li>Set A: " + ("0" + Number(bytes).toString(16)).slice(-2).toUpperCase() + "</li>"
   );
 }
 
@@ -63,8 +76,13 @@ function setB(bytes) {
   $("#register-B-output").val(
     ("0" + Number(cpu.B).toString(16)).slice(-2).toUpperCase()
   );
+
   $("#register-D-output").val(
-    ("0" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
+    ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
+  );
+
+  $("#log-output-div > ul").append(
+    "<li>Set B: " + ("0" + Number(bytes).toString(16)).slice(-2).toUpperCase() + "</li>"
   );
 }
 
@@ -74,13 +92,19 @@ function setD(bytes) {
   cpu.B = bytes & 0xff;
 
   $("#register-D-output").val(
-    ("0" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
+    ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
   );
+
   $("#register-A-output").val(
     ("0" + Number(cpu.A).toString(16)).slice(-2).toUpperCase()
   );
+
   $("#register-B-output").val(
     ("0" + Number(cpu.B).toString(16)).slice(-2).toUpperCase()
+  );
+
+  $("#log-output-div > ul").append(
+    "<li>Set D: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
   );
 }
 
@@ -88,7 +112,11 @@ function setX(bytes) {
   cpu.X = bytes;
 
   $("#register-X-output").val(
-    ("0" + Number(cpu.X).toString(16)).slice(-4).toUpperCase()
+    ("000" + Number(cpu.X).toString(16)).slice(-4).toUpperCase()
+  );
+
+  $("#log-output-div > ul").append(
+    "<li>Set X: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
   );
 }
 
@@ -96,7 +124,11 @@ function setY(bytes) {
   cpu.Y = bytes;
 
   $("#register-Y-output").val(
-    ("0" + Number(cpu.Y).toString(16)).slice(-4).toUpperCase()
+    ("000" + Number(cpu.Y).toString(16)).slice(-4).toUpperCase()
+  );
+
+  $("#log-output-div > ul").append(
+    "<li>Set Y: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
   );
 }
 
@@ -128,6 +160,10 @@ function setStatusFlag(flag) {
   $("#register-Z-output").val(cpu.status.Z);
   $("#register-V-output").val(cpu.status.V);
   $("#register-C-output").val(cpu.status.C);
+
+  $("#log-output-div > ul").append(
+    "<li>Set " + flag + " flag</li>"
+  );
 }
 
 function clearStatusFlag(flag) {
@@ -158,15 +194,23 @@ function clearStatusFlag(flag) {
   $("#register-Z-output").val(cpu.status.Z);
   $("#register-V-output").val(cpu.status.V);
   $("#register-C-output").val(cpu.status.C);
+
+  $("#log-output-div > ul").append(
+    "<li>Clear " + flag + " flag</li>"
+  );
 }
 
 function writeRAM(addr, byte, clockWrite) {
   cpu.memory.view[addr] = byte;
 
   if (clockWrite) {
-    lastClockWrite = addr;
+    lastClockWrite.push(addr);
   } else {
-    lastRAMWrite = addr;
+    lastRAMWrite.push(addr);
+
+    $("#log-output-div > ul").append(
+      "<li>Write RAM: " + ("0" + Number(byte).toString(16)).slice(-2).toUpperCase() + " @ " + ("000" + Number(addr).toString(16)).slice(-4).toUpperCase() +"</li>"
+    );
   }
 
   redrawRAM = 1;
@@ -178,15 +222,21 @@ function writeRAM(addr, byte, clockWrite) {
 }
 
 function readRAM(addr, clockRead) {
+  let result = cpu.memory.view[addr];
+
   if (clockRead) {
-    lastClockRead = addr;
+    lastClockRead.push(addr);
   } else {
-    lastRAMRead = addr;
+    lastRAMRead.push(addr);
+
+    $("#log-output-div > ul").append(
+      "<li>Read RAM: " + ("0" + Number(result).toString(16)).slice(-2).toUpperCase() + " @ " + ("000" + Number(addr).toString(16)).slice(-4).toUpperCase() + "</li>"
+    );
   }
 
   redrawRAM = 1;
 
-  return cpu.memory.view[addr];
+  return result;
 }
 
 function readROM(addr) {
@@ -198,6 +248,11 @@ function setPcToEntrypoint() {
 }
 
 function fullReset() {
+  cpu.memory.view.fill(0);
+
+  //Set Output compare to 0xFFFF
+  writeRAM(0x000b, 0xFF);
+  writeRAM(0x000c, 0xFF);
   //setA(0);
   //setB(0);
   setD(0);
@@ -214,14 +269,157 @@ function fullReset() {
   clearStatusFlag("V");
   clearStatusFlag("C");
 
-  lastRAMWrite = 0;
-  lastRAMRead = 0;
+  lastRAMWrite.length = 0;
+  lastRAMRead.length = 0;
 
   cpu.clock.tickCount = 0;
 
   $("#clock-ticks-output").val(cpu.clock.tickCount);
 
-  cpu.memory.view.fill(0);
-
   drawRAMOutput(cpu.memory.view, RAMSize, 1);
+}
+
+function stackD(unstack) {
+  if(!unstack) {
+    let b1 = cpu.D >> 8;
+    let b2 = cpu.D & 0xff;
+
+    console.log("Prev D: 0x" + cpu.D.toString(16));
+
+    writeRAM(cpu.SP, b2);
+    setSP(cpu.SP - 1);
+
+    writeRAM(cpu.SP, b1);
+    setSP(cpu.SP - 1);
+  } else {
+    setSP(cpu.SP + 1);
+    let b1 = readRAM(cpu.SP);
+    setSP(cpu.SP + 1);
+    let b2 = readRAM(cpu.SP);
+
+    setD((b1 << 8) + b2);
+  }
+}
+
+function stackX(unstack) {
+  if(!unstack) {
+    let b1 = cpu.X >> 8;
+    let b2 = cpu.X & 0xff;
+
+    console.log("Prev X: 0x" + cpu.X.toString(16));
+
+    writeRAM(cpu.SP, b2);
+    setSP(cpu.SP - 1);
+
+    writeRAM(cpu.SP, b1);
+    setSP(cpu.SP - 1);
+  } else {
+    setSP(cpu.SP + 1);
+    let b1 = readRAM(cpu.SP);
+    setSP(cpu.SP + 1);
+    let b2 = readRAM(cpu.SP);
+
+    setX((b1 << 8) + b2);
+  }
+}
+
+function stackY(unstack) {
+  if(!unstack) {
+    let b1 = cpu.Y >> 8;
+    let b2 = cpu.Y & 0xff;
+
+    console.log("Prev Y: 0x" + cpu.Y.toString(16));
+
+    writeRAM(cpu.SP, b2);
+    setSP(cpu.SP - 1);
+
+    writeRAM(cpu.SP, b1);
+    setSP(cpu.SP - 1);
+  } else {
+    setSP(cpu.SP + 1);
+    let b1 = readRAM(cpu.SP);
+    setSP(cpu.SP + 1);
+    let b2 = readRAM(cpu.SP);
+
+    setY((b1 << 8) + b2);
+  }
+}
+
+function stackPC(unstack) {
+  if(!unstack) {
+    let b1 = cpu.PC >> 8;
+    let b2 = cpu.PC & 0xff;
+
+    console.log("Prev PC: 0x" + cpu.PC.toString(16));
+
+    writeRAM(cpu.SP, b2);
+    setSP(cpu.SP - 1);
+
+    writeRAM(cpu.SP, b1);
+    setSP(cpu.SP - 1);
+  } else {
+    setSP(cpu.SP + 1);
+    let b1 = readRAM(cpu.SP);
+    setSP(cpu.SP + 1);
+    let b2 = readRAM(cpu.SP);
+
+    setPC((b1 << 8) + b2);
+  }
+}
+
+function stackFlags(unstack) {
+  if(!unstack) {
+    let b1 = 0xC0;
+
+    b1 += cpu.status.H;
+    b1 += cpu.status.I << 1;
+    b1 += cpu.status.N << 2;
+    b1 += cpu.status.Z << 3;
+    b1 += cpu.status.V << 4;
+    b1 += cpu.status.C << 5;
+
+    console.log("Prev D: 0b" + b1.toString(2));
+
+    writeRAM(cpu.SP, b1);
+    setSP(cpu.SP - 1);
+  } else {
+    setSP(cpu.SP + 1);
+    let b1 = readRAM(cpu.SP);
+
+    if(b1 & 1) {
+      setStatusFlag("H");
+    } else {
+      clearStatusFlag("H");
+    }
+
+    if(b1 & 2) {
+      setStatusFlag("I");
+    } else {
+      clearStatusFlag("I");
+    }
+
+    if(b1 & 3) {
+      setStatusFlag("N");
+    } else {
+      clearStatusFlag("N");
+    }
+
+    if(b1 & 4) {
+      setStatusFlag("Z");
+    } else {
+      clearStatusFlag("Z");
+    }
+
+    if(b1 & 5) {
+      setStatusFlag("V");
+    } else {
+      clearStatusFlag("V");
+    }
+
+    if(b1 & 6) {
+      setStatusFlag("C");
+    } else {
+      clearStatusFlag("C");
+    }
+  }
 }

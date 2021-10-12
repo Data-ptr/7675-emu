@@ -2566,6 +2566,18 @@
                 Break on op
               </label>
             </div>
+
+            <div class="input-group mb-3">
+              <input
+                id="ignoreInterrupts-input"
+                class="form-check-input"
+                type="checkbox"
+              />
+
+              <label class="form-check-label" for="ignoreInterrupts-input">
+                Ignore interrupts
+              </label>
+            </div>
           </div>
         </div>
 
@@ -2577,6 +2589,20 @@
         >
           <div id="log-output-div" style="font-family: monospace;">
             <ul></ul>
+          </div>
+
+          <input type="button" id="clear-log-button-input" value="Clear Log" />
+
+          <div class="input-group mb-3">
+            <input
+              id="log-follow-input"
+              class="form-check-input"
+              type="checkbox"
+            />
+
+            <label class="form-check-label" for="log-follow-input">
+              Follow
+            </label>
           </div>
         </div>
       </div>
