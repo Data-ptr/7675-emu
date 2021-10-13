@@ -348,8 +348,13 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if (result > 0xffff) {
-        setStatusFlag("V");
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = accA & 0x80;
+      let ob = accB & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
       } else {
         clearStatusFlag("V");
       }
@@ -395,8 +400,13 @@ let instructionTable = {
       clearStatusFlag("Z");
     }
 
-    if (result > 0xffff) {
-      setStatusFlag("V");
+    // 2s compliment overflow test
+    // Get MSBs of the operands
+    let oa = acc & 0x80;
+    let ob = b1 & 0x80;
+
+    if (oa != ob) {
+      clearStatusFlag("V");
     } else {
       clearStatusFlag("V");
     }
@@ -573,8 +583,13 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if (result > 0xffff) {
-        setStatusFlag("V");
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = index & 0x8000;
+      let ob = mem & 0x8000;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
       } else {
         clearStatusFlag("V");
       }
@@ -605,19 +620,8 @@ let instructionTable = {
 
       setPC(cpu.PC + this.len);
 
-      console.log(
-        "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
-      );
-
       if (0b10000000 == (0b10000000 & jmpOffset)) {
-        console.log(
-          cpu.PC.toString(16) +
-            " - " +
-            ((jmpOffset ^ 0xff) + 0x1).toString(16) +
-            " = "
-        );
         setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
-        console.log(cpu.PC.toString(16));
       } else {
         setPC(cpu.PC + jmpOffset);
       }
@@ -656,19 +660,8 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 == cpu.status.C + cpu.status.Z) {
-        console.log(
-          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
-        );
-
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          console.log(
-            cpu.PC.toString(16) +
-              " - " +
-              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
-              " = "
-          );
           setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
-          console.log(cpu.PC.toString(16));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -692,19 +685,8 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (1 == (cpu.status.C | cpu.status.Z)) {
-        console.log(
-          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
-        );
-
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          console.log(
-            cpu.PC.toString(16) +
-              " - " +
-              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
-              " = "
-          );
           setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
-          console.log(cpu.PC.toString(16));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -728,19 +710,8 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 == cpu.status.C) {
-        console.log(
-          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
-        );
-
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          console.log(
-            cpu.PC.toString(16) +
-              " - " +
-              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
-              " = "
-          );
           setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
-          console.log(cpu.PC.toString(16));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -764,19 +735,8 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (1 == cpu.status.C) {
-        console.log(
-          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
-        );
-
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          console.log(
-            cpu.PC.toString(16) +
-              " - " +
-              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
-              " = "
-          );
           setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
-          console.log(cpu.PC.toString(16));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -800,19 +760,8 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 == cpu.status.Z) {
-        console.log(
-          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
-        );
-
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          console.log(
-            cpu.PC.toString(16) +
-              " - " +
-              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
-              " = "
-          );
           setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
-          console.log(cpu.PC.toString(16));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -836,19 +785,8 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (1 == cpu.status.Z) {
-        console.log(
-          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
-        );
-
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          console.log(
-            cpu.PC.toString(16) +
-              " - " +
-              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
-              " = "
-          );
           setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
-          console.log(cpu.PC.toString(16));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -875,19 +813,8 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (1 == cpu.status.N) {
-        console.log(
-          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
-        );
-
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          console.log(
-            cpu.PC.toString(16) +
-              " - " +
-              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
-              " = "
-          );
           setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
-          console.log(cpu.PC.toString(16));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -1501,7 +1428,54 @@ let instructionTable = {
     }
   },
   0x55: { name: "0x55", len: 0, type: "IMPLIED", cycles: 0 },
-  0x56: { name: "rorb", len: 1, type: "IMPLIED", cycles: 0 },
+  0x56: { name: "rorb", len: 1, type: "IMPLIED", cycles: 2,
+  microcode: function(view) {
+    let acc = cpu.B;
+
+    setB((cpu.b >> 1) | (cpu.status.C << 7));
+
+    // Do flag stuff
+    /*
+      N: Set if most significant bit of the result is set; cleared otherwise.
+      Z: Set if all bits of the result are cleared; cleared otherwise.
+      V: Set if, after the completion of the operation, (N is set and C is cleared) OR
+      (N is cleared and C is set); cleared otherwise.
+      C: Set if, before the operation, the least significant bit of the ACCX or M was
+      set; cleared otherwise.
+    */
+    if (0x80 == (cpu.A & 0x80)) {
+      setStatusFlag("N");
+    } else {
+      clearStatusFlag("N");
+    }
+
+    if (0 == cpu.A) {
+      setStatusFlag("Z");
+    } else {
+      clearStatusFlag("Z");
+    }
+
+    if (0b00000001 == (acc & 0b00000001)) {
+      setStatusFlag("C");
+    } else {
+      clearStatusFlag("C");
+    }
+
+    if (
+      (1 == cpu.status.N && 0 == cpu.status.C) ||
+      (0 == cpu.status.N && 1 == cpu.status.C)
+    ) {
+      setStatusFlag("V");
+    } else {
+      clearStatusFlag("V");
+    }
+
+    //Next
+    setPC(cpu.PC + this.len);
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
   0x57: {
     name: "asrb",
     len: 1,
@@ -2157,8 +2131,13 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if (result > 0xffff) {
-        setStatusFlag("V");
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x8000;
+      let ob = b1 & 0x8000;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
       } else {
         clearStatusFlag("V");
       }
@@ -2208,8 +2187,13 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if (result > 0xffff) {
-        setStatusFlag("V");
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = b1 & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
       } else {
         clearStatusFlag("V");
       }
@@ -2342,19 +2326,8 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 != (readRAM(addr) & bitMask)) {
-        console.log(
-          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
-        );
-
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          console.log(
-            cpu.PC.toString(16) +
-              " - " +
-              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
-              " = "
-          );
           setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
-          console.log(cpu.PC.toString(16));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -2394,8 +2367,13 @@ let instructionTable = {
       clearStatusFlag("Z");
     }
 
-    if (result > 0xffff) {
-      setStatusFlag("V");
+    // 2s compliment overflow test
+    // Get MSBs of the operands
+    let oa = acc & 0x80;
+    let ob = b1 & 0x80;
+
+    if (oa != ob) {
+      clearStatusFlag("V");
     } else {
       clearStatusFlag("V");
     }
@@ -2519,19 +2497,8 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 == result) {
-        console.log(
-          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
-        );
-
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          console.log(
-            cpu.PC.toString(16) +
-              " - " +
-              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
-              " = "
-          );
           setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
-          console.log(cpu.PC.toString(16));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -2566,8 +2533,13 @@ let instructionTable = {
         clearStatusFlag("N");
       }
 
-      if (result > 0xffff) {
-        setStatusFlag("V");
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = mem & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
       } else {
         clearStatusFlag("V");
       }
@@ -2862,6 +2834,7 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 5,
     microcode: function(view) {
+      let index = cpu.X;
       let b1 = view[cpu.PC - 0x8000 + 1];
       let mem = readRAM(b1);
 
@@ -2880,8 +2853,13 @@ let instructionTable = {
         clearStatusFlag("N");
       }
 
-      if (result > 0xffff) {
-        setStatusFlag("V");
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = index & 0x80;
+      let ob = mem & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
       } else {
         clearStatusFlag("V");
       }
@@ -3159,8 +3137,13 @@ let instructionTable = {
       clearStatusFlag("Z");
     }
 
-    if (result > 0xffff) {
-      setStatusFlag("V");
+    // 2s compliment overflow test
+    // Get MSBs of the operands
+    let oa = acc & 0x80;
+    let ob = b1 & 0x80;
+
+    if (oa != ob) {
+      clearStatusFlag("V");
     } else {
       clearStatusFlag("V");
     }
@@ -3200,8 +3183,13 @@ let instructionTable = {
         clearStatusFlag("N");
       }
 
-      if (result > 0xffff) {
-        setStatusFlag("V");
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = b1 & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
       } else {
         clearStatusFlag("V");
       }
@@ -3403,8 +3391,13 @@ let instructionTable = {
       clearStatusFlag("Z");
     }
 
-    if (result > 0xffff) {
-      setStatusFlag("V");
+    // 2s compliment overflow test
+    // Get MSBs of the operands
+    let oa = acc & 0x80;
+    let ob = b1 & 0x80;
+
+    if (oa != ob) {
+      clearStatusFlag("V");
     } else {
       clearStatusFlag("V");
     }
@@ -3482,8 +3475,13 @@ let instructionTable = {
       clearStatusFlag("Z");
     }
 
-    if (result > 0xffff) {
-      setStatusFlag("V");
+    // 2s compliment overflow test
+    // Get MSBs of the operands
+    let oa = acc & 0x80;
+    let ob = b1 & 0x80;
+
+    if (oa != ob) {
+      clearStatusFlag("V");
     } else {
       clearStatusFlag("V");
     }
@@ -3590,19 +3588,8 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 == (mem & bitMask)) {
-        console.log(
-          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
-        );
-
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          console.log(
-            cpu.PC.toString(16) +
-              " - " +
-              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
-              " = "
-          );
           setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
-          console.log(cpu.PC.toString(16));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -3642,8 +3629,13 @@ let instructionTable = {
       clearStatusFlag("Z");
     }
 
-    if (result > 0xffff) {
-      setStatusFlag("V");
+    // 2s compliment overflow test
+    // Get MSBs of the operands
+    let oa = acc & 0x80;
+    let ob = mem & 0x80;
+
+    if (oa != ob) {
+      clearStatusFlag("V");
     } else {
       clearStatusFlag("V");
     }
@@ -3684,8 +3676,13 @@ let instructionTable = {
         clearStatusFlag("N");
       }
 
-      if (result > 0xffff) {
-        setStatusFlag("V");
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = mem & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
       } else {
         clearStatusFlag("V");
       }
@@ -3834,8 +3831,13 @@ let instructionTable = {
       clearStatusFlag("Z");
     }
 
-    if (result > 0xffff) {
-      setStatusFlag("V");
+    // 2s compliment overflow test
+    // Get MSBs of the operands
+    let oa = acc & 0x80;
+    let ob = mem & 0x80;
+
+    if (oa != ob) {
+      clearStatusFlag("V");
     } else {
       clearStatusFlag("V");
     }
@@ -4384,9 +4386,13 @@ let subOps = {
           clearStatusFlag("N");
         }
 
-        //TODO: Is this right? No it is not...
-        if (0 != (result & 0x80000)) {
-          setStatusFlag("V");
+        // 2s compliment overflow test
+        // Get MSBs of the operands
+        let oa = acc & 0x8000;
+        let ob = word & 0x8000;
+
+        if (oa != ob) {
+          clearStatusFlag("V");
         } else {
           clearStatusFlag("V");
         }
