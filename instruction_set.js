@@ -217,7 +217,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 3,
     microcode: function(view) {
-      if (0xFFFF == cpu.X) {
+      if (0xffff == cpu.X) {
         setX(0x0);
       } else {
         setX(cpu.X + 1);
@@ -245,7 +245,7 @@ let instructionTable = {
     cycles: 3,
     microcode: function(view) {
       if (0 == cpu.X) {
-        setX(0xFFFF);
+        setX(0xffff);
       } else {
         setX(cpu.X - 1);
       }
@@ -316,52 +316,57 @@ let instructionTable = {
       cpu.clock.tickCount += this.cycles;
     }
   },
-  0x10: { name: "sba", len: 1, type: "IMPLIED", cycles: 2,
-  microcode: function(view) {
-    let accA = cpu.A;
-    let accB = cpu.B;
-    let result = accA - accB;
+  0x10: {
+    name: "sba",
+    len: 1,
+    type: "IMPLIED",
+    cycles: 2,
+    microcode: function(view) {
+      let accA = cpu.A;
+      let accB = cpu.B;
+      let result = accA - accB;
 
-    setA(result);
+      setA(result);
 
-    // Do flag stuff
-    /*
+      // Do flag stuff
+      /*
       N: Set if most significant bit of the result is set; cleared otherwise.
       Z: Set if all bits of the result are cleared; cleared otherwise.
       V: Set if there is two's complement overflow as a result of the operation.
       C: Carry is set if the absolute value of Accumulator B is larger than the
       absolute value of Accumulator A; cleared otherwise.
     */
-    if (0x80 == (result & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
+      if (0x80 == (result & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (result > 0xffff) {
+        setStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      if (accB > accA) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    if (result > 0xffff) {
-      setStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    if (accB > accA) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  } },
+  },
   0x11: { name: "cba", len: 1, type: "IMPLIED", cycles: 0 },
   0x12: { name: "nop", len: 3, type: "EXTENDED", cycles: 0 },
   0x13: { name: "brclr2", len: 4, type: "DIRECT3", cycles: 0 },
@@ -491,7 +496,7 @@ let instructionTable = {
       let secondByte = view[cpu.PC - 0x8000 + 2];
       let addr = (firstByte << 8) + secondByte;
 
-      let mem = 0;;
+      let mem = 0;
 
       if (RAMSize >= addr) {
         mem = readRAM(addr);
@@ -523,7 +528,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if (result > 0xFFFF) {
+      if (result > 0xffff) {
         setStatusFlag("V");
       } else {
         clearStatusFlag("V");
@@ -555,7 +560,15 @@ let instructionTable = {
 
       setPC(cpu.PC + this.len);
 
-      setPC(cpu.PC + jmpOffset);
+      console.log("0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16) );
+
+      if(0b10000000 == (0b10000000 & jmpOffset)) {
+        console.log(cpu.PC.toString(16) + " - " + ((jmpOffset ^ 0xFF) + 0x1).toString(16) + " = ");
+        setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
+        console.log(cpu.PC.toString(16));
+      } else {
+        setPC(cpu.PC + jmpOffset);
+      }
 
       // Do flag stuff
       // Not affected.
@@ -591,7 +604,15 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 == cpu.status.C + cpu.status.Z) {
-        setPC(cpu.PC + jmpOffset);
+        console.log("0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16) );
+
+        if(0b10000000 == (0b10000000 & jmpOffset)) {
+          console.log(cpu.PC.toString(16) + " - " + ((jmpOffset ^ 0xFF) + 0x1).toString(16) + " = ");
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
+          console.log(cpu.PC.toString(16));
+        } else {
+          setPC(cpu.PC + jmpOffset);
+        }
       }
 
       // Do flag stuff
@@ -612,7 +633,15 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (1 == (cpu.status.C | cpu.status.Z)) {
-        setPC(cpu.PC + jmpOffset);
+        console.log("0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16) );
+
+        if(0b10000000 == (0b10000000 & jmpOffset)) {
+          console.log(cpu.PC.toString(16) + " - " + ((jmpOffset ^ 0xFF) + 0x1).toString(16) + " = ");
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
+          console.log(cpu.PC.toString(16));
+        } else {
+          setPC(cpu.PC + jmpOffset);
+        }
       }
 
       // Do flag stuff
@@ -633,7 +662,15 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 == cpu.status.C) {
-        setPC(cpu.PC + jmpOffset);
+        console.log("0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16) );
+
+        if(0b10000000 == (0b10000000 & jmpOffset)) {
+          console.log(cpu.PC.toString(16) + " - " + ((jmpOffset ^ 0xFF) + 0x1).toString(16) + " = ");
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
+          console.log(cpu.PC.toString(16));
+        } else {
+          setPC(cpu.PC + jmpOffset);
+        }
       }
 
       // Do flag stuff
@@ -654,11 +691,18 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (1 == cpu.status.C) {
-        console.log("0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16) );
+        console.log(
+          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
+        );
 
-        if(0b10000000 == (0b10000000 & jmpOffset)) {
-          console.log(cpu.PC.toString(16) + " - " + ((jmpOffset ^ 0xFF) + 0x1).toString(16) + " = ");
-          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
+        if (0b10000000 == (0b10000000 & jmpOffset)) {
+          console.log(
+            cpu.PC.toString(16) +
+              " - " +
+              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
+              " = "
+          );
+          setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
           console.log(cpu.PC.toString(16));
         } else {
           setPC(cpu.PC + jmpOffset);
@@ -683,7 +727,22 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 == cpu.status.Z) {
-        setPC(cpu.PC + jmpOffset);
+        console.log(
+          "0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16)
+        );
+
+        if (0b10000000 == (0b10000000 & jmpOffset)) {
+          console.log(
+            cpu.PC.toString(16) +
+              " - " +
+              ((jmpOffset ^ 0xff) + 0x1).toString(16) +
+              " = "
+          );
+          setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
+          console.log(cpu.PC.toString(16));
+        } else {
+          setPC(cpu.PC + jmpOffset);
+        }
       }
 
       // Do flag stuff
@@ -704,7 +763,15 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (1 == cpu.status.Z) {
-        setPC(cpu.PC + jmpOffset);
+        console.log("0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16) );
+
+        if(0b10000000 == (0b10000000 & jmpOffset)) {
+          console.log(cpu.PC.toString(16) + " - " + ((jmpOffset ^ 0xFF) + 0x1).toString(16) + " = ");
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
+          console.log(cpu.PC.toString(16));
+        } else {
+          setPC(cpu.PC + jmpOffset);
+        }
       }
 
       // Do flag stuff
@@ -728,7 +795,15 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (1 == cpu.status.N) {
-        setPC(cpu.PC + jmpOffset);
+        console.log("0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16) );
+
+        if(0b10000000 == (0b10000000 & jmpOffset)) {
+          console.log(cpu.PC.toString(16) + " - " + ((jmpOffset ^ 0xFF) + 0x1).toString(16) + " = ");
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
+          console.log(cpu.PC.toString(16));
+        } else {
+          setPC(cpu.PC + jmpOffset);
+        }
       }
 
       // Do flag stuff
@@ -939,7 +1014,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      setA(0xFF - cpu.A);
+      setA(0xff - cpu.A);
 
       // Do flag stuff
       /*
@@ -1455,7 +1530,7 @@ let instructionTable = {
       let acc = cpu.B;
 
       if (0 == cpu.B) {
-        setB(0xFF);
+        setB(0xff);
       } else {
         setB(cpu.B - 1);
       }
@@ -1598,18 +1673,22 @@ let instructionTable = {
   0x75: { name: "0x75", len: 0, type: "EXTENDED", cycles: 0 },
   0x76: { name: "ror", len: 3, type: "EXTENDED", cycles: 0 },
   0x77: { name: "asr", len: 3, type: "EXTENDED", cycles: 0 },
-  0x78: { name: "asl", len: 3, type: "EXTENDED", cycles: 6,
-  microcode: function(view) {
-    let firstByte = view[cpu.PC - 0x8000 + 1];
-    let secondByte = view[cpu.PC - 0x8000 + 2];
-    let addr = (firstByte << 8) + secondByte;
-    let mem = readRAM(addr);
-    let result = mem >>> 1;
+  0x78: {
+    name: "asl",
+    len: 3,
+    type: "EXTENDED",
+    cycles: 6,
+    microcode: function(view) {
+      let firstByte = view[cpu.PC - 0x8000 + 1];
+      let secondByte = view[cpu.PC - 0x8000 + 2];
+      let addr = (firstByte << 8) + secondByte;
+      let mem = readRAM(addr);
+      let result = mem >>> 1;
 
-    writeRAM(addr, result);
+      writeRAM(addr, result);
 
-    // Do flag stuff
-    /*
+      // Do flag stuff
+      /*
       N: Set if most significant bit of the result is set; cleared otherwise.
       Z: Set if all bits of the result are cleared; cleared othewise.
       V: Set if, after the completion of the shift operation, (N is set and C is cleared)
@@ -1617,39 +1696,40 @@ let instructionTable = {
       C: Set if, before the operation, the most significant bit of the ACCX or M was
       set; cleared otherwise.
     */
-    if (0x80 == (result & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
+      if (0x80 == (result & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x80 == (mem & 0x80)) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      if (
+        (1 == cpu.status.N && 0 == cpu.status.C) ||
+        (0 == cpu.status.N && 1 == cpu.status.C)
+      ) {
+        setStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    if (0x80 == (mem & 0x80)) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
-
-    if (
-      (1 == cpu.status.N && 0 == cpu.status.C) ||
-      (0 == cpu.status.N && 1 == cpu.status.C)
-    ) {
-      setStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  } },
+  },
   0x79: { name: "rol", len: 3, type: "EXTENDED", cycles: 0 },
   0x7a: {
     name: "dec",
@@ -1990,7 +2070,15 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 != (readRAM(addr) & bitMask)) {
-        setPC(cpu.PC + jmpOffset);
+        console.log("0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16) );
+
+        if(0b10000000 == (0b10000000 & jmpOffset)) {
+          console.log(cpu.PC.toString(16) + " - " + ((jmpOffset ^ 0xFF) + 0x1).toString(16) + " = ");
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
+          console.log(cpu.PC.toString(16));
+        } else {
+          setPC(cpu.PC + jmpOffset);
+        }
       }
 
       //Clock
@@ -2106,7 +2194,15 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 == result) {
-        setPC(cpu.PC + jmpOffset);
+        console.log("0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16) );
+
+        if(0b10000000 == (0b10000000 & jmpOffset)) {
+          console.log(cpu.PC.toString(16) + " - " + ((jmpOffset ^ 0xFF) + 0x1).toString(16) + " = ");
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
+          console.log(cpu.PC.toString(16));
+        } else {
+          setPC(cpu.PC + jmpOffset);
+        }
       }
 
       //Clock
@@ -2157,49 +2253,54 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x92: { name: "sbca", len: 2, type: "DIRECT", cycles: 3,
-  microcode: function(view) {
-    let acc = cpu.A;
-    let addr = view[cpu.PC - 0x8000 + 1];
-    let mem = readRAM(addr);
-    let result = cpu.A - mem - cpu.status.C;
+  0x92: {
+    name: "sbca",
+    len: 2,
+    type: "DIRECT",
+    cycles: 3,
+    microcode: function(view) {
+      let acc = cpu.A;
+      let addr = view[cpu.PC - 0x8000 + 1];
+      let mem = readRAM(addr);
+      let result = cpu.A - mem - cpu.status.C;
 
-    setA(result);
+      setA(result);
 
-    // Do flag stuff
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
+      // Do flag stuff
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x80 == (result & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (mem + cpu.status.C > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      if (
+        (1 == cpu.status.N && 0 == cpu.status.C) ||
+        (0 == cpu.status.N && 1 == cpu.status.C)
+      ) {
+        setStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0x80 == (result & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
-    }
-
-    if ((mem + cpu.status.C) > acc) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
-
-    if (
-      (1 == cpu.status.N && 0 == cpu.status.C) ||
-      (0 == cpu.status.N && 1 == cpu.status.C)
-    ) {
-      setStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  }  },
+  },
   0x93: {
     name: "subd",
     len: 2,
@@ -2907,7 +3008,15 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (0 == (readRAM(addr) & bitMask)) {
-        setPC(cpu.PC + jmpOffset);
+        console.log("0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16) );
+
+        if(0b10000000 == (0b10000000 & jmpOffset)) {
+          console.log(cpu.PC.toString(16) + " - " + ((jmpOffset ^ 0xFF) + 0x1).toString(16) + " = ");
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
+          console.log(cpu.PC.toString(16));
+        } else {
+          setPC(cpu.PC + jmpOffset);
+        }
       }
 
       //Clock
