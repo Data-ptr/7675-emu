@@ -250,9 +250,17 @@ function setPcToEntrypoint() {
 function fullReset() {
   cpu.memory.view.fill(0);
 
-  //Set Output compare to 0xFFFF
-  writeRAM(0x000b, 0xFF);
-  writeRAM(0x000c, 0xFF);
+  //Set Output compares to 0xFFFF
+  //Timer 1 (0x0B:0x0C)
+  writeRAM(0x000B, 0xFF);
+  writeRAM(0x000C, 0xFF);
+  //Timer 2 (0x1B:0x1C)
+  writeRAM(0x001B, 0xFF);
+  writeRAM(0x001C, 0xFF);
+  //Timer 3 (0x2B:0x2C)
+  writeRAM(0x002B, 0xFF);
+  writeRAM(0x002C, 0xFF);
+
   //setA(0);
   //setB(0);
   setD(0);

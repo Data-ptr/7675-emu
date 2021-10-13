@@ -121,46 +121,36 @@ function advanceClock(ticks) {
   let preTick = cpu.clock.tickCount;
   cpu.clock.tickCount += ticks;
 
-  let timer1Freq = 2; //2Mhz
-  let timer3Freq = 0.25; //250khz
+  let timer1Freq = 2;     //2Mhz
+  let timer3Freq = 0.25;  //250khz
 
   let ignoreInterrupts = $('#ignoreInterrupts-input').is(":checked");
 
   for (let i = 0; i < ticks; i++) {
     // Output compare 1
-    let outCmp = (readRAM(0x000b, 1) << 8) + readRAM(0x000c, 1);
+    let t1OutCmp = (readRAM(0x000B, 1) << 8) + readRAM(0x000C, 1);
+    let t2OutCmp = (readRAM(0x001B, 1) << 8) + readRAM(0x001C, 1);
+    let t3OutCmp = (readRAM(0x002B, 1) << 8) + readRAM(0x002C, 1);
 
-    if (!ignoreInterrupts && lastClockOutCmp != outCmp && Math.ceil(cpu.timer_1_2) + i == outCmp) {
-      lastClockOutCmp = outCmp;
-      console.log("Timer 1 output compare match! Watch");
+    //Output compare 1 vector= 0xFFF0
+    if (!ignoreInterrupts && Math.ceil(cpu.timer_1_2) + i == t1OutCmp) {
+      console.log("Timer 1 output compare match!");
 
-      //TODO: use vector table
-      //Output compare 1 vector= 0xFFF0
-      let firstByte = cpu.ROM.view[0xFFF0 - 0x8000];
-      let secondByte = cpu.ROM.view[0xFFF1 - 0x8000];
-      let addr = (firstByte << 8) + secondByte;
+      interrupt(0xFFF0);
+    }
 
-      stackPC();
-      stackY();
-      stackX();
-      stackD();
-      stackFlags();
+    //Output compare 2 vector= 0xFFEE
+    if (!ignoreInterrupts && Math.ceil(cpu.timer_1_2) + i == t2OutCmp) {
+      console.log("Timer 2 output compare match!");
 
-      setD(0);
-      setX(0);
-      setY(0);
+      interrupt(0xFFEE);
+    }
 
-      setPC(addr);
+    //Output compare 3 vector= 0xFFEC
+    if (!ignoreInterrupts && Math.ceil(cpu.timer_3) + i == t3OutCmp) {
+      console.log("Timer 3 output compare match!");
 
-      clearStatusFlag("H");
-      setStatusFlag("I");
-      clearStatusFlag("N");
-      clearStatusFlag("Z");
-      clearStatusFlag("V");
-      clearStatusFlag("C");
-
-      //Output compare 2 vector= 0xFFEE
-      //Output compare 3 vector= 0xFFEC
+      interrupt(0xFFEC);
     }
   }
 
@@ -206,4 +196,29 @@ function executeMicrocode(view) {
       instructionTable[view[cpu.PC - 0x8000]].microcode(view); // branch here
     }
   }
+}
+
+function interrupt(vector) {
+  let firstByte = cpu.ROM.view[vector - 0x8000];
+  let secondByte = cpu.ROM.view[vector + 1 - 0x8000];
+  let addr = (firstByte << 8) + secondByte;
+
+  stackPC();
+  stackY();
+  stackX();
+  stackD();
+  stackFlags();
+
+  setD(0);
+  setX(0);
+  setY(0);
+
+  setPC(addr);
+
+  clearStatusFlag("H");
+  setStatusFlag("I");
+  clearStatusFlag("N");
+  clearStatusFlag("Z");
+  clearStatusFlag("V");
+  clearStatusFlag("C");
 }

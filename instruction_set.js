@@ -40,13 +40,18 @@ let instructionTable = {
       writeRAM(addr, result);
 
       // Do flag stuff
+      /*
+        N  = R7: Set  if the  result's MSB is  "1"; cleared  otherwise_
+        Z = R7-R6-RS-R4-R3-R2-Rl-RO: Set  if  the  "resul t is  zero;  cleared otherwise_
+        V  =  0: Cleared
+      */
       if (0 === result) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
       }
 
-      if ((result & 0xf0) == 0xf0) {
+      if (0x80 == (result & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -76,13 +81,18 @@ let instructionTable = {
       writeRAM(addr, result);
 
       // Do flag stuff
+      /*
+        N  = R7: Set  if the  result's MSB is  "1"; cleared  otherwise_
+        Z = R7-R6-RS-R4-R3-R2-Rl-RO: Set  if  the  "resul t is  zero;  cleared otherwise_
+        V  =  0: Cleared
+      */
       if (0 === result) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
       }
 
-      if ((result & 0xf0) == 0xf0) {
+      if (0x80 == (result & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -108,13 +118,23 @@ let instructionTable = {
       setD(cpu.D >> 1);
 
       // Do flag stuff
-      if (0xf000 == (cpu.D & 0xf000)) {
-        setStatusFlag("N");
+      /*
+        N: Cleared.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if, after completion of the shift operation, (N is set and C is cleared) OR
+        (N is cleared and C is set); cleared otherwise.
+        C: Set if, before the shift, the least significant bit of ACCD was set; cleared
+        otherwise.
+      */
+      clearStatusFlag("N");
+
+      if (0 == cpu.D) {
+        setStatusFlag("Z");
       } else {
-        clearStatusFlag("N");
+        clearStatusFlag("Z");
       }
 
-      if (0xf000 == (acc & 0xf000)) {
+      if (acc & 0b00000001) {
         setStatusFlag("C");
       } else {
         clearStatusFlag("C");
@@ -147,13 +167,27 @@ let instructionTable = {
       setD(cpu.D << 1);
 
       // Do flag stuff
-      if (0xf000 == (cpu.D & 0xf000)) {
+      /*
+      N: Set if most significant bit of result is set; cleared otherwise.
+      Z: Set if all bits of the result are cleared; cleared otherwise.
+      V: Set if, after the completion of the shift operation, (N is set and Cis cleared)
+      OR (N is cleared and C is set); cleared otherwise.
+      C: Set if before the operation the most significant bit of ACCD was set;
+      cleared otherwise.
+      */
+      if (0x8000 == (cpu.D & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
-      if (0xf000 == (acc & 0xf000)) {
+      if (0 == cpu.D) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x8000 == (acc & 0x8000)) {
         setStatusFlag("C");
       } else {
         clearStatusFlag("C");
@@ -183,25 +217,18 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 3,
     microcode: function(view) {
-      setX(cpu.X + 1);
+      if (0xFFFF == cpu.X) {
+        setX(0x0);
+      } else {
+        setX(cpu.X + 1);
+      }
 
       // Do flag stuff
-      if (0 === cpu.X) {
+      // Z: Set if all 16 bits of the result are cleared; cleared otherwise.
+      if (0 == cpu.X) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
-      }
-
-      if (0xf000 == (cpu.X & 0xf000)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0x7f == cpu.X) {
-        setStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
       }
 
       //Next
@@ -217,25 +244,18 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 3,
     microcode: function(view) {
-      setX(cpu.X - 1);
+      if (0 == cpu.X) {
+        setX(0xFFFF);
+      } else {
+        setX(cpu.X - 1);
+      }
 
       // Do flag stuff
-      if (0 === cpu.X) {
+      // Z: Set if all bits of the result are cleared; cleared otherwise.
+      if (0 == cpu.X) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
-      }
-
-      if ((cpu.X & 0xf0) == 0xf0) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0x7f == cpu.X) {
-        setStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
       }
 
       //Next
@@ -245,7 +265,22 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x0a: { name: "clv", len: 1, type: "IMPLIED", cycles: 0 },
+  0x0a: {
+    name: "clv",
+    len: 1,
+    type: "IMPLIED",
+    cycles: 2,
+    microcode: function(view) {
+      // V: Cleared.
+      clearStatusFlag("V");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      cpu.clock.tickCount += this.cycles;
+    }
+  },
   0x0b: { name: "sev", len: 1, type: "IMPLIED", cycles: 0 },
   0x0c: { name: "clc", len: 1, type: "IMPLIED", cycles: 0 },
   0x0d: { name: "sec", len: 1, type: "IMPLIED", cycles: 0 },
@@ -255,7 +290,9 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
+      // I: Cleared.
       clearStatusFlag("I");
+
       //Next
       setPC(cpu.PC + this.len);
 
@@ -269,6 +306,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
+      //I: Set.
       setStatusFlag("I");
 
       //Next
@@ -278,7 +316,52 @@ let instructionTable = {
       cpu.clock.tickCount += this.cycles;
     }
   },
-  0x10: { name: "sba", len: 1, type: "IMPLIED", cycles: 0 },
+  0x10: { name: "sba", len: 1, type: "IMPLIED", cycles: 2,
+  microcode: function(view) {
+    let accA = cpu.A;
+    let accB = cpu.B;
+    let result = accA - accB;
+
+    setA(result);
+
+    // Do flag stuff
+    /*
+      N: Set if most significant bit of the result is set; cleared otherwise.
+      Z: Set if all bits of the result are cleared; cleared otherwise.
+      V: Set if there is two's complement overflow as a result of the operation.
+      C: Carry is set if the absolute value of Accumulator B is larger than the
+      absolute value of Accumulator A; cleared otherwise.
+    */
+    if (0x80 == (result & 0x80)) {
+      setStatusFlag("N");
+    } else {
+      clearStatusFlag("N");
+    }
+
+    if (0 == result) {
+      setStatusFlag("Z");
+    } else {
+      clearStatusFlag("Z");
+    }
+
+    if (result > 0xffff) {
+      setStatusFlag("V");
+    } else {
+      clearStatusFlag("V");
+    }
+
+    if (accB > accA) {
+      setStatusFlag("C");
+    } else {
+      clearStatusFlag("C");
+    }
+
+    //Next
+    setPC(cpu.PC + this.len);
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
   0x11: { name: "cba", len: 1, type: "IMPLIED", cycles: 0 },
   0x12: { name: "nop", len: 3, type: "EXTENDED", cycles: 0 },
   0x13: { name: "brclr2", len: 4, type: "DIRECT3", cycles: 0 },
@@ -330,23 +413,23 @@ let instructionTable = {
       setB(q);
 
       // Do flag stuff
-      if (0 == q) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if (d <= n) {
-        setStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (0 == d || n > d) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      // if (0 == q) {
+      //   setStatusFlag("Z");
+      // } else {
+      //   clearStatusFlag("Z");
+      // }
+      //
+      // if (d <= n) {
+      //   setStatusFlag("V");
+      // } else {
+      //   clearStatusFlag("V");
+      // }
+      //
+      // if (0 == d || n > d) {
+      //   setStatusFlag("C");
+      // } else {
+      //   clearStatusFlag("C");
+      // }
 
       //Next
       setPC(cpu.PC + this.len);
@@ -364,16 +447,23 @@ let instructionTable = {
       setB(cpu.A);
 
       // Do flag stuff
-      if (0 === cpu.B) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if ((cpu.B & 0xf0) == 0xf0) {
+      /*
+      N: Set if the most significant bit of the contents of the accumulator is set;
+      cleared otherwise.
+      Z: Set if all bits of the contents of the accumulator are cleared; cleared other-
+      wise.
+      V: Cleared.
+      */
+      if (0x80 == (cpu.B & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
+      }
+
+      if (0 == cpu.B) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
       }
 
       clearStatusFlag("V");
@@ -396,11 +486,12 @@ let instructionTable = {
     type: "IMMEDIATE16",
     cycles: 5,
     microcode: function(view) {
+      let index = cpu.D;
       let firstByte = view[cpu.PC - 0x8000 + 1];
       let secondByte = view[cpu.PC - 0x8000 + 2];
       let addr = (firstByte << 8) + secondByte;
 
-      let mem;
+      let mem = 0;;
 
       if (RAMSize >= addr) {
         mem = readRAM(addr);
@@ -411,22 +502,37 @@ let instructionTable = {
       let result = cpu.D - mem;
 
       // Do flag stuff
-      if (0 === result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if ((cpu.A & 0xf0) == 0xf0) {
+      /*
+        N: Set if most significant bit c;>f the result of the subtraction is set; cleared
+        otherwise.
+        Z: Set if all bits of the internal result are cleared; cleared otherwise.
+        V: Set if the subtraction results in two's complement overflow; cleared other-
+        wise.
+        C: Set if the absolute value of the contents of memory is larger than the abso-
+        lute value of the index register; cleared otherwise.
+      */
+      if (0x8000 == (result & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
-      if (result > 0xffff) {
-        clearStatusFlag("V");
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (result > 0xFFFF) {
+        setStatusFlag("V");
       } else {
         clearStatusFlag("V");
+      }
+
+      if (mem > index) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
       }
 
       //Next
@@ -451,6 +557,9 @@ let instructionTable = {
 
       setPC(cpu.PC + jmpOffset);
 
+      // Do flag stuff
+      // Not affected.
+
       //Clock
       advanceClock(this.cycles);
     }
@@ -461,6 +570,9 @@ let instructionTable = {
     type: "RELATIVE",
     cycles: 3,
     microcode: function() {
+      // Do flag stuff
+      // Not affected.
+
       //Next
       setPC(cpu.PC + this.len);
 
@@ -482,6 +594,9 @@ let instructionTable = {
         setPC(cpu.PC + jmpOffset);
       }
 
+      // Do flag stuff
+      // Not affected.
+
       //Clock
       advanceClock(this.cycles);
     }
@@ -496,9 +611,12 @@ let instructionTable = {
 
       setPC(cpu.PC + this.len);
 
-      if (1 == cpu.status.C || cpu.status.Z) {
+      if (1 == (cpu.status.C | cpu.status.Z)) {
         setPC(cpu.PC + jmpOffset);
       }
+
+      // Do flag stuff
+      // Not affected.
 
       //Clock
       advanceClock(this.cycles);
@@ -518,6 +636,9 @@ let instructionTable = {
         setPC(cpu.PC + jmpOffset);
       }
 
+      // Do flag stuff
+      // Not affected.
+
       //Clock
       advanceClock(this.cycles);
     }
@@ -533,8 +654,19 @@ let instructionTable = {
       setPC(cpu.PC + this.len);
 
       if (1 == cpu.status.C) {
-        setPC(cpu.PC + jmpOffset);
+        console.log("0b10000000 & jmpOffset = " + (0b10000000 & jmpOffset).toString(16) );
+
+        if(0b10000000 == (0b10000000 & jmpOffset)) {
+          console.log(cpu.PC.toString(16) + " - " + ((jmpOffset ^ 0xFF) + 0x1).toString(16) + " = ");
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
+          console.log(cpu.PC.toString(16));
+        } else {
+          setPC(cpu.PC + jmpOffset);
+        }
       }
+
+      // Do flag stuff
+      // Not affected.
 
       //Clock
       advanceClock(this.cycles);
@@ -554,6 +686,9 @@ let instructionTable = {
         setPC(cpu.PC + jmpOffset);
       }
 
+      // Do flag stuff
+      // Not affected.
+
       //Clock
       advanceClock(this.cycles);
     }
@@ -571,6 +706,9 @@ let instructionTable = {
       if (1 == cpu.status.Z) {
         setPC(cpu.PC + jmpOffset);
       }
+
+      // Do flag stuff
+      // Not affected.
 
       //Clock
       advanceClock(this.cycles);
@@ -593,6 +731,9 @@ let instructionTable = {
         setPC(cpu.PC + jmpOffset);
       }
 
+      // Do flag stuff
+      // Not affected.
+
       //Clock
       advanceClock(this.cycles);
     }
@@ -614,6 +755,9 @@ let instructionTable = {
 
       setA(b1);
 
+      // Do flag stuff
+      // Not affected.
+
       //Next
       setPC(cpu.PC + this.len);
 
@@ -631,6 +775,9 @@ let instructionTable = {
       let b1 = readRAM(cpu.SP);
 
       setB(b1);
+
+      // Do flag stuff
+      // Not affected.
 
       //Next
       setPC(cpu.PC + this.len);
@@ -650,6 +797,9 @@ let instructionTable = {
       writeRAM(cpu.SP, cpu.A);
       setSP(cpu.SP - 1);
 
+      // Do flag stuff
+      // Not affected.
+
       //Next
       setPC(cpu.PC + this.len);
 
@@ -665,6 +815,9 @@ let instructionTable = {
     microcode: function(view) {
       writeRAM(cpu.SP, cpu.B);
       setSP(cpu.SP - 1);
+
+      // Do flag stuff
+      // Not affected.
 
       //Next
       setPC(cpu.PC + this.len);
@@ -683,6 +836,9 @@ let instructionTable = {
       let b1 = readRAM(cpu.SP);
 
       setX(b1);
+
+      // Do flag stuff
+      // Not affected.
 
       //Next
       setPC(cpu.PC + this.len);
@@ -707,6 +863,9 @@ let instructionTable = {
 
       setPC(addr);
 
+      // Do flag stuff
+      // Not affected.
+
       //Clock
       advanceClock(this.cycles);
     }
@@ -718,6 +877,9 @@ let instructionTable = {
     cycles: 3,
     microcode: function(view) {
       setX(cpu.B + cpu.X);
+
+      // Do flag stuff
+      // Not affected.
 
       //Next
       setPC(cpu.PC + this.len);
@@ -737,8 +899,10 @@ let instructionTable = {
       stackX(1);
       stackY(1);
       stackPC(1);
-
     }
+
+    // Do flag stuff
+    // Restored to the states pulled from the stack.
   },
   0x3c: { name: "pshx", len: 1, type: "IMPLIED", cycles: 0 },
   0x3d: {
@@ -750,7 +914,8 @@ let instructionTable = {
       setD(cpu.A * cpu.B);
 
       // Do flag stuff
-      if (1 == (cpu.B & 0b01000000)) {
+      // C: Set if bit 7 of result (ACCB B7) is set; cleared otherwise.
+      if (0x80 == (cpu.B & 0x80)) {
         setStatusFlag("C");
       } else {
         clearStatusFlag("C");
@@ -774,22 +939,30 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      setA(0xff - cpu.A);
+      setA(0xFF - cpu.A);
 
       // Do flag stuff
-      if (0 === cpu.A) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if ((cpu.A & 0xf0) == 0xf0) {
+      /*
+        N: Set if most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Cleared.
+        C: Set.
+      */
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
+      if (0 == cpu.A) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
       clearStatusFlag("V");
+
+      setStatusFlag("C");
 
       //Next
       setPC(cpu.PC + this.len);
@@ -809,13 +982,23 @@ let instructionTable = {
       setA(cpu.A >>> 1);
 
       // Do flag stuff
-      if (0xf0 == (cpu.A & 0xf0)) {
-        setStatusFlag("N");
+      /*
+        N: Cleared.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if, after the completion of the shift operation, (Nis set and C is cleared)
+        OR (N is cleared and C is set); cleared otherwise.
+        C: Set if, before the operation, the least significant bit of the ACCX or M was
+        set; cleared otherwise.
+      */
+      clearStatusFlag("N");
+
+      if (0 == cpu.A) {
+        setStatusFlag("Z");
       } else {
-        clearStatusFlag("N");
+        clearStatusFlag("Z");
       }
 
-      if (0xf0 == (acc & 0xf0)) {
+      if (0x80 == (acc & 0x80)) {
         setStatusFlag("C");
       } else {
         clearStatusFlag("C");
@@ -850,13 +1033,27 @@ let instructionTable = {
       setA(cpu.A >> 1);
 
       // Do flag stuff
-      if (0xf0 == (cpu.A & 0xf0)) {
+      /*
+        N: Set if the most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if, after the completion of the shift operation, (N is set and C is cleared)
+        OR (N is cleared and C is set); cleared otherwise.
+        C: Set if, before the operation, the least significant bit of the ACCX or M was
+        set; cleared otherwise.
+      */
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
-      if (0xf0 == (acc & 0xf0)) {
+      if (0 == cpu.A) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0b00000001 == (acc & 0b00000001)) {
         setStatusFlag("C");
       } else {
         clearStatusFlag("C");
@@ -885,16 +1082,31 @@ let instructionTable = {
     cycles: 2,
     microcode: function(view) {
       let acc = cpu.A;
+
       setA(cpu.A << 1);
 
       // Do flag stuff
-      if (0xf0 == (cpu.A & 0xf0)) {
+      /*
+        N: Set if most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared othewise.
+        V: Set if, after the completion of the shift operation, (N is set and C is cleared)
+        OR (N is cleared and C is set); cleared otherwise.
+        C: Set if, before the operation, the most significant bit of the ACCX or M was
+        set; cleared otherwise.
+      */
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
-      if (0xf0 == (acc & 0xf0)) {
+      if (0 == cpu.A) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x80 == (acc & 0x80)) {
         setStatusFlag("C");
       } else {
         clearStatusFlag("C");
@@ -917,30 +1129,84 @@ let instructionTable = {
     }
   },
   0x49: { name: "rola", len: 1, type: "IMPLIED", cycles: 0 },
-  0x4a: { name: "deca", len: 1, type: "IMPLIED", cycles: 0 },
-  0x4b: { name: "0x4b", len: 0, type: "IMPLIED", cycles: 0 },
+  0x4a: {
+    name: "deca",
+    len: 1,
+    type: "IMPLIED",
+    cycles: 2,
+    microcode: function(view) {
+      let acc = cpu.A;
+
+      if (0 == cpu.A) {
+        setA(0xff);
+      } else {
+        setA(cpu.A - 1);
+      }
+
+      // Do flag stuff
+      /*
+        N: Set if most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if there was two's complement overflow as a result of the operation;
+        cleared otherwise. Two's complement ·overflow occurs if and only if (ACCX)
+        or (M) was 80 before the operation.
+      */
+      if (0x80 == (cpu.A & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == cpu.A) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x80 == acc) {
+        setStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
+  0x4b: { name: "0x4b", len: 0, type: "INVALID", cycles: 0 },
   0x4c: {
     name: "inca",
     len: 1,
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
+      let acc = cpu.A;
       setA(cpu.A + 1);
 
       // Do flag stuff
-      if (0 === cpu.A) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if ((cpu.A & 0xf0) == 0xf0) {
+      /*
+        N: Set if most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if there is a two's complement overflow as a result of the operation;
+        cleared otherwise. Two's complement overflow will occur if and only if
+        (ACCX) or (M) was 7F before the operation.
+      */
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
-      if (0x7f == cpu.A) {
+      if (0 == cpu.A) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x7f == acc) {
         setStatusFlag("V");
       } else {
         clearStatusFlag("V");
@@ -962,16 +1228,23 @@ let instructionTable = {
       setA(cpu.A - 0);
 
       // Do flag stuff
-      if (0 === cpu.A) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if ((cpu.A & 0xf0) == 0xf0) {
+      /*
+        N: Set if most significant bit of the contents of ACCX or M is set; cleared
+        otherwise.
+        Z: Set if all bits of the contents of ACCX or M are cleared; cleared otherwise.
+        V: Cleared.
+        C: Cleared.
+      */
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
+      }
+
+      if (0 == cpu.A) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
       }
 
       clearStatusFlag("V");
@@ -994,8 +1267,14 @@ let instructionTable = {
       setA(0);
 
       // Do flag stuff
-      setStatusFlag("Z");
+      /*
+        N: Cleared.
+        Z: Set.
+        V: Cleared.
+        C: Cleared.
+      */
       clearStatusFlag("N");
+      setStatusFlag("Z");
       clearStatusFlag("V");
       clearStatusFlag("C");
 
@@ -1010,7 +1289,55 @@ let instructionTable = {
   0x51: { name: "0x51", len: 0, type: "IMPLIED", cycles: 0 },
   0x52: { name: "0x52", len: 0, type: "IMPLIED", cycles: 0 },
   0x53: { name: "comb", len: 1, type: "IMPLIED", cycles: 0 },
-  0x54: { name: "lsrb", len: 1, type: "IMPLIED", cycles: 0 },
+  0x54: {
+    name: "lsrb",
+    len: 1,
+    type: "IMPLIED",
+    cycles: 2,
+    microcode: function(view) {
+      let acc = cpu.B;
+
+      setB(cpu.B << 1);
+
+      // Do flag stuff
+      /*
+        N: Cleared.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if, after the completion of the shift operation, (Nis set and C is cleared)
+        OR (N is cleared and C is set); cleared otherwise.
+        C: Set if, before the operation, the least significant bit of the ACCX or M was
+        set; cleared otherwise.
+      */
+      clearStatusFlag("N");
+
+      if (0 == cpu.B) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0b00000001 == (acc & 0b00000001)) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      if (
+        (1 == cpu.status.N && 0 == cpu.status.C) ||
+        (0 == cpu.status.N && 1 == cpu.status.C)
+      ) {
+        setStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
   0x55: { name: "0x55", len: 0, type: "IMPLIED", cycles: 0 },
   0x56: { name: "rorb", len: 1, type: "IMPLIED", cycles: 0 },
   0x57: {
@@ -1019,7 +1346,45 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
+      let acc = cpu.B;
+
       setB(cpu.B >> 1);
+
+      // Do flag stuff
+      /*
+        N: Set if the most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if, after the completion of the shift operation, (N is set and C is cleared)
+        OR (N is cleared and C is set); cleared otherwise.
+        C: Set if, before the operation, the least significant bit of the ACCX or M was
+        set; cleared otherwise.
+      */
+      if (0x80 == (cpu.B & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == cpu.B) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0b00000001 == (acc & 0b00000001)) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      if (
+        (1 == cpu.status.N && 0 == cpu.status.C) ||
+        (0 == cpu.status.N && 1 == cpu.status.C)
+      ) {
+        setStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
 
       //Next
       setPC(cpu.PC + this.len);
@@ -1034,7 +1399,44 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
+      let acc = cpu.B;
       setB(cpu.B << 1);
+
+      // Do flag stuff
+      /*
+        N: Set if most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared othewise.
+        V: Set if, after the completion of the shift operation, (N is set and C is cleared)
+        OR (N is cleared and C is set); cleared otherwise.
+        C: Set if, before the operation, the most significant bit of the ACCX or M was
+        set; cleared otherwise.
+      */
+      if (0x80 == (cpu.B & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == cpu.B) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x80 == (acc & 0x80)) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      if (
+        (1 == cpu.status.N && 0 == cpu.status.C) ||
+        (0 == cpu.status.N && 1 == cpu.status.C)
+      ) {
+        setStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
 
       //Next
       setPC(cpu.PC + this.len);
@@ -1050,22 +1452,35 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      setB(cpu.B + 1);
+      let acc = cpu.B;
 
-      // Do flag stuff
-      if (0 === cpu.B) {
-        setStatusFlag("Z");
+      if (0 == cpu.B) {
+        setB(0xFF);
       } else {
-        clearStatusFlag("Z");
+        setB(cpu.B - 1);
       }
 
-      if ((cpu.B & 0xf0) == 0xf0) {
+      // Do flag stuff
+      /*
+        N: Set if most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if there was two's complement overflow as a result of the operation;
+        cleared otherwise. Two's complement ·overflow occurs if and only if (ACCX)
+        or (M) was 80 before the operation.
+      */
+      if (0x80 == (cpu.B & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
-      if (0x7f == cpu.B) {
+      if (0 == cpu.B) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x80 == acc) {
         setStatusFlag("V");
       } else {
         clearStatusFlag("V");
@@ -1078,10 +1493,10 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x5b: { name: "0x5b", len: 0, type: "IMPLIED", cycles: 0 },
+  0x5b: { name: "0x5b", len: 0, type: "INVALID", cycles: 0 },
   0x5c: { name: "incb", len: 1, type: "IMPLIED", cycles: 0 },
   0x5d: { name: "tstb", len: 1, type: "IMPLIED", cycles: 0 },
-  0x5e: { name: "0x5e", len: 0, type: "IMPLIED", cycles: 0 },
+  0x5e: { name: "0x5e", len: 0, type: "INVALID", cycles: 0 },
   0x5f: {
     name: "clrb",
     len: 1,
@@ -1091,8 +1506,14 @@ let instructionTable = {
       setB(0);
 
       // Do flag stuff
-      setStatusFlag("Z");
+      /*
+        N: Cleared.
+        Z: Set.
+        V: Cleared.
+        C: Cleared.
+      */
       clearStatusFlag("N");
+      setStatusFlag("Z");
       clearStatusFlag("V");
       clearStatusFlag("C");
 
@@ -1104,11 +1525,11 @@ let instructionTable = {
     }
   },
   0x60: { name: "neg", len: 2, type: "INDEXED", cycles: 0 },
-  0x61: { name: "0x61", len: 0, type: "INDEXED", cycles: 0 },
-  0x62: { name: "0x62", len: 0, type: "INDEXED", cycles: 0 },
+  0x61: { name: "0x61", len: 0, type: "INVALID", cycles: 0 },
+  0x62: { name: "0x62", len: 0, type: "INVALID", cycles: 0 },
   0x63: { name: "com", len: 2, type: "INDEXED", cycles: 0 },
   0x64: { name: "lsr", len: 2, type: "INDEXED", cycles: 0 },
-  0x65: { name: "0x65", len: 0, type: "INDEXED", cycles: 0 },
+  0x65: { name: "0x65", len: 0, type: "INVALID", cycles: 0 },
   0x66: { name: "ror", len: 2, type: "INDEXED", cycles: 0 },
   0x67: { name: "asr", len: 2, type: "INDEXED", cycles: 0 },
   0x68: { name: "asl", len: 2, type: "INDEXED", cycles: 0 },
@@ -1124,19 +1545,31 @@ let instructionTable = {
       let mem = readRAM(addr);
       let result = mem - 1;
 
+      //TODO: questionable...
+      if (result < 0) {
+        result += 0xff;
+      }
+
       writeRAM(addr, result);
 
       // Do flag stuff
+      /*
+        N: Set if most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if there was two's complement overflow as a result of the operation;
+        cleared otherwise. Two's complement ·overflow occurs if and only if (ACCX)
+        or (M) was 80 before the operation.
+      */
+      if (0x80 == (result & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
       if (0 == result) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
-      }
-
-      if ((result & 0xf0) == 0xf0) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
       }
 
       if (0x80 == mem) {
@@ -1165,7 +1598,58 @@ let instructionTable = {
   0x75: { name: "0x75", len: 0, type: "EXTENDED", cycles: 0 },
   0x76: { name: "ror", len: 3, type: "EXTENDED", cycles: 0 },
   0x77: { name: "asr", len: 3, type: "EXTENDED", cycles: 0 },
-  0x78: { name: "asl", len: 3, type: "EXTENDED", cycles: 0 },
+  0x78: { name: "asl", len: 3, type: "EXTENDED", cycles: 6,
+  microcode: function(view) {
+    let firstByte = view[cpu.PC - 0x8000 + 1];
+    let secondByte = view[cpu.PC - 0x8000 + 2];
+    let addr = (firstByte << 8) + secondByte;
+    let mem = readRAM(addr);
+    let result = mem >>> 1;
+
+    writeRAM(addr, result);
+
+    // Do flag stuff
+    /*
+      N: Set if most significant bit of the result is set; cleared otherwise.
+      Z: Set if all bits of the result are cleared; cleared othewise.
+      V: Set if, after the completion of the shift operation, (N is set and C is cleared)
+      OR (N is cleared and C is set); cleared otherwise.
+      C: Set if, before the operation, the most significant bit of the ACCX or M was
+      set; cleared otherwise.
+    */
+    if (0x80 == (result & 0x80)) {
+      setStatusFlag("N");
+    } else {
+      clearStatusFlag("N");
+    }
+
+    if (0 == result) {
+      setStatusFlag("Z");
+    } else {
+      clearStatusFlag("Z");
+    }
+
+    if (0x80 == (mem & 0x80)) {
+      setStatusFlag("C");
+    } else {
+      clearStatusFlag("C");
+    }
+
+    if (
+      (1 == cpu.status.N && 0 == cpu.status.C) ||
+      (0 == cpu.status.N && 1 == cpu.status.C)
+    ) {
+      setStatusFlag("V");
+    } else {
+      clearStatusFlag("V");
+    }
+
+    //Next
+    setPC(cpu.PC + this.len);
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
   0x79: { name: "rol", len: 3, type: "EXTENDED", cycles: 0 },
   0x7a: {
     name: "dec",
@@ -1179,19 +1663,31 @@ let instructionTable = {
       let mem = readRAM(addr);
       let result = mem - 1;
 
+      //TODO: questionable...
+      if (result < 0) {
+        result += 0xff;
+      }
+
       writeRAM(addr, result);
 
       // Do flag stuff
-      if (0 === result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if ((result & 0xf0) == 0xf0) {
+      /*
+        N: Set if most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if there was two's complement overflow as a result of the operation;
+        cleared otherwise. Two's complement ·overflow occurs if and only if (ACCX)
+        or (M) was 80 before the operation.
+      */
+      if (0x80 == (result & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
+      }
+
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
       }
 
       if (0x80 == mem) {
@@ -1223,16 +1719,23 @@ let instructionTable = {
       writeRAM(addr, result);
 
       // Do flag stuff
-      if (0 === result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if ((result & 0xf0) == 0xf0) {
+      /*
+        N: Set if most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if there is a two's complement overflow as a result of the operation;
+        cleared otherwise. Two's complement overflow will occur if and only if
+        (ACCX) or (M) was 7F before the operation.
+      */
+      if (0x80 == (result & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
+      }
+
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
       }
 
       if (0x7f == mem) {
@@ -1261,6 +1764,9 @@ let instructionTable = {
 
       setPC(addr);
 
+      // Do flag stuff
+      // Not affected.
+
       //Clock
       advanceClock(this.cycles);
     }
@@ -1272,32 +1778,41 @@ let instructionTable = {
     type: "IMMEDIATE",
     cycles: 2,
     microcode: function(view) {
+      let acc = cpu.A;
       let b1 = view[cpu.PC - 0x8000 + 1];
       let result = cpu.A - b1;
 
       setA(result);
 
       // Do flag stuff
-      if (0 === result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if ((cpu.A & 0xf0) == 0xf0) {
+      /*
+        N: Set if most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if there is a two's complement overflow as a result of the operation;
+        cleared otherwise.
+        C: Set if the absolute value of the contents of memory are larger than the abso-
+        lute value of the accumulator; cleared otherwise.
+      */
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
       if (result > 0xffff) {
-        clearStatusFlag("V");
+        setStatusFlag("V");
       } else {
         clearStatusFlag("V");
       }
 
-      if (result > 0xffff) {
-        clearStatusFlag("C");
+      if (b1 > acc) {
+        setStatusFlag("C");
       } else {
         clearStatusFlag("C");
       }
@@ -1315,26 +1830,42 @@ let instructionTable = {
     type: "IMMEDIATE",
     cycles: 2,
     microcode: function(view) {
+      let acc = cpu.A;
       let b1 = view[cpu.PC - 0x8000 + 1];
       let result = cpu.A - b1;
 
       // Do flag stuff
-      if (0 === result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if ((cpu.A & 0xf0) == 0xf0) {
+      /*
+        N: Set if the most significant bit of the result of the subtraction is set; cleared
+        otherwise.
+        Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
+        V: Set if the subtraction results in two's complement overflow: cleared other-
+        wise.
+        C: Set if the absolute value of the contents of memory is larger than the abso-
+        lute value of the accumulator; cleared otherwise.
+      */
+      if (0x80 == (result & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
       if (result > 0xffff) {
-        clearStatusFlag("V");
+        setStatusFlag("V");
       } else {
         clearStatusFlag("V");
+      }
+
+      if (b1 > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
       }
 
       //Next
@@ -1366,7 +1897,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((result & 0xf000) == 0xf000) {
+      if (0x8000 == (result & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1392,13 +1923,13 @@ let instructionTable = {
       setA(cpu.A & firstByte);
 
       // Do flag stuff
-      if (0 === cpu.A) {
+      if (0 == cpu.A) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1425,13 +1956,13 @@ let instructionTable = {
       setA(firstByte);
 
       // Do flag stuff
-      if (0 === cpu.A) {
+      if (0 == cpu.A) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1458,7 +1989,7 @@ let instructionTable = {
 
       setPC(cpu.PC + this.len);
 
-      if ((0 != readRAM(addr)) & bitMask) {
+      if (0 != (readRAM(addr) & bitMask)) {
         setPC(cpu.PC + jmpOffset);
       }
 
@@ -1485,7 +2016,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1546,7 +2077,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((addr & 0xf000) == 0xf000) {
+      if (0x8000 == (addr & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1570,10 +2101,11 @@ let instructionTable = {
       let addr = view[cpu.PC - 0x8000 + 1];
       let bitMask = view[cpu.PC - 0x8000 + 2];
       let jmpOffset = view[cpu.PC - 0x8000 + 3];
+      let result = readRAM(addr) & bitMask;
 
       setPC(cpu.PC + this.len);
 
-      if ((0 == readRAM(addr)) & bitMask) {
+      if (0 == result) {
         setPC(cpu.PC + jmpOffset);
       }
 
@@ -1588,29 +2120,34 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 3,
     microcode: function(view) {
+      let acc = cpu.A;
       let addr = view[cpu.PC - 0x8000 + 1];
-
       let mem = readRAM(addr);
-
       let result = cpu.A - mem;
 
       // Do flag stuff
-      if (0 === result) {
+      if (0 == result) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (result & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
       if (result > 0xffff) {
-        clearStatusFlag("V");
+        setStatusFlag("V");
       } else {
         clearStatusFlag("V");
+      }
+
+      if (mem > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
       }
 
       //Next
@@ -1620,7 +2157,49 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x92: { name: "sbca", len: 2, type: "DIRECT", cycles: 0 },
+  0x92: { name: "sbca", len: 2, type: "DIRECT", cycles: 3,
+  microcode: function(view) {
+    let acc = cpu.A;
+    let addr = view[cpu.PC - 0x8000 + 1];
+    let mem = readRAM(addr);
+    let result = cpu.A - mem - cpu.status.C;
+
+    setA(result);
+
+    // Do flag stuff
+    if (0 == result) {
+      setStatusFlag("Z");
+    } else {
+      clearStatusFlag("Z");
+    }
+
+    if (0x80 == (result & 0x80)) {
+      setStatusFlag("N");
+    } else {
+      clearStatusFlag("N");
+    }
+
+    if ((mem + cpu.status.C) > acc) {
+      setStatusFlag("C");
+    } else {
+      clearStatusFlag("C");
+    }
+
+    if (
+      (1 == cpu.status.N && 0 == cpu.status.C) ||
+      (0 == cpu.status.N && 1 == cpu.status.C)
+    ) {
+      setStatusFlag("V");
+    } else {
+      clearStatusFlag("V");
+    }
+
+    //Next
+    setPC(cpu.PC + this.len);
+
+    //Clock
+    advanceClock(this.cycles);
+  }  },
   0x93: {
     name: "subd",
     len: 2,
@@ -1643,7 +2222,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.D & 0xf000) == 0xf000) {
+      if (0x8000 == (cpu.D & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1651,8 +2230,8 @@ let instructionTable = {
 
       // 2s compliment overflow test
       // Get MSBs of the operands
-      let oa = acc & 0xf000;
-      let ob = mem & 0xf000;
+      let oa = acc & 0x8000;
+      let ob = mem & 0x8000;
 
       if (oa != ob) {
         clearStatusFlag("V");
@@ -1661,7 +2240,7 @@ let instructionTable = {
       }
 
       if (mem > acc) {
-        clearStatusFlag("C");
+        setStatusFlag("C");
       } else {
         clearStatusFlag("C");
       }
@@ -1692,7 +2271,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1727,7 +2306,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1759,7 +2338,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1793,7 +2372,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1829,7 +2408,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1862,14 +2441,14 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
       if (result > 0xffff) {
-        clearStatusFlag("V");
+        setStatusFlag("V");
       } else {
         clearStatusFlag("V");
       }
@@ -1932,7 +2511,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -1966,7 +2545,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2002,7 +2581,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2057,6 +2636,7 @@ let instructionTable = {
     type: "IMMEDIATE",
     cycles: 2,
     microcode: function(view) {
+      let acc = cpu.B;
       let b1 = view[cpu.PC - 0x8000 + 1];
       let result = cpu.B - b1;
 
@@ -2067,16 +2647,22 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (0x80 == result)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
       if (result > 0xffff) {
-        clearStatusFlag("V");
+        setStatusFlag("V");
       } else {
         clearStatusFlag("V");
+      }
+
+      if (b1 > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
       }
 
       //Next
@@ -2108,7 +2694,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.D & 0xf000) == 0xf000) {
+      if (0x8000 == (cpu.D & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2116,17 +2702,17 @@ let instructionTable = {
 
       // 2s compliment overflow test
       // Get MSBs of the operands
-      let oa = acc & 0xf000;
-      let ob = word & 0xf000;
+      let oa = acc & 0x8000;
+      let ob = word & 0x8000;
 
       if (oa != ob) {
-        clearStatusFlag("V");
+        setStatusFlag("V");
       } else {
         clearStatusFlag("V");
       }
 
       if (result >= 0x10000) {
-        clearStatusFlag("C");
+        setStatusFlag("C");
       } else {
         clearStatusFlag("C");
       }
@@ -2155,7 +2741,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.B & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.B & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2188,7 +2774,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.B & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.B & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2223,7 +2809,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2258,7 +2844,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((word & 0xf000) == 0xf000) {
+      if (0x8000 == (word & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2293,7 +2879,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((word & 0xf000) == 0xf000) {
+      if (0x8000 == (word & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2320,7 +2906,7 @@ let instructionTable = {
 
       setPC(cpu.PC + this.len);
 
-      if ((0 == readRAM(addr)) & bitMask) {
+      if (0 == (readRAM(addr) & bitMask)) {
         setPC(cpu.PC + jmpOffset);
       }
 
@@ -2335,27 +2921,34 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 3,
     microcode: function(view) {
+      let acc = cpu.B;
       let b1 = view[cpu.PC - 0x8000 + 1];
       let mem = readRAM(b1);
       let result = cpu.B - mem;
 
       // Do flag stuff
-      if (0 === result) {
+      if (0 == result) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.A & 0xf0) == 0xf0) {
+      if (0x80 == (result & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
       if (result > 0xffff) {
-        clearStatusFlag("V");
+        setStatusFlag("V");
       } else {
         clearStatusFlag("V");
+      }
+
+      if (mem > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
       }
 
       //Next
@@ -2388,7 +2981,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.B & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.B & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2420,7 +3013,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.B & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.B & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2458,7 +3051,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.D & 0xf000) == 0xf000) {
+      if (0x8000 == (cpu.D & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2491,7 +3084,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.D & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.D & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2525,7 +3118,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.X & 0xf000) == 0xf000) {
+      if (0x8000 == (cpu.X & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2558,7 +3151,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.X & 0xf000) == 0xf000) {
+      if (0x8000 == (cpu.X & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2621,7 +3214,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((word & 0xf000) == 0xf000) {
+      if (0x8000 == (word & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2655,7 +3248,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.D & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.D & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2705,7 +3298,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((word & 0xf000) == 0xf000) {
+      if (0x8000 == (word & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2739,7 +3332,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.B & 0xf0) == 0xf0) {
+      if (0x80 == (cpu.B & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2782,7 +3375,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((word & 0xf000) == 0xf000) {
+      if (0x8000 == (word & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2816,7 +3409,7 @@ let instructionTable = {
         clearStatusFlag("Z");
       }
 
-      if ((cpu.D & 0xf000) == 0xf000) {
+      if (0x8000 == (cpu.D & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -2847,6 +3440,7 @@ let subOps = {
       type: "IMMEDIATE16",
       cycles: 1,
       microcode: function(view) {
+        let acc = cpu.Y;
         let firstByte = view[cpu.PC - 0x8000 + 2];
         let secondByte = view[cpu.PC - 0x8000 + 3];
         let word = (firstByte << 8) + secondByte;
@@ -2860,19 +3454,20 @@ let subOps = {
           clearStatusFlag("Z");
         }
 
-        if ((result & 0xf000) == 0xf000) {
+        if (0x8000 == (result & 0x8000)) {
           setStatusFlag("N");
         } else {
           clearStatusFlag("N");
         }
 
-        if (0 != (result & 0xf0000)) {
+        //TODO: Is this right? No it is not...
+        if (0 != (result & 0x80000)) {
           setStatusFlag("V");
         } else {
           clearStatusFlag("V");
         }
 
-        if (result > cpu.Y) {
+        if (result > acc) {
           setStatusFlag("C");
         } else {
           clearStatusFlag("C");
@@ -2906,7 +3501,7 @@ let subOps = {
           clearStatusFlag("Z");
         }
 
-        if ((word & 0xf000) == 0xf000) {
+        if (0x8000 == (word & 0x8000)) {
           setStatusFlag("N");
         } else {
           clearStatusFlag("N");
@@ -3016,7 +3611,7 @@ let subOps = {
           clearStatusFlag("Z");
         }
 
-        if ((cpu.B & 0xf0) == 0xf0) {
+        if (0x80 == (cpu.B & 0x80)) {
           setStatusFlag("N");
         } else {
           clearStatusFlag("N");
@@ -3068,7 +3663,7 @@ let subOps = {
           clearStatusFlag("Z");
         }
 
-        if ((cpu.D & 0xf0) == 0xf0) {
+        if (0x80 == (cpu.D & 0x80)) {
           setStatusFlag("N");
         } else {
           clearStatusFlag("N");
