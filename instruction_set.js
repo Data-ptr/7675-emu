@@ -372,14 +372,18 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x11: { name: "cba", len: 1, type: "IMPLIED", cycles: 2,
-  microcode: function(view) {
-    let acc = cpu.A;
-    let b1 = cpu.B;
-    let result = acc - b1;
+  0x11: {
+    name: "cba",
+    len: 1,
+    type: "IMPLIED",
+    cycles: 2,
+    microcode: function(view) {
+      let acc = cpu.A;
+      let b1 = cpu.B;
+      let result = acc - b1;
 
-    // Do flag stuff
-    /*
+      // Do flag stuff
+      /*
       N: Set if the most significant bit of the result of the subtraction is set; cleared
       otherwise.
       Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
@@ -388,41 +392,42 @@ let instructionTable = {
       C: Set if the absolute value of the contents of memory is larger than the abso-
       lute value of the accumulator; cleared otherwise.
     */
-    if (0x80 == (result & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
+      if (0x80 == (result & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = b1 & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      if (b1 > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    // 2s compliment overflow test
-    // Get MSBs of the operands
-    let oa = acc & 0x80;
-    let ob = b1 & 0x80;
-
-    if (oa != ob) {
-      clearStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    if (b1 > acc) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  } },
+  },
   0x12: { name: "nop", len: 3, type: "EXTENDED", cycles: 0 },
   0x13: { name: "brclr2", len: 4, type: "DIRECT3", cycles: 0 },
   0x14: { name: "idiv", len: 2, type: "DIRECT", cycles: 6 },
@@ -536,9 +541,32 @@ let instructionTable = {
     }
   },
   0x17: { name: "tba", len: 1, type: "IMPLIED", cycles: 0 },
-  0x18: { name: "xgxy", len: 1, type: "IMPLIED", cycles: 0 },
+  0x18: { name: "xgxy", len: 1, type: "IMPLIED", cycles: 4 },
   0x19: { name: "daa", len: 1, type: "IMPLIED", cycles: 0 },
-  0x1a: { name: "xgdx", len: 1, type: "IMPLIED", cycles: 0 },
+  0x1a: {
+    name: "xgdx",
+    len: 1,
+    type: "IMPLIED",
+    cycles: 4,
+    microcode: function(view) {
+      let acc = cpu.D;
+      let index = cpu.X;
+
+      setD(index);
+      setX(acc);
+
+      // Do flag stuff
+      /*
+    None affected
+    */
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
   0x1b: { name: "aba", len: 1, type: "IMPLIED", cycles: 0 },
   0x1c: {
     name: "cpd",
@@ -607,7 +635,56 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x1d: { name: "cmpd1", len: 2, type: "DIRECT", cycles: 0 },
+  0x1d: {
+    name: "cmpd1",
+    len: 2,
+    type: "DIRECT",
+    cycles: 6,
+    microcode: function(view) {
+      let acc = cpu.D;
+      let b1 = view[cpu.PC - 0x8000 + 1];
+      let mem1 = readRAM(b1);
+      let mem2 = readRAM(b1 + 1);
+      let mem = ((mem1 >> 8) + mem2) & 0xff;
+      let result = cpu.D - mem;
+
+      // Do flag stuff
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x8000 == (result & 0x8000)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x8000;
+      let ob = mem & 0x8000;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      if (mem > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
   0x1e: { name: "cpd", len: 2, type: "INDEXED", cycles: 0 },
   0x1f: { name: "cpd", len: 3, type: "EXTENDED", cycles: 0 },
   0x20: {
@@ -983,11 +1060,18 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 12,
     microcode: function(view) {
-      stackFlags(1);
-      stackD(1);
-      stackX(1);
-      stackY(1);
-      stackPC(1);
+      if (cpu.status.I) {
+        stackFlags(1);
+        stackD(1);
+        stackX(1);
+        stackY(1);
+        stackPC(1);
+      } else {
+        console.log(
+          "Trying to return from interrupt while not in an interrrupt..."
+        );
+        clearInterval(stepInterval);
+      }
     }
 
     // Do flag stuff
@@ -1217,7 +1301,59 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x49: { name: "rola", len: 1, type: "IMPLIED", cycles: 0 },
+  0x49: {
+    name: "rola",
+    len: 1,
+    type: "IMPLIED",
+    cycles: 2,
+    microcode: function(view) {
+      let acc = cpu.A;
+
+      setB((cpu.A << 1) | cpu.status.C);
+
+      // Do flag stuff
+      /*
+      N: Set if most significant bit of the result is set; cleared otherwise.
+      Z: Set if all bits of the result are cleared; cleared otherwise.
+      V: Set if, after the completion of the operation, (N is set and C is cleared) OR
+      (N is cleared and C is set); cleared otherwise.
+      C: Set if, before the operation, the least significant bit of the ACCX or M was
+      set; cleared otherwise.
+    */
+      if (0x80 == (cpu.A & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == cpu.A) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0b10000000 == (acc & 0b10000000)) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      if (
+        (1 == cpu.status.N && 0 == cpu.status.C) ||
+        (0 == cpu.status.N && 1 == cpu.status.C)
+      ) {
+        setStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
   0x4a: {
     name: "deca",
     len: 1,
@@ -1375,8 +1511,8 @@ let instructionTable = {
     }
   },
   0x50: { name: "negb", len: 1, type: "IMPLIED", cycles: 0 },
-  0x51: { name: "0x51", len: 0, type: "IMPLIED", cycles: 0 },
-  0x52: { name: "0x52", len: 0, type: "IMPLIED", cycles: 0 },
+  0x51: { name: "0x51", len: 0, type: "INVALID", cycles: 0 },
+  0x52: { name: "0x52", len: 0, type: "INVALID", cycles: 0 },
   0x53: { name: "comb", len: 1, type: "IMPLIED", cycles: 0 },
   0x54: {
     name: "lsrb",
@@ -1428,14 +1564,18 @@ let instructionTable = {
     }
   },
   0x55: { name: "0x55", len: 0, type: "IMPLIED", cycles: 0 },
-  0x56: { name: "rorb", len: 1, type: "IMPLIED", cycles: 2,
-  microcode: function(view) {
-    let acc = cpu.B;
+  0x56: {
+    name: "rorb",
+    len: 1,
+    type: "IMPLIED",
+    cycles: 2,
+    microcode: function(view) {
+      let acc = cpu.B;
 
-    setB((cpu.b >> 1) | (cpu.status.C << 7));
+      setB((cpu.b >> 1) | (cpu.status.C << 7));
 
-    // Do flag stuff
-    /*
+      // Do flag stuff
+      /*
       N: Set if most significant bit of the result is set; cleared otherwise.
       Z: Set if all bits of the result are cleared; cleared otherwise.
       V: Set if, after the completion of the operation, (N is set and C is cleared) OR
@@ -1443,39 +1583,40 @@ let instructionTable = {
       C: Set if, before the operation, the least significant bit of the ACCX or M was
       set; cleared otherwise.
     */
-    if (0x80 == (cpu.A & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
+      if (0x80 == (cpu.B & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == cpu.B) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0b00000001 == (acc & 0b00000001)) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      if (
+        (1 == cpu.status.N && 0 == cpu.status.C) ||
+        (0 == cpu.status.N && 1 == cpu.status.C)
+      ) {
+        setStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0 == cpu.A) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    if (0b00000001 == (acc & 0b00000001)) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
-
-    if (
-      (1 == cpu.status.N && 0 == cpu.status.C) ||
-      (0 == cpu.status.N && 1 == cpu.status.C)
-    ) {
-      setStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  } },
+  },
   0x57: {
     name: "asrb",
     len: 1,
@@ -1581,7 +1722,59 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x59: { name: "rolb", len: 1, type: "IMPLIED", cycles: 0 },
+  0x59: {
+    name: "rolb",
+    len: 1,
+    type: "IMPLIED",
+    cycles: 2,
+    microcode: function(view) {
+      let acc = cpu.B;
+
+      setB((cpu.B << 1) | cpu.status.C);
+
+      // Do flag stuff
+      /*
+      N: Set if most significant bit of the result is set; cleared otherwise.
+      Z: Set if all bits of the result are cleared; cleared otherwise.
+      V: Set if, after the completion of the operation, (N is set and C is cleared) OR
+      (N is cleared and C is set); cleared otherwise.
+      C: Set if, before the operation, the least significant bit of the ACCX or M was
+      set; cleared otherwise.
+    */
+      if (0x80 == (cpu.B & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == cpu.B) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0b10000000 == (acc & 0b10000000)) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      if (
+        (1 == cpu.status.N && 0 == cpu.status.C) ||
+        (0 == cpu.status.N && 1 == cpu.status.C)
+      ) {
+        setStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
   0x5a: {
     name: "decb",
     len: 1,
@@ -2218,28 +2411,54 @@ let instructionTable = {
     type: "IMMEDIATE16",
     cycles: 4,
     microcode: function(view) {
+      let acc = cpu.D;
       let firstByte = view[cpu.PC - 0x8000 + 1];
       let secondByte = view[cpu.PC - 0x8000 + 2];
       let addr = (firstByte << 8) + secondByte;
+      let mem = readRAM(addr);
 
-      let result = cpu.D - readRAM(addr);
+      let result = cpu.D - mem;
 
       setD(result);
 
       // Do flag stuff
+      /*
+        N: Set if the most significant bit of the result of the subtraction is set; cleared
+        otherwise.
+        Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
+        V: Set if the subtraction results in two's complement overflow: cleared other-
+        wise.
+        C: Set if the absolute value of the contents of memory is larger than the abso-
+        lute value of the accumulator; cleared otherwise.
+      */
+      if (0x80 == (result & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
       if (0 == result) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
       }
 
-      if (0x8000 == (result & 0x8000)) {
-        setStatusFlag("N");
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = mem & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
       } else {
-        clearStatusFlag("N");
+        clearStatusFlag("V");
       }
 
-      clearStatusFlag("V");
+      if (mem > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
 
       //Next
       setPC(cpu.PC + this.len);
@@ -2337,17 +2556,52 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x88: { name: "eora", len: 2, type: "IMMEDIATE", cycles: 0 },
-  0x89: { name: "adca", len: 2, type: "IMMEDIATE", cycles: 2,
-  microcode: function(view) {
-    let acc = cpu.A;
-    let b1 = view[cpu.PC - 0x8000 + 1];
-    let result = cpu.A + b1 + cpu.status.C;
+  0x88: {
+    name: "eora",
+    len: 2,
+    type: "IMMEDIATE",
+    cycles: 2,
+    microcode: function(view) {
+      let b1 = view[cpu.PC - 0x8000 + 1];
 
-    setB(result);
+      setA(cpu.A ^ b1);
 
-    // Do flag stuff
-    /*
+      // Do flag stuff
+      if (0 == cpu.A) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x80 == (cpu.A & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      clearStatusFlag("V");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
+  0x89: {
+    name: "adca",
+    len: 2,
+    type: "IMMEDIATE",
+    cycles: 2,
+    microcode: function(view) {
+      let acc = cpu.A;
+      let b1 = view[cpu.PC - 0x8000 + 1];
+      let result = cpu.A + b1 + cpu.status.C;
+
+      setB(result);
+
+      // Do flag stuff
+      /*
       N: Set if most significant bit of the result is set; cleared otherwise.
       Z: Set if all bits of the result are cleared; cleared otherwise.
       V: Set if there is a two's complement overflow as a result of the operation;
@@ -2355,41 +2609,42 @@ let instructionTable = {
       C: Set if the absolute value of the contents of memory are larger than the abso-
       lute value of the accumulator; cleared otherwise.
     */
-    if (0x80 == (cpu.A & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
+      if (0x80 == (cpu.A & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = b1 & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      if (b1 > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    // 2s compliment overflow test
-    // Get MSBs of the operands
-    let oa = acc & 0x80;
-    let ob = b1 & 0x80;
-
-    if (oa != ob) {
-      clearStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    if (b1 > acc) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  }  },
+  },
   0x8a: {
     name: "oraa",
     len: 2,
@@ -2443,7 +2698,11 @@ let instructionTable = {
       writeRAM(cpu.SP, PcByte2);
       setSP(cpu.SP - 1);
 
-      setPC(cpu.PC + b1);
+      if (0b10000000 == (0b10000000 & b1)) {
+        setPC(cpu.PC - ((b1 ^ 0xff) + 0x1));
+      } else {
+        setPC(cpu.PC + b1);
+      }
 
       //Clock
       advanceClock(this.cycles);
@@ -2875,83 +3134,151 @@ let instructionTable = {
   0x9e: { name: "lds", len: 2, type: "DIRECT", cycles: 0 },
   0x9f: { name: "sts", len: 2, type: "DIRECT", cycles: 0 },
   0xa0: { name: "suba", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
-  0xa1: { name: "cmpa", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
+  0xa1: {
+    name: "cmpa",
+    len: 2,
+    type: "INDEXED",
+    hasSubops: true,
+    cycles: 4,
+    microcode: function(view) {
+      let acc = cpu.A;
+      let offset = view[cpu.PC - 0x8000 + 1];
+      let addr = offset + cpu.X;
+      let mem = 0;
+
+      if (RAMSize > addr) {
+        mem = readRAM(addr);
+      } else {
+        mem = readROM(addr);
+      }
+
+      let result = cpu.A - mem;
+
+      // Do flag stuff
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x80 == (result & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = mem & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      if (mem > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+  },
   0xa2: { name: "sbca", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xa3: { name: "subd", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xa4: { name: "anda", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xa5: { name: "bita", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
-  0xa6: { name: "ldaa", len: 2, type: "INDEXED", hasSubops: true, cycles: 4,
-  microcode: function(view) {
-    let offset = view[cpu.PC - 0x8000 + 1];
-    let addr = offset + cpu.X;
-    let mem = 0;
+  0xa6: {
+    name: "ldaa",
+    len: 2,
+    type: "INDEXED",
+    hasSubops: true,
+    cycles: 4,
+    microcode: function(view) {
+      let offset = view[cpu.PC - 0x8000 + 1];
+      let addr = offset + cpu.X;
+      let mem = 0;
 
-    if (RAMSize > addr) {
-      mem = readRAM(addr);
-    } else {
-      mem = readROM(addr);
+      if (RAMSize > addr) {
+        mem = readRAM(addr);
+      } else {
+        mem = readROM(addr);
+      }
+
+      setA(mem);
+
+      // Do flag stuff
+      if (0 == mem) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x8000 == (mem & 0x8000)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      clearStatusFlag("V");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    setA(mem);
-
-    // Do flag stuff
-    if (0 == mem) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    if (0x8000 == (mem & 0x8000)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
-    }
-
-    clearStatusFlag("V");
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  } },
+  },
   0xa7: { name: "staa", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xa8: { name: "eora", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
-  0xa9: { name: "adca", len: 2, type: "INDEXED", hasSubops: true, cycles: 4,
-  microcode: function(view) {
-    let offset = view[cpu.PC - 0x8000 + 1];
-    let addr = offset + cpu.X;
-    let mem = 0;
+  0xa9: {
+    name: "adca",
+    len: 2,
+    type: "INDEXED",
+    hasSubops: true,
+    cycles: 4,
+    microcode: function(view) {
+      let offset = view[cpu.PC - 0x8000 + 1];
+      let addr = offset + cpu.X;
+      let mem = 0;
 
-    if (RAMSize > addr) {
-      mem = readRAM(addr);
-    } else {
-      mem = readROM(addr);
+      if (RAMSize > addr) {
+        mem = readRAM(addr);
+      } else {
+        mem = readROM(addr);
+      }
+
+      setA(cpu.A + mem + cpu.status.C);
+
+      // Do flag stuff
+      if (0 == cpu.A) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x80 == (cpu.A & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      clearStatusFlag("V");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    setA(cpu.A + mem + cpu.status.C);
-
-    // Do flag stuff
-    if (0 == cpu.A) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    if (0x80 == (cpu.A & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
-    }
-
-    clearStatusFlag("V");
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  } },
+  },
   0xaa: { name: "oraa", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xab: { name: "adda", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xac: { name: "cpx", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
@@ -3108,16 +3435,20 @@ let instructionTable = {
   },
   0xbe: { name: "lds", len: 3, type: "EXTENDED", cycles: 0 },
   0xbf: { name: "sts", len: 3, type: "EXTENDED", cycles: 0 },
-  0xc0: { name: "subb", len: 2, type: "IMMEDIATE", cycles: 2,
-  microcode: function(view) {
-    let acc = cpu.B;
-    let b1 = view[cpu.PC - 0x8000 + 1];
-    let result = cpu.B - b1;
+  0xc0: {
+    name: "subb",
+    len: 2,
+    type: "IMMEDIATE",
+    cycles: 2,
+    microcode: function(view) {
+      let acc = cpu.B;
+      let b1 = view[cpu.PC - 0x8000 + 1];
+      let result = cpu.B - b1;
 
-    setB(result);
+      setB(result);
 
-    // Do flag stuff
-    /*
+      // Do flag stuff
+      /*
       N: Set if most significant bit of the result is set; cleared otherwise.
       Z: Set if all bits of the result are cleared; cleared otherwise.
       V: Set if there is a two's complement overflow as a result of the operation;
@@ -3125,41 +3456,42 @@ let instructionTable = {
       C: Set if the absolute value of the contents of memory are larger than the abso-
       lute value of the accumulator; cleared otherwise.
     */
-    if (0x80 == (cpu.B & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
+      if (0x80 == (cpu.B & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = b1 & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      if (b1 > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    // 2s compliment overflow test
-    // Get MSBs of the operands
-    let oa = acc & 0x80;
-    let ob = b1 & 0x80;
-
-    if (oa != ob) {
-      clearStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    if (b1 > acc) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  }  },
+  },
   0xc1: {
     name: "cmpb",
     len: 2,
@@ -3362,16 +3694,20 @@ let instructionTable = {
   },
   0xc7: { name: "brset", len: 4, type: "INDEXED", cycles: 0 },
   0xc8: { name: "eorb", len: 2, type: "IMMEDIATE", cycles: 0 },
-  0xc9: { name: "adcb", len: 2, type: "IMMEDIATE", cycles: 2,
-  microcode: function(view) {
-    let acc = cpu.B;
-    let b1 = view[cpu.PC - 0x8000 + 1];
-    let result = cpu.B + b1 + cpu.status.C;
+  0xc9: {
+    name: "adcb",
+    len: 2,
+    type: "IMMEDIATE",
+    cycles: 2,
+    microcode: function(view) {
+      let acc = cpu.B;
+      let b1 = view[cpu.PC - 0x8000 + 1];
+      let result = cpu.B + b1 + cpu.status.C;
 
-    setB(result);
+      setB(result);
 
-    // Do flag stuff
-    /*
+      // Do flag stuff
+      /*
       N: Set if most significant bit of the result is set; cleared otherwise.
       Z: Set if all bits of the result are cleared; cleared otherwise.
       V: Set if there is a two's complement overflow as a result of the operation;
@@ -3379,41 +3715,42 @@ let instructionTable = {
       C: Set if the absolute value of the contents of memory are larger than the abso-
       lute value of the accumulator; cleared otherwise.
     */
-    if (0x80 == (cpu.B & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
+      if (0x80 == (cpu.B & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = b1 & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      if (b1 > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    // 2s compliment overflow test
-    // Get MSBs of the operands
-    let oa = acc & 0x80;
-    let ob = b1 & 0x80;
-
-    if (oa != ob) {
-      clearStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    if (b1 > acc) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  }  },
+  },
   0xca: {
     name: "orab",
     len: 2,
@@ -3446,16 +3783,20 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0xcb: { name: "addb", len: 2, type: "IMMEDIATE", cycles: 2,
-  microcode: function(view) {
-    let acc = cpu.B;
-    let b1 = view[cpu.PC - 0x8000 + 1];
-    let result = cpu.B + b1;
+  0xcb: {
+    name: "addb",
+    len: 2,
+    type: "IMMEDIATE",
+    cycles: 2,
+    microcode: function(view) {
+      let acc = cpu.B;
+      let b1 = view[cpu.PC - 0x8000 + 1];
+      let result = cpu.B + b1;
 
-    setB(result);
+      setB(result);
 
-    // Do flag stuff
-    /*
+      // Do flag stuff
+      /*
       N: Set if most significant bit of the result is set; cleared otherwise.
       Z: Set if all bits of the result are cleared; cleared otherwise.
       V: Set if there is a two's complement overflow as a result of the operation;
@@ -3463,41 +3804,42 @@ let instructionTable = {
       C: Set if the absolute value of the contents of memory are larger than the abso-
       lute value of the accumulator; cleared otherwise.
     */
-    if (0x80 == (cpu.B & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
+      if (0x80 == (cpu.B & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = b1 & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      if (b1 > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    // 2s compliment overflow test
-    // Get MSBs of the operands
-    let oa = acc & 0x80;
-    let ob = b1 & 0x80;
-
-    if (oa != ob) {
-      clearStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    if (b1 > acc) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  } },
+  },
   0xcc: {
     name: "ldd",
     len: 3,
@@ -3599,17 +3941,21 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0xd0: { name: "subb", len: 2, type: "DIRECT", cycles: 3,
-  microcode: function(view) {
-    let acc = cpu.B;
-    let b1 = view[cpu.PC - 0x8000 + 1];
-    let mem = readRAM(b1);
-    let result = cpu.B - mem;
+  0xd0: {
+    name: "subb",
+    len: 2,
+    type: "DIRECT",
+    cycles: 3,
+    microcode: function(view) {
+      let acc = cpu.B;
+      let b1 = view[cpu.PC - 0x8000 + 1];
+      let mem = readRAM(b1);
+      let result = cpu.B - mem;
 
-    setB(result);
+      setB(result);
 
-    // Do flag stuff
-    /*
+      // Do flag stuff
+      /*
       N: Set if most significant bit of the result is set; cleared otherwise.
       Z: Set if all bits of the result are cleared; cleared otherwise.
       V: Set if there is a two's complement overflow as a result of the operation;
@@ -3617,41 +3963,42 @@ let instructionTable = {
       C: Set if the absolute value of the contents of memory are larger than the abso-
       lute value of the accumulator; cleared otherwise.
     */
-    if (0x80 == (cpu.B & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
+      if (0x80 == (cpu.B & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = mem & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      if (b1 > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    // 2s compliment overflow test
-    // Get MSBs of the operands
-    let oa = acc & 0x80;
-    let ob = mem & 0x80;
-
-    if (oa != ob) {
-      clearStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    if (b1 > acc) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  }  },
+  },
   0xd1: {
     name: "cmpb",
     len: 2,
@@ -3701,35 +4048,40 @@ let instructionTable = {
     }
   },
   0xd2: { name: "sbcb", len: 2, type: "DIRECT", cycles: 0 },
-  0xd3: { name: "addd", len: 2, type: "DIRECT", cycles: 5,
-  microcode: function(view) {
-    let b1 = view[cpu.PC - 0x8000 + 1];
-    let mem = readRAM(b1);
-    let mem2 = readRAM(b1 + 1);
+  0xd3: {
+    name: "addd",
+    len: 2,
+    type: "DIRECT",
+    cycles: 5,
+    microcode: function(view) {
+      let b1 = view[cpu.PC - 0x8000 + 1];
+      let mem = readRAM(b1);
+      let mem2 = readRAM(b1 + 1);
 
-    setD(cpu.D + ((mem >> 8) + mem2));
+      setD(cpu.D + ((mem >> 8) + mem2));
 
-    // Do flag stuff
-    if (0 == cpu.D) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
+      // Do flag stuff
+      if (0 == cpu.D) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x8000 == (cpu.D & 0x8000)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      clearStatusFlag("V");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0x8000 == (cpu.D & 0x8000)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
-    }
-
-    clearStatusFlag("V");
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  } },
+  },
   0xd4: { name: "andb", len: 2, type: "DIRECT", cycles: 0 },
   0xd5: { name: "bitb", len: 2, type: "DIRECT", cycles: 0 },
   0xd6: {
@@ -3801,17 +4153,21 @@ let instructionTable = {
   0xd8: { name: "eorb", len: 2, type: "DIRECT", cycles: 0 },
   0xd9: { name: "adcb", len: 2, type: "DIRECT", cycles: 0 },
   0xda: { name: "orab", len: 2, type: "DIRECT", cycles: 0 },
-  0xdb: { name: "addb", len: 2, type: "DIRECT", cycles: 3,
-  microcode: function(view) {
-    let acc = cpu.B;
-    let b1 = view[cpu.PC - 0x8000 + 1];
-    let mem = readRAM(b1);
-    let result = cpu.B + mem;
+  0xdb: {
+    name: "addb",
+    len: 2,
+    type: "DIRECT",
+    cycles: 3,
+    microcode: function(view) {
+      let acc = cpu.B;
+      let b1 = view[cpu.PC - 0x8000 + 1];
+      let mem = readRAM(b1);
+      let result = cpu.B + mem;
 
-    setB(result);
+      setB(result);
 
-    // Do flag stuff
-    /*
+      // Do flag stuff
+      /*
       N: Set if most significant bit of the result is set; cleared otherwise.
       Z: Set if all bits of the result are cleared; cleared otherwise.
       V: Set if there is a two's complement overflow as a result of the operation;
@@ -3819,41 +4175,42 @@ let instructionTable = {
       C: Set if the absolute value of the contents of memory are larger than the abso-
       lute value of the accumulator; cleared otherwise.
     */
-    if (0x80 == (result & 0x80)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
+      if (0x80 == (result & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = mem & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      if (b1 > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    // 2s compliment overflow test
-    // Get MSBs of the operands
-    let oa = acc & 0x80;
-    let ob = mem & 0x80;
-
-    if (oa != ob) {
-      clearStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    if (b1 > acc) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  }  },
+  },
   0xdc: {
     name: "ldd",
     len: 2,
@@ -3988,83 +4345,95 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0xe0: { name: "subb", len: 2, type: "INDEXED", hasSubops: true, cycles: 4,
-  microcode: function(view) {
-    let offset = view[cpu.PC - 0x8000 + 1];
-    let addr = offset + cpu.X;
-    let mem = 0;
+  0xe0: {
+    name: "subb",
+    len: 2,
+    type: "INDEXED",
+    hasSubops: true,
+    cycles: 4,
+    microcode: function(view) {
+      let offset = view[cpu.PC - 0x8000 + 1];
+      let addr = offset + cpu.X;
+      let mem = 0;
 
-    if (RAMSize > addr) {
-      mem = readRAM(addr);
-    } else {
-      mem = readROM(addr);
+      if (RAMSize > addr) {
+        mem = readRAM(addr);
+      } else {
+        mem = readROM(addr);
+      }
+
+      let result = cpu.B - mem;
+
+      setB(result);
+
+      // Do flag stuff
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x8000 == (result & 0x8000)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      clearStatusFlag("V");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    let result = cpu.B - mem;
-
-    setB(result);
-
-    // Do flag stuff
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    if (0x8000 == (result & 0x8000)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
-    }
-
-    clearStatusFlag("V");
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  }  },
+  },
   0xe1: { name: "cmpb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xe2: { name: "sbcb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xe3: { name: "addd", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xe4: { name: "andb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xe5: { name: "bitb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
-  0xe6: { name: "ldab", len: 2, type: "INDEXED", hasSubops: true, cycles: 4,
-  microcode: function(view) {
-    let offset = view[cpu.PC - 0x8000 + 1];
-    let addr = offset + cpu.X;
-    let mem = 0;
+  0xe6: {
+    name: "ldab",
+    len: 2,
+    type: "INDEXED",
+    hasSubops: true,
+    cycles: 4,
+    microcode: function(view) {
+      let offset = view[cpu.PC - 0x8000 + 1];
+      let addr = offset + cpu.X;
+      let mem = 0;
 
-    if (RAMSize > addr) {
-      mem = readRAM(addr);
-    } else {
-      mem = readROM(addr);
+      if (RAMSize > addr) {
+        mem = readRAM(addr);
+      } else {
+        mem = readROM(addr);
+      }
+
+      setB(mem);
+
+      // Do flag stuff
+      if (0 == mem) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x8000 == (mem & 0x8000)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      clearStatusFlag("V");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
     }
-
-    setB(mem);
-
-    // Do flag stuff
-    if (0 == mem) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    if (0x8000 == (mem & 0x8000)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
-    }
-
-    clearStatusFlag("V");
-
-    //Next
-    setPC(cpu.PC + this.len);
-
-    //Clock
-    advanceClock(this.cycles);
-  } },
+  },
   0xe7: {
     name: "stab",
     len: 2,
@@ -4073,12 +4442,12 @@ let instructionTable = {
     cycles: 4,
     microcode: function(view) {
       //Check index type
-      let indexType = 0x80 == view[cpu.PC - 0x8000 + 1] ? "Y" : "X";
-
-      if ("Y" == indexType) {
-        // Try to run subopcode
-        subOps[0xe7][0x80].microcode(view);
-      } else {
+      // let indexType = 0x80 == view[cpu.PC - 0x8000 + 1] ? "Y" : "X";
+      //
+      // if ("Y" == indexType) {
+      //   // Try to run subopcode
+      //   subOps[0xe7][0x80].microcode(view);
+      // } else {
         let offset = view[cpu.PC - 0x8000 + 1];
         let addr = offset + cpu.X;
         let mem = 0;
@@ -4090,7 +4459,7 @@ let instructionTable = {
         }
 
         setB(mem);
-      }
+      // }
     }
   },
   0xe8: { name: "eorb", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
@@ -4155,7 +4524,7 @@ let instructionTable = {
       let addr = offset + cpu.X;
 
       writeRAM(addr, cpu.D >> 8);
-      writeRAM(addr + 1, cpu.D & 0xFF);
+      writeRAM(addr + 1, cpu.D & 0xff);
 
       // Do flag stuff
       if (0 == cpu.D) {
@@ -4356,8 +4725,60 @@ let instructionTable = {
 
 let subOps = {
   0xcd: {
-    0x08: { name: "iny", len: 2, type: "IMPLIED", cycles: 1 },
-    0x09: { name: "dey", len: 2, type: "IMPLIED", cycles: 1 },
+    0x08: {
+      name: "iny",
+      len: 2,
+      type: "IMPLIED",
+      cycles: 4,
+      microcode: function(view) {
+        if (0xffff == cpu.Y) {
+          setY(0);
+        } else {
+          setY(cpu.Y + 1);
+        }
+
+        // Do flag stuff
+        // Z: Set if all bits of the result are cleared; cleared otherwise.
+        if (0 == cpu.Y) {
+          setStatusFlag("Z");
+        } else {
+          clearStatusFlag("Z");
+        }
+
+        //Next
+        setPC(cpu.PC + this.len);
+
+        //Clock
+        advanceClock(this.cycles);
+      }
+    },
+    0x09: {
+      name: "dey",
+      len: 2,
+      type: "IMPLIED",
+      cycles: 4,
+      microcode: function(view) {
+        if (0 == cpu.Y) {
+          setY(0xffff);
+        } else {
+          setY(cpu.Y - 1);
+        }
+
+        // Do flag stuff
+        // Z: Set if all bits of the result are cleared; cleared otherwise.
+        if (0 == cpu.Y) {
+          setStatusFlag("Z");
+        } else {
+          clearStatusFlag("Z");
+        }
+
+        //Next
+        setPC(cpu.PC + this.len);
+
+        //Clock
+        advanceClock(this.cycles);
+      }
+    },
     0x1a: { name: "xgdy", len: 2, type: "IMPLIED", cycles: 1 },
     0x3a: { name: "aby", len: 2, type: "IMPLIED", cycles: 1 },
     0x8c: {
@@ -4374,16 +4795,25 @@ let subOps = {
         let result = cpu.Y - word;
 
         // Do flag stuff
-        if (0 == result) {
-          setStatusFlag("Z");
-        } else {
-          clearStatusFlag("Z");
-        }
-
+        /*
+          N: Set if the most significant bit of the result of the subtraction is set; cleared
+          otherwise.
+          Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
+          V: Set if the subtraction results in two's complement overflow: cleared other-
+          wise.
+          C: Set if the absolute value of the contents of memory is larger than the abso-
+          lute value of the accumulator; cleared otherwise.
+        */
         if (0x8000 == (result & 0x8000)) {
           setStatusFlag("N");
         } else {
           clearStatusFlag("N");
+        }
+
+        if (0 == result) {
+          setStatusFlag("Z");
+        } else {
+          clearStatusFlag("Z");
         }
 
         // 2s compliment overflow test
@@ -4397,7 +4827,7 @@ let subOps = {
           clearStatusFlag("V");
         }
 
-        if (result > acc) {
+        if (word > acc) {
           setStatusFlag("C");
         } else {
           clearStatusFlag("C");
@@ -4425,16 +4855,23 @@ let subOps = {
         setY(word);
 
         // Do flag stuff
-        if (0 == word) {
-          setStatusFlag("Z");
-        } else {
-          clearStatusFlag("Z");
-        }
-
+        /*
+        N: Set if the most significant bit of the index register is set by the operation;
+        cleared otherwise.
+        Z: Set if all bits of the index register are cleared by the operation; cleared
+        otherwise.
+        V: Cleared.
+        */
         if (0x8000 == (word & 0x8000)) {
           setStatusFlag("N");
         } else {
           clearStatusFlag("N");
+        }
+
+        if (0 == word) {
+          setStatusFlag("Z");
+        } else {
+          clearStatusFlag("Z");
         }
 
         clearStatusFlag("V");
@@ -4446,17 +4883,145 @@ let subOps = {
         advanceClock(this.cycles);
       }
     },
-    0xdf: { name: "sty", len: 3, type: "DIRECT", cycles: 1 },
+    0xdf: { name: "sty", len: 3, type: "DIRECT", cycles: 5,
+    microcode: function(view) {
+      let addr = view[cpu.PC - 0x8000 + 2];
+
+      writeRAM(addr, cpu.Y >> 8);
+      writeRAM(addr + 1, cpu.Y & 0xFF)
+
+      // Do flag stuff
+      /*
+      N: Set if the most significant bit of the index register is set by the operation;
+      cleared otherwise.
+      Z: Set if all bits of the index register are cleared by the operation; cleared
+      otherwise.
+      V: Cleared.
+      */
+      if (0x8000 == (cpu.Y & 0x8000)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      if (0 == cpu.Y) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      clearStatusFlag("V");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    } },
     0xde: { name: "ldy", len: 3, type: "DIRECT", cycles: 1 },
     0xee: { name: "ldy", len: 3, type: "INDEXED", cycles: 1 },
     0xef: { name: "stx", len: 2, type: "INDEXEDY", cycles: 1 },
     0xfe: { name: "nop", len: 2, type: "INDEXEDY", cycles: 1 }
   },
   0xa0: {
-    0x80: { name: "suba", len: 2, type: "INDEXEDY", cycles: 1 }
+    0x80: { name: "suba", len: 2, type: "INDEXEDY", cycles: 4,
+    microcode: function(view) {
+      let acc = cpu.A;
+      let index = cpu.Y;
+
+      let result = acc - index;
+
+      setA(result);
+
+      setY(cpu.Y + 1);
+
+      // Do flag stuff
+      if (0 == result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x80 == (result & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      // 2s compliment overflow test
+      // Get MSBs of the operands
+      let oa = acc & 0x80;
+      let ob = index & 0x80;
+
+      if (oa != ob) {
+        clearStatusFlag("V");
+      } else {
+        clearStatusFlag("V");
+      }
+
+      if (index > acc) {
+        setStatusFlag("C");
+      } else {
+        clearStatusFlag("C");
+      }
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    } }
   },
   0xa1: {
-    0x80: { name: "cmpa", len: 2, type: "INDEXEDY", cycles: 1 }
+    0x80: {
+      name: "cmpa",
+      len: 2,
+      type: "INDEXEDY",
+      cycles: 4,
+      microcode: function(view) {
+        let acc = cpu.A;
+        let index = cpu.Y;
+        let result = acc - index;
+
+        setY(cpu.Y + 1);
+
+        // Do flag stuff
+        if (0 == result) {
+          setStatusFlag("Z");
+        } else {
+          clearStatusFlag("Z");
+        }
+
+        if (0x80 == (result & 0x80)) {
+          setStatusFlag("N");
+        } else {
+          clearStatusFlag("N");
+        }
+
+        // 2s compliment overflow test
+        // Get MSBs of the operands
+        let oa = acc & 0x80;
+        let ob = index & 0x80;
+
+        if (oa != ob) {
+          clearStatusFlag("V");
+        } else {
+          clearStatusFlag("V");
+        }
+
+        if (index > acc) {
+          setStatusFlag("C");
+        } else {
+          clearStatusFlag("C");
+        }
+
+        //Next
+        setPC(cpu.PC + this.len);
+
+        //Clock
+        advanceClock(this.cycles);
+      }
+    }
   },
   0xa2: {
     0x80: { name: "sbca", len: 2, type: "INDEXEDY", cycles: 1 }
@@ -4471,7 +5036,36 @@ let subOps = {
     0x80: { name: "bita", len: 2, type: "INDEXEDY", cycles: 1 }
   },
   0xa6: {
-    0x80: { name: "ldaa", len: 2, type: "INDEXEDY", cycles: 1 }
+    0x80: { name: "ldaa", len: 2, type: "INDEXEDY", cycles: 4,
+    microcode: function(view) {
+      let b1 = cpu.Y;
+
+      setA(b1);
+
+      setY(cpu.Y + 1);
+
+      // Do flag stuff
+      if (0 == cpu.A) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x80 == (cpu.A & 0x80)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      clearStatusFlag("V");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    }
+   }
   },
   0xa7: {
     0x80: { name: "staa", len: 2, type: "INDEXEDY", cycles: 1 }
@@ -4528,10 +5122,10 @@ let subOps = {
       type: "INDEXEDY",
       cycles: 4,
       microcode: function(view) {
-        let offset = view[cpu.PC - 0x8000 + 1];
-        let addr = offset + cpu.Y;
+        let acc = cpu.B;
+        let addr = cpu.Y;
 
-        writeRAM(addr, cpu.B);
+        writeRAM(addr, acc);
 
         setY(cpu.Y + 1);
 
@@ -4580,8 +5174,7 @@ let subOps = {
       type: "INDEXEDY",
       cycles: 5,
       microcode: function(view) {
-        let offset = view[cpu.PC - 0x8000 + 1];
-        let addr = offset + cpu.X;
+        let addr = cpu.Y;
 
         writeRAM(addr, cpu.D >> 8);
         writeRAM(addr + 1, cpu.D & 0xff);
@@ -4612,7 +5205,35 @@ let subOps = {
     }
   },
   0xee: {
-    0x80: { name: "ldx", len: 2, type: "INDEXEDY", cycles: 1 }
+    0x80: { name: "ldx", len: 2, type: "INDEXEDY", cycles: 5,
+    microcode: function(view) {
+      let index = cpu.Y;
+
+      setX(index);
+
+      setY(cpu.Y + 2);
+
+      // Do flag stuff
+      if (0 == cpu.X) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
+      }
+
+      if (0x8000 == (cpu.X & 0x8000)) {
+        setStatusFlag("N");
+      } else {
+        clearStatusFlag("N");
+      }
+
+      clearStatusFlag("V");
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    } }
   },
   0xef: {
     0x80: { name: "stx", len: 2, type: "INDEXEDY", cycles: 1 }

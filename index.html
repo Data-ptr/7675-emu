@@ -162,6 +162,27 @@
                   value="reset"
                 />
               </div>
+
+              <div id="instructions">
+                  <p>E931/2 entrypoint: 0xCEFF</p>
+                  <p>E900 entrypoint: 0xD57F</p>
+                  <p>In a terminal:</p>
+                  <pre>
+                    $ base64 mybin.bin
+                  </pre>
+                  <p>
+                    then copy that and paste it above. Click "load". Go to the
+                    home tab and click "Run".
+                  </p>
+                  <p>
+                    If you click "save" instead the binary will be stashed into
+                    local storage. After that you can just click "restore" to
+                    pull it from the browser
+                  </p>
+                  <p>
+                    reset is buggy, just refresh the page.
+                  </p>
+              </div>
             </div>
           </div>
         </div>
@@ -174,9 +195,9 @@
         >
           <div class="row">
             <div class="col-sm">
-              <label for="register-A-output">A</label>
+              <div class="input-group two-digit">
+                <label for="register-A-output">A</label>
 
-              <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text">0x</span>
                 </div>
@@ -191,9 +212,9 @@
             </div>
 
             <div class="col-sm">
-              <label for="register-B-output">B</label>
+              <div class="input-group two-digit">
+                <label for="register-B-output">B</label>
 
-              <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text">0x</span>
                 </div>
@@ -208,9 +229,9 @@
             </div>
 
             <div class="col-sm">
-              <label for="register-D-output">D</label>
+              <div class="input-group four-digit">
+                <label for="register-D-output">D</label>
 
-              <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text">0x</span>
                 </div>
@@ -227,9 +248,9 @@
 
           <div class="row">
             <div class="col-sm">
-              <label for="register-X-output">X</label>
+              <div class="input-group four-digit">
+                <label for="register-X-output">X</label>
 
-              <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text">0x</span>
                 </div>
@@ -244,9 +265,8 @@
             </div>
 
             <div class="col-sm">
-              <label for="register-Y-output">Y</label>
-
-              <div class="input-group mb-3">
+              <div class="input-group four-digit">
+                <label for="register-Y-output">Y</label>
                 <div class="input-group-prepend">
                   <span class="input-group-text">0x</span>
                 </div>
@@ -255,15 +275,16 @@
                   id="register-Y-output"
                   class="form-control"
                   type="text"
-                  maxlength="4"
+                  maxlength="4",
+                  disabled="true"
                 />
               </div>
             </div>
 
             <div class="col-sm">
-              <label for="register-PC-output">PC</label>
+              <div class="input-group four-digit">
+                <label for="register-PC-output">PC</label>
 
-              <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text">0x</span>
                 </div>
@@ -274,13 +295,16 @@
                   type="text"
                   maxlength="4"
                 />
+
+
+                <input id="set-breakpoint-pc-button-input" type="button" value="Set as breakpoint"/>
               </div>
             </div>
 
             <div class="col-sm">
-              <label for="register-SP-output">SP</label>
+              <div class="input-group four-digit">
+                <label for="register-SP-output">SP</label>
 
-              <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text">0x</span>
                 </div>
@@ -297,47 +321,47 @@
 
           <div class="row">
             <div class="col">
-              <div class="input-group mb-3" style="width: 100%">
+              <div id="status-registers" class="input-group">
                 <span class="input-group-text">H:</span>
 
                 <input
                   id="register-H-output"
-                  class="form-control"
+                  class="form-control one-digit"
                   type="text"
                 />
                 <span class="input-group-text">I:</span>
 
                 <input
                   id="register-I-output"
-                  class="form-control"
+                  class="form-control one-digit"
                   type="text"
                 />
                 <span class="input-group-text">N:</span>
 
                 <input
                   id="register-N-output"
-                  class="form-control"
+                  class="form-control one-digit"
                   type="text"
                 />
                 <span class="input-group-text">Z:</span>
 
                 <input
                   id="register-Z-output"
-                  class="form-control"
+                  class="form-control one-digit"
                   type="text"
                 />
                 <span class="input-group-text">V:</span>
 
                 <input
                   id="register-V-output"
-                  class="form-control"
+                  class="form-control one-digit"
                   type="text"
                 />
                 <span class="input-group-text">C:</span>
 
                 <input
                   id="register-C-output"
-                  class="form-control"
+                  class="form-control one-digit"
                   type="text"
                 />
               </div>
@@ -348,7 +372,7 @@
             <div class="col-sm">
               <label for="clock-tick-output">Cycles</label>
 
-              <div class="input-group mb-3">
+              <div class="input-group">
                 <input
                   id="clock-ticks-output"
                   class="form-control"
@@ -400,7 +424,7 @@
             <div class="col-sm">
               <label for="clock-speed-input">Clock speed:</label>
 
-              <div class="input-group mb-3">
+              <div class="input-group">
                 <input
                   id="clock-speed-input"
                   class="form-control"
@@ -2490,7 +2514,7 @@
           aria-labelledby="settings-tab"
         >
           <div class="col-sm">
-            <div class="input-group mb-3">
+            <div class="input-group">
               <input
                 id="followRamRead-input"
                 class="form-check-input"
@@ -2502,7 +2526,7 @@
               </label>
             </div>
 
-            <div class="input-group mb-3">
+            <div class="input-group">
               <input
                 id="followRamWrite-input"
                 class="form-check-input"
@@ -2523,7 +2547,7 @@
           aria-labelledby="debug-tab"
         >
           <div class="col-sm">
-            <div class="input-group mb-3">
+            <div class="input-group">
               <label for="breakpoint-input">Addr Breakpoint:</label>
               <input
                 id="breakpoint-input"
@@ -2533,7 +2557,7 @@
               />
             </div>
 
-            <div class="input-group mb-3">
+            <div class="input-group">
               <input
                 id="break-input"
                 class="form-check-input"
@@ -2546,7 +2570,7 @@
           </div>
 
           <div class="col-sm">
-            <div class="input-group mb-3">
+            <div class="input-group">
               <label for="op-breakpoint-input">Op Breakpoint:</label>
               <input
                 id="op-breakpoint-input"
@@ -2556,7 +2580,7 @@
               />
             </div>
 
-            <div class="input-group mb-3">
+            <div class="input-group">
               <input
                 id="op-break-input"
                 class="form-check-input"
@@ -2567,7 +2591,7 @@
               </label>
             </div>
 
-            <div class="input-group mb-3">
+            <div class="input-group">
               <input
                 id="ignoreInterrupts-input"
                 class="form-check-input"
@@ -2593,7 +2617,7 @@
 
           <input type="button" id="clear-log-button-input" value="Clear Log" />
 
-          <div class="input-group mb-3">
+          <div class="input-group">
             <input
               id="log-follow-input"
               class="form-check-input"

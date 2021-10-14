@@ -78,3 +78,7 @@ $("#pause-button-input").bind("click", function() {
 $("#clear-log-button-input").bind("click", function() {
   $("#log-output-div > ul").empty();
 });
+
+$("#set-breakpoint-pc-button-input").bind("click", function() {
+  $('#breakpoint-input').val($('#register-PC-output').val());
+});
