@@ -164,24 +164,25 @@
               </div>
 
               <div id="instructions">
-                  <p>E931/2 entrypoint: 0xCEFF</p>
-                  <p>E900 entrypoint: 0xD57F</p>
-                  <p>In a terminal:</p>
-                  <pre>
+                <p>E931/2 entrypoint: 0xCEFF</p>
+                <p>E900 entrypoint: 0xD57F</p>
+                <p>In a terminal:</p>
+                <pre>
                     $ base64 mybin.bin
-                  </pre>
-                  <p>
-                    then copy that and paste it above. Click "load". Go to the
-                    home tab and click "Run".
-                  </p>
-                  <p>
-                    If you click "save" instead the binary will be stashed into
-                    local storage. After that you can just click "restore" to
-                    pull it from the browser
-                  </p>
-                  <p>
-                    reset is buggy, just refresh the page.
-                  </p>
+                  </pre
+                >
+                <p>
+                  then copy that and paste it above. Click "load". Go to the
+                  home tab and click "Run".
+                </p>
+                <p>
+                  If you click "save" instead the binary will be stashed into
+                  local storage. After that you can just click "restore" to pull
+                  it from the browser
+                </p>
+                <p>
+                  reset is buggy, just refresh the page.
+                </p>
               </div>
             </div>
           </div>
@@ -275,7 +276,8 @@
                   id="register-Y-output"
                   class="form-control"
                   type="text"
-                  maxlength="4",
+                  maxlength="4"
+                  ,
                   disabled="true"
                 />
               </div>
@@ -296,8 +298,11 @@
                   maxlength="4"
                 />
 
-
-                <input id="set-breakpoint-pc-button-input" type="button" value="Set as breakpoint"/>
+                <input
+                  id="set-breakpoint-pc-button-input"
+                  type="button"
+                  value="Set as breakpoint"
+                />
               </div>
             </div>
 
@@ -368,17 +373,43 @@
             </div>
           </div>
 
-          <div class="row">
+          <div id="clocks" class="row">
             <div class="col-sm">
-              <label for="clock-tick-output">Cycles</label>
-
               <div class="input-group">
+                <label for="clock-tick-output">Cycles:</label>
+
                 <input
                   id="clock-ticks-output"
                   class="form-control"
                   type="text"
                   disabled="true"
                 />
+              </div>
+            </div>
+
+            <div class="col-sm">
+              <div class="input-group">
+                <label for="sim-time-output">Simulated Time:</label>
+
+                <input
+                  id="sim-time-output"
+                  class="form-control"
+                  type="text"
+                  disabled="true"
+                />s
+              </div>
+            </div>
+
+            <div class="col-sm">
+              <div class="input-group">
+                <label for="real-time-output">Realtime:</label>
+
+                <input
+                  id="real-time-output"
+                  class="form-control"
+                  type="text"
+                  disabled="true"
+                />s
               </div>
             </div>
           </div>
@@ -2639,5 +2670,4 @@
   <script src="ui_input.js"></script>
   <script src="ui-draw.js"></script>
   <script src="index.js"></script>
-
 </div>

@@ -76,7 +76,12 @@
   width: 25px;
 }
 
-#clock-ticks-output {
+#clocks label {
+  padding-right: 7px;
+  width: unset;
+}
+
+#clocks input {
   width: 100px;
   flex: unset;
 }

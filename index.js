@@ -11,6 +11,8 @@ let elementString = "";
 
 let redrawRAM = 0;
 
+let rtcStart = 0;
+
 for (let i = 0; i < RAMSize; i++) {
   elementString += "<span title='" + i.toString(16) + "'>00</span>";
 }
@@ -182,8 +184,6 @@ function advanceClock(ticks) {
 
   writeRAM(0x002d, Math.ceil(cpu.timer_3) >> 8, 1);
   writeRAM(0x002e, Math.ceil(cpu.timer_3) & 0xFF, 1);
-
-  $("#clock-ticks-output").val(cpu.clock.tickCount);
 }
 
 function executeMicrocode(view) {
@@ -231,3 +231,13 @@ function interrupt(vector) {
   clearStatusFlag("V");
   clearStatusFlag("C");
 }
+
+let clockUpdateInterval = setInterval(function(){
+  let cycles = cpu.clock.tickCount;
+  let simTimeNow = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.tickCount;
+  let rtcNow = ((new Date().getTime()) - rtcStart) / 1000;
+
+  $("#clock-ticks-output").val(cycles);
+  $("#sim-time-output").val(simTimeNow);
+  $("#real-time-output").val(rtcNow);
+}, 500);

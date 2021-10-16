@@ -115,7 +115,7 @@ let instructionTable = {
     microcode: function(view) {
       let acc = cpu.D;
 
-      setD(cpu.D >> 1);
+      setD(cpu.D >>> 1);
 
       // Do flag stuff
       /*
@@ -595,7 +595,25 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x18: { name: "xgxy", len: 1, type: "IMPLIED", cycles: 4 },
+  0x18: { name: "xgxy", len: 1, type: "IMPLIED", cycles: 4,
+  microcode: function(view) {
+    let index1 = cpu.X;
+    let index2 = cpu.Y;
+
+    setY(index1);
+    setX(index2);
+
+    // Do flag stuff
+    /*
+      None affected
+    */
+
+    //Next
+    setPC(cpu.PC + this.len);
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
   0x19: { name: "daa", len: 1, type: "IMPLIED", cycles: 0 },
   0x1a: {
     name: "xgdx",
@@ -611,8 +629,8 @@ let instructionTable = {
 
       // Do flag stuff
       /*
-    None affected
-    */
+        None affected
+      */
 
       //Next
       setPC(cpu.PC + this.len);
@@ -987,9 +1005,66 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x28: { name: "bvc", len: 2, type: "RELATIVE", cycles: 0 },
-  0x29: { name: "bvs", len: 2, type: "RELATIVE", cycles: 0 },
-  0x2a: { name: "bpl", len: 2, type: "RELATIVE", cycles: 0 },
+  0x28: { name: "bvc", len: 2, type: "RELATIVE", cycles: 3,
+  microcode: function(view) {
+    let jmpOffset = view[cpu.PC - 0x8000 + 1];
+
+    setPC(cpu.PC + this.len);
+
+    if (0 == cpu.status.V) {
+      if (0b10000000 == (0b10000000 & jmpOffset)) {
+        setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
+      } else {
+        setPC(cpu.PC + jmpOffset);
+      }
+    }
+
+    // Do flag stuff
+    // Not affected.
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
+  0x29: { name: "bvs", len: 2, type: "RELATIVE", cycles: 3,
+  microcode: function(view) {
+    let jmpOffset = view[cpu.PC - 0x8000 + 1];
+
+    setPC(cpu.PC + this.len);
+
+    if (1 == cpu.status.V) {
+      if (0b10000000 == (0b10000000 & jmpOffset)) {
+        setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
+      } else {
+        setPC(cpu.PC + jmpOffset);
+      }
+    }
+
+    // Do flag stuff
+    // Not affected.
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
+  0x2a: { name: "bpl", len: 2, type: "RELATIVE", cycles: 3,
+  microcode: function(view) {
+    let jmpOffset = view[cpu.PC - 0x8000 + 1];
+
+    setPC(cpu.PC + this.len);
+
+    if (0 == cpu.status.N) {
+      if (0b10000000 == (0b10000000 & jmpOffset)) {
+        setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
+      } else {
+        setPC(cpu.PC + jmpOffset);
+      }
+    }
+
+    // Do flag stuff
+    // Not affected.
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
   0x2b: {
     name: "bmi",
     len: 2,
@@ -1015,7 +1090,26 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x2c: { name: "bge", len: 2, type: "RELATIVE", cycles: 0 },
+  0x2c: { name: "bge", len: 2, type: "RELATIVE", cycles: 3,
+  microcode: function(view) {
+    let jmpOffset = view[cpu.PC - 0x8000 + 1];
+
+    setPC(cpu.PC + this.len);
+
+    if (cpu.status.N == cpu.status.V) {
+      if (0b10000000 == (0b10000000 & jmpOffset)) {
+        setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
+      } else {
+        setPC(cpu.PC + jmpOffset);
+      }
+    }
+
+    // Do flag stuff
+    // Not affected.
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
   0x2d: { name: "blt", len: 2, type: "RELATIVE", cycles: 0 },
   0x2e: { name: "bgt", len: 2, type: "RELATIVE", cycles: 0 },
   0x2f: { name: "ble", len: 2, type: "RELATIVE", cycles: 0 },
@@ -1340,7 +1434,7 @@ let instructionTable = {
   microcode: function(view) {
     let acc = cpu.A;
 
-    setB((cpu.A >> 1) | (cpu.status.C << 7));
+    setA((cpu.A >> 1) | (cpu.status.C << 7));
 
     // Do flag stuff
     /*
@@ -1751,7 +1845,7 @@ let instructionTable = {
     microcode: function(view) {
       let acc = cpu.B;
 
-      setB(cpu.B << 1);
+      setB(cpu.B >>> 1);
 
       // Do flag stuff
       /*
@@ -5791,31 +5885,30 @@ let instructionTable = {
       let secondByte = view[cpu.PC - 0x8000 + 2];
       let addr = (firstByte << 8) + secondByte;
 
-      let mem = readRAM(addr);
-      let mem2 = readRAM(addr + 1);
-      //TODO: impliment
-      /*
       let mem = 0;
+      let mem1 = 0;
+      let mem2 = 0;
 
-      if(RAMSize > addr) {
-        mem = readRAM(addr);
+      if (RAMSize > addr) {
+        mem1 = readRAM(addr);
+        mem2 = readRAM(addr + 1);
       } else {
-        mem = readROM(addr);
+        mem1 = readROM(addr);
+        mem2 = readROM(addr + 1);
       }
-      */
 
-      let word = (mem << 8) + mem2;
+      mem = (mem1 << 8) + mem2;
 
-      setD(word);
+      setD(mem);
 
       // Do flag stuff
-      if (0 == word) {
+      if (0 == mem) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
       }
 
-      if (0x8000 == (word & 0x8000)) {
+      if (0x8000 == (mem & 0x8000)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -5958,7 +6051,25 @@ let subOps = {
         advanceClock(this.cycles);
       }
     },
-    0x1a: { name: "xgdy", len: 2, type: "IMPLIED", cycles: 1 },
+    0x1a: { name: "xgdy", len: 2, type: "IMPLIED", cycles: 1,
+    microcode: function(view) {
+      let acc = cpu.D;
+      let index = cpu.Y;
+
+      setD(index);
+      setY(acc);
+
+      // Do flag stuff
+      /*
+        None affected
+      */
+
+      //Next
+      setPC(cpu.PC + this.len);
+
+      //Clock
+      advanceClock(this.cycles);
+    } },
     0x3a: { name: "aby", len: 2, type: "IMPLIED", cycles: 1 },
     0x8c: {
       name: "cmpy",
@@ -6142,7 +6253,7 @@ let subOps = {
     0xee: { name: "ldy", len: 3, type: "INDEXED", cycles: 5,
     microcode: function(view) {
       let index = cpu.X;
-      let offset = view[cpu.PC - 0x8000 + 1];
+      let offset = view[cpu.PC - 0x8000 + 2];
       let addr = offset + index;
 
       let mem = 0;
@@ -6194,8 +6305,17 @@ let subOps = {
       microcode: function(view) {
         let acc = cpu.A;
         let index = cpu.Y;
+        let addr = index;
 
-        let result = acc - index;
+        let mem = 0;
+
+        if (RAMSize > addr) {
+          mem = readRAM(addr);
+        } else {
+          mem = readROM(addr);
+        }
+
+        let result = acc - mem;
 
         if(result < 0) {
           result += 0xFF;
@@ -6252,7 +6372,17 @@ let subOps = {
       microcode: function(view) {
         let acc = cpu.A;
         let index = cpu.Y;
-        let result = acc - index;
+        let addr = index;
+
+        let mem = 0;
+
+        if (RAMSize > addr) {
+          mem = readRAM(addr);
+        } else {
+          mem = readROM(addr);
+        }
+
+        let result = acc - mem;
 
         setY(cpu.Y + 1);
 
@@ -6313,20 +6443,30 @@ let subOps = {
       type: "INDEXEDY",
       cycles: 4,
       microcode: function(view) {
-        let b1 = cpu.Y;
+        let acc = cpu.A;
+        let index = cpu.Y;
+        let addr = index;
 
-        setA(b1);
+        let mem = 0;
+
+        if (RAMSize > addr) {
+          mem = readRAM(addr);
+        } else {
+          mem = readROM(addr);
+        }
+
+        setA(mem);
 
         setY(cpu.Y + 1);
 
         // Do flag stuff
-        if (0 == cpu.A) {
+        if (0 == mem) {
           setStatusFlag("Z");
         } else {
           clearStatusFlag("Z");
         }
 
-        if (0x80 == (cpu.A & 0x80)) {
+        if (0x80 == (mem & 0x80)) {
           setStatusFlag("N");
         } else {
           clearStatusFlag("N");
@@ -6349,21 +6489,22 @@ let subOps = {
       type: "INDEXEDY",
       cycles: 1,
       microcode: function(view) {
-        let offset = view[cpu.PC - 0x8000 + 1];
-        let addr = offset + cpu.Y;
+        let acc = cpu.A;
+        let index = cpu.Y;
+        let addr = index;
 
-        writeRAM(addr, cpu.A);
+        writeRAM(addr, acc);
 
         setY(cpu.Y + 1);
 
         // Do flag stuff
-        if (0 == cpu.A) {
+        if (0 == acc) {
           setStatusFlag("Z");
         } else {
           clearStatusFlag("Z");
         }
 
-        if (0x80 == (cpu.A & 0x80)) {
+        if (0x80 == (acc & 0x80)) {
           setStatusFlag("N");
         } else {
           clearStatusFlag("N");
@@ -6386,8 +6527,8 @@ let subOps = {
     0x80: { name: "adca", len: 2, type: "INDEXEDY", cycles: 1,
     microcode: function(view) {
       let acc = cpu.A;
-      let offset = view[cpu.PC - 0x8000 + 1];
-      let addr = offset + cpu.Y;
+      let index = cpu.Y;
+      let addr = index;
       let mem = 0;
 
       if (RAMSize > addr) {
@@ -6431,8 +6572,8 @@ let subOps = {
     0x80: { name: "adda", len: 2, type: "INDEXEDY", cycles: 1,
     microcode: function(view) {
       let acc = cpu.A;
-      let offset = view[cpu.PC - 0x8000 + 1];
-      let addr = offset + cpu.Y;
+      let index = cpu.Y;
+      let addr = index;
       let mem = 0;
 
       if (RAMSize > addr) {
@@ -6489,7 +6630,17 @@ let subOps = {
     microcode: function(view) {
       let acc = cpu.B;
       let index = cpu.Y;
-      let result = acc - index;
+      let addr = index;
+
+      let mem = 0;
+
+      if (RAMSize > addr) {
+        mem = readRAM(addr);
+      } else {
+        mem = readROM(addr);
+      }
+
+      let result = acc - mem;
 
       setY(cpu.Y + 1);
 
@@ -6553,20 +6704,21 @@ let subOps = {
       cycles: 4,
       microcode: function(view) {
         let acc = cpu.B;
-        let addr = cpu.Y;
+        let index = cpu.Y;
+        let addr = index;
 
         writeRAM(addr, acc);
 
         setY(cpu.Y + 1);
 
         // Do flag stuff
-        if (0 == cpu.B) {
+        if (0 == acc) {
           setStatusFlag("Z");
         } else {
           clearStatusFlag("Z");
         }
 
-        if (0x80 == (cpu.B & 0x80)) {
+        if (0x80 == (acc & 0x80)) {
           setStatusFlag("N");
         } else {
           clearStatusFlag("N");
@@ -6589,8 +6741,8 @@ let subOps = {
     0x80: { name: "adcb", len: 2, type: "INDEXEDY", cycles: 1,
     microcode: function(view) {
       let acc = cpu.B;
-      let offset = view[cpu.PC - 0x8000 + 1];
-      let addr = offset + cpu.Y;
+      let index = cpu.Y;
+      let addr = index;
       let mem = 0;
 
       if (RAMSize > addr) {
@@ -6634,8 +6786,8 @@ let subOps = {
     0x80: { name: "addb", len: 2, type: "INDEXEDY", cycles: 1,
     microcode: function(view) {
       let acc = cpu.B;
-      let offset = view[cpu.PC - 0x8000 + 1];
-      let addr = offset + cpu.Y;
+      let index = cpu.Y;
+      let addr = index;
       let mem = 0;
 
       if (RAMSize > addr) {
@@ -6682,7 +6834,9 @@ let subOps = {
       type: "INDEXEDY",
       cycles: 5,
       microcode: function(view) {
-        let addr = cpu.Y;
+        let acc = cpu.D;
+        let index = cpu.Y;
+        let addr = index;
 
         writeRAM(addr, cpu.D >> 8);
         writeRAM(addr + 1, cpu.D & 0xff);
@@ -6690,13 +6844,13 @@ let subOps = {
         setY(cpu.Y + 2);
 
         // Do flag stuff
-        if (0 == cpu.D) {
+        if (0 == acc) {
           setStatusFlag("Z");
         } else {
           clearStatusFlag("Z");
         }
 
-        if (0x80 == (cpu.D & 0x80)) {
+        if (0x80 == (acc & 0x80)) {
           setStatusFlag("N");
         } else {
           clearStatusFlag("N");
@@ -6720,8 +6874,7 @@ let subOps = {
       cycles: 5,
       microcode: function(view) {
         let index = cpu.Y;
-        let offset = view[cpu.PC - 0x8000 + 1];
-        let addr = offset + index;
+        let addr = index;
 
         let mem = 0;
         let mem1 = 0;

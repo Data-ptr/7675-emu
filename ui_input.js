@@ -65,6 +65,11 @@ $("#step-button-input").bind("click", function() {
 });
 
 $("#run-button-input").bind("click", function() {
+  if(0 == rtcStart)
+  {
+    rtcStart = new Date().getTime();
+  }
+
   stepInterval = setInterval(
     step,
     window.parseInt($("#clock-speed-input").val())
