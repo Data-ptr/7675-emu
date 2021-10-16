@@ -231,17 +231,3 @@ function interrupt(vector) {
   clearStatusFlag("V");
   clearStatusFlag("C");
 }
-
-function cleanHexify(value, size) {
-  if(undefined == size) {
-    size = 2;
-  }
-
-  let padding;
-
-  for(let i = 1; i < size;i++) {
-    padding += "0"
-  }
-
-  return (padding + value.toString(16)).slice(-size).toUpperCase();
-}

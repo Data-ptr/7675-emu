@@ -57,11 +57,11 @@
   padding: 0;
 }
 
-#registers-table {
+#data-registers-table {
   width: 50%;
 }
 
-#registers {
+#data-registers {
   height: 700px;
   overflow: scroll;
 }

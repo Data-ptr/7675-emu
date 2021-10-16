@@ -31,6 +31,8 @@ cpu.ROM.data = new ArrayBuffer(0x8000);
 cpu.ROM.view = new Uint8ClampedArray(cpu.ROM.data);
 
 function setPC(addr) {
+  checkBytes(addr, 4);
+
   cpu.PC = addr;
 
   updatePCOutput();
@@ -41,6 +43,8 @@ function setPC(addr) {
 }
 
 function setSP(addr) {
+  checkBytes(addr, 4);
+
   cpu.SP = addr;
 
   $("#register-SP-output").val(
@@ -53,6 +57,8 @@ function setSP(addr) {
 }
 
 function setA(bytes) {
+  checkBytes(bytes, 2);
+
   cpu.A = bytes;
   cpu.D = (bytes << 8) + cpu.B;
 
@@ -70,6 +76,8 @@ function setA(bytes) {
 }
 
 function setB(bytes) {
+  checkBytes(bytes, 2);
+
   cpu.B = bytes;
   cpu.D = (cpu.A << 8) + bytes;
 
@@ -87,6 +95,8 @@ function setB(bytes) {
 }
 
 function setD(bytes) {
+  checkBytes(bytes, 4);
+
   cpu.D = bytes;
   cpu.A = bytes >> 8;
   cpu.B = bytes & 0xff;
@@ -109,6 +119,8 @@ function setD(bytes) {
 }
 
 function setX(bytes) {
+  checkBytes(bytes, 4);
+
   cpu.X = bytes;
 
   $("#register-X-output").val(
@@ -121,6 +133,8 @@ function setX(bytes) {
 }
 
 function setY(bytes) {
+  checkBytes(bytes, 4);
+
   cpu.Y = bytes;
 
   $("#register-Y-output").val(

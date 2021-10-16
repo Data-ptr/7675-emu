@@ -67,13 +67,13 @@
             id="registers-tab"
             class="nav-link"
             data-bs-toggle="tab"
-            data-bs-target="#registers"
+            data-bs-target="#data-registers"
             type="button"
             role="tab"
-            aria-controls="registers"
+            aria-controls="data-registers"
             aria-selected="false"
           >
-            Registers
+            Data Registers
           </button>
         </li>
 
@@ -437,12 +437,12 @@
         </div>
 
         <div
-          id="registers"
+          id="data-registers"
           class="tab-pane fade"
           role="tabpanel"
-          aria-labelledby="registers-tab"
+          aria-labelledby="data-registers-tab"
         >
-          <table id="registers-table" class="table table-striped">
+          <table id="data-registers-table" class="table table-striped">
             <thead>
               <tr>
                 <th scope="col">#</th>
@@ -2633,6 +2633,7 @@
     </div>
   </div>
 
+  <script src="helpers.js"></script>
   <script src="instruction_set.js"></script>
   <script src="cpu.js"></script>
   <script src="ui_input.js"></script>
