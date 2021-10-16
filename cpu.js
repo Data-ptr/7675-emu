@@ -262,6 +262,11 @@ function setPcToEntrypoint() {
 }
 
 function fullReset() {
+  cpuReset();
+  uiReset();
+}
+
+function cpuReset() {
   cpu.memory.view.fill(0);
 
   //Set Output compares to 0xFFFF
@@ -295,8 +300,24 @@ function fullReset() {
   lastRAMRead.length = 0;
 
   cpu.clock.tickCount = 0;
+}
+
+function uiReset() {
+  let elementString = "";
+
+  for (let i = 0; i < RAMSize; i++) {
+    elementString += "<span title='" + i.toString(16) + "'>00</span>";
+  }
+
+  $("#RAM-output-div")
+    .empty()
+    .append(elementString);
 
   $("#clock-ticks-output").val(cpu.clock.tickCount);
+  $("#real-time-output").val(0);
+  $("#sim-time-output").val(0);
+
+  $("#log-output-div > ul").empty();
 
   drawRAMOutput(cpu.memory.view, RAMSize, 1);
 }

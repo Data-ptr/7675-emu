@@ -327,6 +327,10 @@ let instructionTable = {
       let accB = cpu.B;
       let result = accA - accB;
 
+      if(result < 0) {
+        result += 0xFF;
+      }
+
       setA(result);
 
       // Do flag stuff
@@ -3102,7 +3106,7 @@ let instructionTable = {
   microcode: function(view) {
     let acc = cpu.A;
     let b1 = view[cpu.PC - 0x8000 + 1];
-    let result = result + b1;
+    let result = acc + b1;
 
     if(result > 0xFF) {
       result = result & 0xFF;

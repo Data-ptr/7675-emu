@@ -4,22 +4,12 @@ let lastClockRead = [];
 let lastClockWrite = [];
 
 let lastClockOutCmp = 0;
-
-let stepInterval;
-
-let elementString = "";
+let rtcStart = 0;
+let rtcStash = 0;
+let stepInterval = -1;
+let clockUpdateInterval = -1;
 
 let redrawRAM = 0;
-
-let rtcStart = 0;
-
-for (let i = 0; i < RAMSize; i++) {
-  elementString += "<span title='" + i.toString(16) + "'>00</span>";
-}
-
-$("#RAM-output-div")
-  .empty()
-  .append(elementString);
 
 fullReset();
 
@@ -231,13 +221,3 @@ function interrupt(vector) {
   clearStatusFlag("V");
   clearStatusFlag("C");
 }
-
-let clockUpdateInterval = setInterval(function(){
-  let cycles = cpu.clock.tickCount;
-  let simTimeNow = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.tickCount;
-  let rtcNow = ((new Date().getTime()) - rtcStart) / 1000;
-
-  $("#clock-ticks-output").val(cycles);
-  $("#sim-time-output").val(simTimeNow);
-  $("#real-time-output").val(rtcNow);
-}, 500);

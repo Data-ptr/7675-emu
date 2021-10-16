@@ -1,3 +1,5 @@
+let byteElements = undefined;
+
 function hideInput() {
   $("#input-div").hide();
   $("#input-hidden-div").show();
@@ -20,7 +22,10 @@ function drawHexOutput(view, len) {
 
 function drawRAMOutput(view, len, all) {
   let i = 0;
-  let byteElements = $("#RAM-output-div > span");
+  
+  if(!byteElements) {
+    byteElements = $("#RAM-output-div > span");
+  }
 
   if (all) {
     for (let i = 0; i < len; i++) {
@@ -28,10 +33,11 @@ function drawRAMOutput(view, len, all) {
         .slice(-2)
         .toUpperCase();
       $(byteElements[i]).text(hexByte);
-      $(byteElements[i]).removeClass("hilight");
-      $(byteElements[i]).removeClass("hilight-read");
-      $(byteElements[i]).removeClass("stack-pointer");
     }
+
+    $(byteElements).removeClass("hilight");
+    $(byteElements).removeClass("hilight-read");
+    $(byteElements).removeClass("stack-pointer");
   } else {
     while ((i = lastClockWrite.pop())) {
       let hexByte = ("0" + Number(view[i]).toString(16))

@@ -70,6 +70,17 @@ $("#run-button-input").bind("click", function() {
     rtcStart = new Date().getTime();
   }
 
+  clockUpdateInterval = setInterval(function(){
+    let cycles = cpu.clock.tickCount;
+    let simTimeNow = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.tickCount;
+    let rtcNow = rtcStash + (((new Date().getTime()) - rtcStart) / 1000);
+
+    $("#clock-ticks-output").val(cycles);
+    $("#sim-time-output").val(simTimeNow);
+    $("#real-time-output").val(rtcNow);
+  }, 500);
+
+
   stepInterval = setInterval(
     step,
     window.parseInt($("#clock-speed-input").val())
@@ -78,6 +89,11 @@ $("#run-button-input").bind("click", function() {
 
 $("#pause-button-input").bind("click", function() {
   clearInterval(stepInterval);
+
+  rtcStash = rtcStash + (((new Date().getTime()) - rtcStart) / 1000)
+  rtcStart = 0;
+
+  clearInterval(clockUpdateInterval);
 });
 
 $("#clear-log-button-input").bind("click", function() {
