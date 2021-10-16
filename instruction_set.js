@@ -3309,13 +3309,13 @@ let instructionTable = {
 
       // Do flag stuff
       /*
-    N: Set if most significant bit of the result is set; cleared otherwise.
-    Z: Set if all bits of the result are cleared; cleared otherwise.
-    V: Set if there is a two's complement overflow as a result of the operation;
-    cleared otherwise.
-    C: Set if the absolute value of the contents of memory are larger than the abso-
-    lute value of the accumulator; cleared otherwise.
-  */
+        N: Set if most significant bit of the result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if there is a two's complement overflow as a result of the operation;
+        cleared otherwise.
+        C: Set if the absolute value of the contents of memory are larger than the abso-
+        lute value of the accumulator; cleared otherwise.
+      */
       if (0x80 == (cpu.A & 0x80)) {
         setStatusFlag("N");
       } else {
@@ -3981,7 +3981,72 @@ let instructionTable = {
   0xad: { name: "jsr", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xae: { name: "lds", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xaf: { name: "sts", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
-  0xb0: { name: "suba", len: 3, type: "EXTENDED", cycles: 0 },
+  0xb0: { name: "suba", len: 3, type: "EXTENDED", cycles: 4,
+  microcode: function(view) {
+    let acc = cpu.A;
+    let firstByte = view[cpu.PC - 0x8000 + 1];
+    let secondByte = view[cpu.PC - 0x8000 + 2];
+    let addr = (firstByte << 8) + secondByte;
+    let mem;
+
+    if (RAMSize >= addr) {
+      mem = readRAM(addr);
+    } else {
+      mem = readROM(addr);
+    }
+
+    let result = cpu.A - mem;
+
+    if(result < 0) {
+      result += 0xFF;
+    }
+
+    setA(result);
+
+    // Do flag stuff
+    /*
+  N: Set if most significant bit of the result is set; cleared otherwise.
+  Z: Set if all bits of the result are cleared; cleared otherwise.
+  V: Set if there is a two's complement overflow as a result of the operation;
+  cleared otherwise.
+  C: Set if the absolute value of the contents of memory are larger than the abso-
+  lute value of the accumulator; cleared otherwise.
+*/
+    if (0x80 == (result & 0x80)) {
+      setStatusFlag("N");
+    } else {
+      clearStatusFlag("N");
+    }
+
+    if (0 == result) {
+      setStatusFlag("Z");
+    } else {
+      clearStatusFlag("Z");
+    }
+
+    // 2s compliment overflow test
+    // Get MSBs of the operands
+    let oa = acc & 0x80;
+    let ob = mem & 0x80;
+
+    if (oa != ob) {
+      clearStatusFlag("V");
+    } else {
+      clearStatusFlag("V");
+    }
+
+    if (mem > acc) {
+      setStatusFlag("C");
+    } else {
+      clearStatusFlag("C");
+    }
+
+    //Next
+    setPC(cpu.PC + this.len);
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
   0xb1: { name: "cmpa", len: 3, type: "EXTENDED", cycles: 4,
   microcode: function(view) {
     let acc = cpu.A;
