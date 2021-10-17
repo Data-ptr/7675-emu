@@ -2,6 +2,7 @@ let lastRAMWrite = [];
 let lastRAMRead = [];
 let lastClockRead = [];
 let lastClockWrite = [];
+let interruptStack = [];
 
 let lastClockOutCmp = 0;
 let rtcStart = 0;
@@ -104,18 +105,18 @@ function step() {
 
   if(redrawRAM) {
     redrawRAM = 0;
-    drawRAMOutput(cpu.memory.view, RAMSize);
+    drawRAMOutput(cpu.memory.view, RAMSize, 0);
   }
 }
 
-function advanceClock(ticks) {
-  let preTick = cpu.clock.tickCount;
-  cpu.clock.tickCount += ticks;
+function advanceClock(cycles) {
+  let preTick = cpu.clock.cycleCount;
+  cpu.clock.cycleCount += cycles;
 
-  let timer1Freq = 2;     //2Mhz
+  let timer1Freq = 1;     //2Mhz
   let timer3Freq = 0.25;  //250khz
 
-  let ignoreInterrupts = cpu.status.I || $('#ignoreInterrupts-input').is(":checked");
+  let ignoreInterrupts = $('#ignoreInterrupts-input').is(":checked");
 
   // Output compare 1
   let t1OutCmp = (readRAM(0x000B, 1) << 8) + readRAM(0x000C, 1);
@@ -125,34 +126,38 @@ function advanceClock(ticks) {
   let t1_2 = Math.ceil(cpu.timer_1_2);
   let t3 = Math.ceil(cpu.timer_3);
 
-
-  for (let i = 0; i < ticks; i++) {
-    //console.log("Compare: 0b" + t1OutCmp.toString(2) + " and clk: 0b" + (t1_2 + i).toString(2));
+  for (let i = 0; i < cycles; i++) {
     //Output compare 1 vector = 0xFFF0
-    if (!ignoreInterrupts && t1_2 + i == t1OutCmp) {
+    if (!ignoreInterrupts && (readRAM(0x0008, 1) & 0b00001000) && t1_2 + i == t1OutCmp) {
       console.log("Timer 1 output compare match!");
 
-      interrupt(0xFFF0);
+      writeRAM(0x0008, readRAM(0x0008, 1) | 0b01000000, 1);
+
+      interruptStack.push(0xFFF0);
     }
 
     //Output compare 2 vector = 0xFFEE
-    if (!ignoreInterrupts && t1_2 + i == t2OutCmp) {
+    if (!ignoreInterrupts && (readRAM(0x0018, 1) & 0b00001000) && t1_2 + i == t2OutCmp) {
       console.log("Timer 2 output compare match!");
 
-      interrupt(0xFFEE);
+      writeRAM(0x0018, readRAM(0x0018, 1) | 0b01000000, 1);
+
+      interruptStack.push(0xFFEE);
     }
 
     //Output compare 3 vector = 0xFFEC
     if (!ignoreInterrupts && t3 + i == t3OutCmp) {
       console.log("Timer 3 output compare match!");
 
-      interrupt(0xFFEC);
+      interruptStack.push(0xFFEC);
     }
   }
 
+  workInterrupts();
+
   // New clocks values
-  cpu.timer_1_2 += (timer1Freq / cpu.clockSpeed) * ticks;
-  cpu.timer_3 += (timer3Freq / cpu.clockSpeed) * ticks;
+  cpu.timer_1_2 += (timer1Freq / cpu.clockSpeed) * cycles;
+  cpu.timer_3 += (timer3Freq / cpu.clockSpeed) * cycles;
 
   // Clk 1-2 rollover
   if (cpu.timer_1_2 > 0xFFFF) {
@@ -165,15 +170,20 @@ function advanceClock(ticks) {
   }
 
   // Clk 1-2 store
-  writeRAM(0x0009, Math.ceil(cpu.timer_1_2) >> 8, 1);
-  writeRAM(0x000a, Math.ceil(cpu.timer_1_2) & 0xFF, 1);
+  let t2Ceil = Math.ceil(cpu.timer_1_2);
+
+  writeRAM(0x0009, t2Ceil >> 8, 1);
+  writeRAM(0x000a, t2Ceil & 0xFF, 1);
 
   // Clk 3 1&2 store
-  writeRAM(0x0029, Math.ceil(cpu.timer_3) >> 8, 1);
-  writeRAM(0x002a, Math.ceil(cpu.timer_3) & 0xFF, 1);
+  let t3Ceil = Math.ceil(cpu.timer_3);
+  let t3B1 = t3Ceil >> 8;
+  let t3B2 = t3Ceil & 0xFF;
 
-  writeRAM(0x002d, Math.ceil(cpu.timer_3) >> 8, 1);
-  writeRAM(0x002e, Math.ceil(cpu.timer_3) & 0xFF, 1);
+  writeRAM(0x0029, t3B1, 1);
+  writeRAM(0x002a, t3B2, 1);
+  writeRAM(0x002d, t3B1, 1);
+  writeRAM(0x002e, t3B2, 1);
 }
 
 function executeMicrocode(view) {
@@ -194,6 +204,12 @@ function executeMicrocode(view) {
     } else {
       instructionTable[view[cpu.PC - 0x8000]].microcode(view);
     }
+  }
+}
+
+function workInterrupts() {
+  if(interruptStack.length > 0 && !cpu.status.I) {
+    interrupt(interruptStack.pop());
   }
 }
 

@@ -1,5 +1,22 @@
 const RAMSize = 0x7fff;
 
+let logElement = $("#log-output-div > ul");
+
+let elementCache = {
+  spRegisterOutput: $("#register-SP-output"),
+  aRegisterOutput: $("#register-A-output"),
+  bRegisterOutput: $("#register-B-output"),
+  dRegisterOutput: $("#register-D-output"),
+  xRegisterOutput: $("#register-X-output"),
+  yRegisterOutput: $("#register-Y-output"),
+  hRegisterOutput: $("#register-H-output"),
+  iRegisterOutput: $("#register-I-output"),
+  nRegisterOutput: $("#register-N-output"),
+  zRegisterOutput: $("#register-Z-output"),
+  vRegisterOutput: $("#register-V-output"),
+  cRegisterOutput: $("#register-C-output"),
+}
+
 let cpu = {
   D: 0,
   X: 0,
@@ -16,7 +33,7 @@ let cpu = {
   },
   memory: { view: undefined, data: undefined },
   ROM: { view: undefined, data: undefined },
-  clock: { auto: false, tickCount: 0 },
+  clock: { auto: false, cycleCount: 0 },
   timer_1_2: 0,
   timer_3: 0,
   clockSpeed: 2 //mhz
@@ -37,7 +54,7 @@ function setPC(addr) {
 
   updatePCOutput();
 
-  $("#log-output-div > ul").append(
+  logElement.append(
     "<li>Set PC: " + ("000" + Number(cpu.PC).toString(16)).slice(-4).toUpperCase() + "</li>"
   );
 }
@@ -47,11 +64,11 @@ function setSP(addr) {
 
   cpu.SP = addr;
 
-  $("#register-SP-output").val(
+  elementCache.spRegisterOutput.val(
     ("000" + Number(cpu.SP).toString(16)).slice(-4).toUpperCase()
   );
 
-  $("#log-output-div > ul").append(
+  logElement.append(
     "<li>Set SP: " + ("000" + Number(cpu.SP).toString(16)).slice(-4).toUpperCase() + "</li>"
   );
 }
@@ -62,15 +79,15 @@ function setA(bytes) {
   cpu.A = bytes;
   cpu.D = (bytes << 8) + cpu.B;
 
-  $("#register-A-output").val(
+  elementCache.aRegisterOutput.val(
     ("0" + Number(cpu.A).toString(16)).slice(-2).toUpperCase()
   );
 
-  $("#register-D-output").val(
+  elementCache.dRegisterOutput.val(
     ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
   );
 
-  $("#log-output-div > ul").append(
+  logElement.append(
     "<li>Set A: " + ("0" + Number(bytes).toString(16)).slice(-2).toUpperCase() + "</li>"
   );
 }
@@ -81,15 +98,15 @@ function setB(bytes) {
   cpu.B = bytes;
   cpu.D = (cpu.A << 8) + bytes;
 
-  $("#register-B-output").val(
+  elementCache.bRegisterOutput.val(
     ("0" + Number(cpu.B).toString(16)).slice(-2).toUpperCase()
   );
 
-  $("#register-D-output").val(
+  elementCache.dRegisterOutput.val(
     ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
   );
 
-  $("#log-output-div > ul").append(
+  logElement.append(
     "<li>Set B: " + ("0" + Number(bytes).toString(16)).slice(-2).toUpperCase() + "</li>"
   );
 }
@@ -101,19 +118,19 @@ function setD(bytes) {
   cpu.A = bytes >> 8;
   cpu.B = bytes & 0xff;
 
-  $("#register-D-output").val(
+  elementCache.dRegisterOutput.val(
     ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
   );
 
-  $("#register-A-output").val(
+  elementCache.aRegisterOutput.val(
     ("0" + Number(cpu.A).toString(16)).slice(-2).toUpperCase()
   );
 
-  $("#register-B-output").val(
+  elementCache.bRegisterOutput.val(
     ("0" + Number(cpu.B).toString(16)).slice(-2).toUpperCase()
   );
 
-  $("#log-output-div > ul").append(
+  logElement.append(
     "<li>Set D: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
   );
 }
@@ -123,11 +140,11 @@ function setX(bytes) {
 
   cpu.X = bytes;
 
-  $("#register-X-output").val(
+  elementCache.xRegisterOutput.val(
     ("000" + Number(cpu.X).toString(16)).slice(-4).toUpperCase()
   );
 
-  $("#log-output-div > ul").append(
+  logElement.append(
     "<li>Set X: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
   );
 }
@@ -137,11 +154,11 @@ function setY(bytes) {
 
   cpu.Y = bytes;
 
-  $("#register-Y-output").val(
+  elementCache.yRegisterOutput.val(
     ("000" + Number(cpu.Y).toString(16)).slice(-4).toUpperCase()
   );
 
-  $("#log-output-div > ul").append(
+  logElement.append(
     "<li>Set Y: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
   );
 }
@@ -150,32 +167,31 @@ function setStatusFlag(flag) {
   switch (flag) {
     case "H":
       cpu.status.H = 1;
+      elementCache.hRegisterOutput.val(cpu.status.H);
       break;
     case "I":
       cpu.status.I = 1;
+      elementCache.iRegisterOutput.val(cpu.status.I);
       break;
     case "N":
       cpu.status.N = 1;
+      elementCache.nRegisterOutput.val(cpu.status.N);
       break;
     case "Z":
       cpu.status.Z = 1;
+      elementCache.zRegisterOutput.val(cpu.status.Z);
       break;
     case "V":
       cpu.status.V = 1;
+      elementCache.vRegisterOutput.val(cpu.status.V);
       break;
     case "C":
       cpu.status.C = 1;
+      elementCache.cRegisterOutput.val(cpu.status.C);
       break;
   }
 
-  $("#register-H-output").val(cpu.status.H);
-  $("#register-I-output").val(cpu.status.I);
-  $("#register-N-output").val(cpu.status.N);
-  $("#register-Z-output").val(cpu.status.Z);
-  $("#register-V-output").val(cpu.status.V);
-  $("#register-C-output").val(cpu.status.C);
-
-  $("#log-output-div > ul").append(
+  logElement.append(
     "<li>Set " + flag + " flag</li>"
   );
 }
@@ -184,32 +200,31 @@ function clearStatusFlag(flag) {
   switch (flag) {
     case "H":
       cpu.status.H = 0;
+      elementCache.hRegisterOutput.val(cpu.status.H);
       break;
     case "I":
       cpu.status.I = 0;
+      elementCache.iRegisterOutput.val(cpu.status.I);
       break;
     case "N":
       cpu.status.N = 0;
+      elementCache.nRegisterOutput.val(cpu.status.N);
       break;
     case "Z":
       cpu.status.Z = 0;
+      elementCache.zRegisterOutput.val(cpu.status.Z);
       break;
     case "V":
       cpu.status.V = 0;
+      elementCache.vRegisterOutput.val(cpu.status.V);
       break;
     case "C":
       cpu.status.C = 0;
+      elementCache.cRegisterOutput.val(cpu.status.C);
       break;
   }
 
-  $("#register-H-output").val(cpu.status.H);
-  $("#register-I-output").val(cpu.status.I);
-  $("#register-N-output").val(cpu.status.N);
-  $("#register-Z-output").val(cpu.status.Z);
-  $("#register-V-output").val(cpu.status.V);
-  $("#register-C-output").val(cpu.status.C);
-
-  $("#log-output-div > ul").append(
+  logElement.append(
     "<li>Clear " + flag + " flag</li>"
   );
 }
@@ -222,7 +237,7 @@ function writeRAM(addr, byte, clockWrite) {
   } else {
     lastRAMWrite.push(addr);
 
-    $("#log-output-div > ul").append(
+    logElement.append(
       "<li>Write RAM: " + ("0" + Number(byte).toString(16)).slice(-2).toUpperCase() + " @ " + ("000" + Number(addr).toString(16)).slice(-4).toUpperCase() +"</li>"
     );
   }
@@ -243,7 +258,7 @@ function readRAM(addr, clockRead) {
   } else {
     lastRAMRead.push(addr);
 
-    $("#log-output-div > ul").append(
+    logElement.append(
       "<li>Read RAM: " + ("0" + Number(result).toString(16)).slice(-2).toUpperCase() + " @ " + ("000" + Number(addr).toString(16)).slice(-4).toUpperCase() + "</li>"
     );
   }
@@ -299,7 +314,7 @@ function cpuReset() {
   lastRAMWrite.length = 0;
   lastRAMRead.length = 0;
 
-  cpu.clock.tickCount = 0;
+  cpu.clock.cycleCount = 0;
 }
 
 function uiReset() {
@@ -313,11 +328,11 @@ function uiReset() {
     .empty()
     .append(elementString);
 
-  $("#clock-ticks-output").val(cpu.clock.tickCount);
+  $("#clock-cycles-output").val(cpu.clock.cycleCount);
   $("#real-time-output").val(0);
   $("#sim-time-output").val(0);
 
-  $("#log-output-div > ul").empty();
+  logElement.empty();
 
   drawRAMOutput(cpu.memory.view, RAMSize, 1);
 }

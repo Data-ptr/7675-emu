@@ -1,3 +1,4 @@
+let lastSP = -1;
 let byteElements = undefined;
 
 function hideInput() {
@@ -22,7 +23,7 @@ function drawHexOutput(view, len) {
 
 function drawRAMOutput(view, len, all) {
   let i = 0;
-  
+
   if(!byteElements) {
     byteElements = $("#RAM-output-div > span");
   }
@@ -46,13 +47,16 @@ function drawRAMOutput(view, len, all) {
       $(byteElements[i]).text(hexByte);
     }
 
+    if(lastRAMWrite.length > 0) {
+      $("#RAM-output-div > span.hilight").removeClass("hilight");
+    }
+
     while ((i = lastRAMWrite.pop())) {
       let hexByte = ("0" + Number(view[i]).toString(16))
         .slice(-2)
         .toUpperCase();
       $(byteElements[i]).text(hexByte);
 
-      $(byteElements).removeClass("hilight");
       $(byteElements[i]).addClass("hilight");
 
       if ($("#followRamWrite-input").is(":checked")) {
@@ -72,13 +76,16 @@ function drawRAMOutput(view, len, all) {
       $(byteElements[i]).text(hexByte);
     }
 
+    if(lastRAMRead.length > 0) {
+      $("#RAM-output-div > span.hilight-read").removeClass("hilight-read");
+    }
+
     while ((i = lastRAMRead.pop())) {
       let hexByte = ("0" + Number(view[i]).toString(16))
         .slice(-2)
         .toUpperCase();
       $(byteElements[i]).text(hexByte);
 
-      $(byteElements).removeClass("hilight-read");
       $(byteElements[i]).addClass("hilight-read");
 
       if ($("#followRamRead-input").is(":checked")) {
@@ -91,8 +98,12 @@ function drawRAMOutput(view, len, all) {
       }
     }
 
-    $(byteElements).removeClass("stack-pointer");
-    $(byteElements[cpu.SP]).addClass("stack-pointer");
+    if(cpu.SP != lastSP) {
+      lastSP = cpu.SP;
+
+      $(byteElements).removeClass("stack-pointer");
+      $(byteElements[cpu.SP]).addClass("stack-pointer");
+    }
   }
 }
 

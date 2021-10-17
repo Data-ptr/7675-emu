@@ -94,3 +94,7 @@
 #debug label, #settings label {
   margin: 0 8px;
 }
+
+#data-registers-table td td, #data-registers-table td th {
+  text-align: center;
+}

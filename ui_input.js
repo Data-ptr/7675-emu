@@ -71,11 +71,11 @@ $("#run-button-input").bind("click", function() {
   }
 
   clockUpdateInterval = setInterval(function(){
-    let cycles = cpu.clock.tickCount;
-    let simTimeNow = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.tickCount;
+    let cycles = cpu.clock.cycleCount;
+    let simTimeNow = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.cycleCount;
     let rtcNow = rtcStash + (((new Date().getTime()) - rtcStart) / 1000);
 
-    $("#clock-ticks-output").val(cycles);
+    $("#clock-cycles-output").val(cycles);
     $("#sim-time-output").val(simTimeNow);
     $("#real-time-output").val(rtcNow);
   }, 500);
