@@ -73,6 +73,7 @@ function step() {
         subOps[view[cpu.PC - 0x8000]][view[cpu.PC - 0x8000 + 1]].microcode  // branch here
       ) {
         clearInterval(stepInterval);
+        clearInterval(clockUpdateInterval);
         console.log("No microcode implimented");
       } else {
         subOps[view[cpu.PC - 0x8000]][view[cpu.PC - 0x8000 + 1]].microcode(view);
@@ -87,6 +88,11 @@ function step() {
   if ($("#break-input").is(":checked")) {
     if (cpu.PC == window.parseInt($("#breakpoint-input").val(), 16)) {
       clearInterval(stepInterval);
+
+      rtcStash = rtcStash + (((new Date().getTime()) - rtcStart) / 1000)
+      rtcStart = 0;
+
+      clearInterval(clockUpdateInterval);
       console.log("Hit the breakpoint");
     }
   }
@@ -99,6 +105,11 @@ function step() {
         .toLowerCase()
     ) {
       clearInterval(stepInterval);
+
+      rtcStash = rtcStash + (((new Date().getTime()) - rtcStart) / 1000)
+      rtcStart = 0;
+
+      clearInterval(clockUpdateInterval);
       console.log("Hit the op-breakpoint");
     }
   }
@@ -193,6 +204,7 @@ function executeMicrocode(view) {
       subOps[view[cpu.PC - 0x8000]][view[cpu.PC - 0x8000 + 1]].microcode  // branch here
     ) {
       clearInterval(stepInterval);
+      clearInterval(clockUpdateInterval);
       console.log("No microcode implimented");
     } else {
       subOps[view[cpu.PC - 0x8000]][view[cpu.PC - 0x8000 + 1]].microcode(view);
@@ -200,6 +212,7 @@ function executeMicrocode(view) {
   } else {
     if (undefined == instructionTable[view[cpu.PC - 0x8000]].microcode) { // branch here
       clearInterval(stepInterval);
+      clearInterval(clockUpdateInterval);
       console.log("No microcode implimented");
     } else {
       instructionTable[view[cpu.PC - 0x8000]].microcode(view);
