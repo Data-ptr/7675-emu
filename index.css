@@ -11,13 +11,17 @@
 }
 
 #RAM-output-div {
-    width: 550px;
-    height: 350px;
+    width: 600px;
+    height: 450px;
     overflow: scroll;
 }
 
 #RAM-output-div > span {
     display: inline-block
+}
+
+#hex-output-textarea, #RAM-output-div {
+  font-family: monospace;
 }
 
 #log-output-div {

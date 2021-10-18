@@ -12,18 +12,21 @@ let clockUpdateInterval = -1;
 
 let redrawRAM = 0;
 
+const romTextarea = $("#hex-output-textarea");
+const logOutputDiv = $("#log-output-div");
+
 fullReset();
 
 function step() {
   let view = cpu.ROM.view;
   let textareaIndex = (cpu.PC - 0x8000) * 2;
 
-  $("#hex-output-textarea").blur();
-  $("#hex-output-textarea")[0].setSelectionRange(
+  romTextarea.blur();
+  romTextarea[0].setSelectionRange(
     textareaIndex,
     textareaIndex + 2
   );
-  $("#hex-output-textarea").focus();
+  romTextarea.focus();
 
   let fullInst;
 
@@ -52,16 +55,16 @@ function step() {
 
   $("#instruction").text(fullInst);
 
-  $("#log-output-div > ul").append(
+  logElement.append(
     "<li>----------</li>"
   );
 
-  $("#log-output-div > ul").append(
+  logElement.append(
     "<li>" + cpu.PC.toString(16) + ": " + fullInst + "</li>"
   );
 
   if($("#log-follow-input").is(":checked")) {
-    let d = $("#log-output-div");
+    let d = logOutputDiv;
     d.scrollTop(d.prop("scrollHeight"));
   }
 

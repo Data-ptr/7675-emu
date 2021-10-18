@@ -1,9 +1,10 @@
 const RAMSize = 0x7fff;
 
-let logElement = $("#log-output-div > ul");
+const logElement = $("#log-output-div > ul");
 
-let elementCache = {
+const elementCache = {
   spRegisterOutput: $("#register-SP-output"),
+  pcRegisterOutput: $("#register-PC-output"),
   aRegisterOutput: $("#register-A-output"),
   bRegisterOutput: $("#register-B-output"),
   dRegisterOutput: $("#register-D-output"),

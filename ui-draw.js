@@ -18,7 +18,7 @@ function drawHexOutput(view, len) {
     hexString += ("0" + Number(view[i]).toString(16)).slice(-2).toUpperCase();
   }
 
-  $("#hex-output-textarea").text(hexString);
+  romTextarea.text(hexString);
 }
 
 function drawRAMOutput(view, len, all) {
@@ -173,7 +173,7 @@ function updateRegisters(i) {
 }
 
 function updatePCOutput() {
-  $("#register-PC-output").val(
+  elementCache.pcRegisterOutput.val(
     ("0" + Number(cpu.PC).toString(16)).slice(-4).toUpperCase()
   );
 }
