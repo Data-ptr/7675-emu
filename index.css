@@ -1,10 +1,18 @@
+.two-digit {
+    width: 113px;
+}
+
+.four-digit {
+    width: 134px;
+}
+
 .input-group {
-    width: 110px;
+  margin: .5rem !important;
 }
 
 #RAM-output-div {
-    width: 550px;
-    height: 350px;
+    width: 600px;
+    height: 450px;
     overflow: scroll;
 }
 
@@ -12,14 +20,85 @@
     display: inline-block
 }
 
+#hex-output-textarea, #RAM-output-div {
+  font-family: monospace;
+}
+
+#log-output-div {
+    width: 550px;
+    height: 700px;
+    overflow: scroll;
+}
+
 .hilight.stack-pointer {
      background-color: blue;
+}
+
+.hilight-read.stack-pointer {
+  background-color: pink;
+}
+
+.hilight.hilight-read {
+  background-color: yellow;
 }
 
 .hilight {
     background-color: green;
 }
 
+.hilight-read{
+    background-color: red;
+}
+
 .stack-pointer {
     background-color: orange;
+}
+.table {
+  margin-bottom: 0;
+}
+
+.table td {
+  padding: 0;
+}
+
+#data-registers-table {
+  width: 50%;
+}
+
+#data-registers {
+  height: 700px;
+  overflow: scroll;
+}
+
+#status-registers {
+   width: 450px;
+   flex-wrap: nowrap;
+}
+
+#home label {
+  padding-top: 7px;
+  width: 25px;
+}
+
+#clocks label {
+  padding-right: 7px;
+  width: unset;
+}
+
+#clocks input {
+  width: 100px;
+  flex: unset;
+}
+
+#debug input[type="text"] {
+  width: 67px;
+  flex: unset;
+}
+
+#debug label, #settings label {
+  margin: 0 8px;
+}
+
+#data-registers-table td td, #data-registers-table td th {
+  text-align: center;
 }
