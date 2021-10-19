@@ -59,7 +59,7 @@ function step() {
       fullInst += " " + cleanHexify(view[cpu.PC - 0x8000 + i]);
     }
   }
-  
+
   if(updateUI) {
     $("#instruction").text(fullInst);
   }
@@ -187,6 +187,7 @@ function advanceClock(cycles) {
   // Clk 1-2 rollover
   if (cpu.timer_1_2 > 0xFFFF) {
     cpu.timer_1_2 -= 0xFFFF;
+    interruptStack.push(0xFFEA);
   }
 
   // Clk 3 rollover

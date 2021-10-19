@@ -81,6 +81,21 @@
 
         <li class="nav-item" role="presentation">
           <button
+            id="events-tab"
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#events"
+            type="button"
+            role="tab"
+            aria-controls="events"
+            aria-selected="false"
+          >
+            Events
+          </button>
+        </li>
+
+        <li class="nav-item" role="presentation">
+          <button
             id="settings-tab"
             class="nav-link"
             data-bs-toggle="tab"
@@ -1042,14 +1057,14 @@
                   <table id="sci_baud-table" class="table">
                     <thead>
                       <tr>
-                        <th title="baud rate divider" scope="col">SS0</th>
-                        <th title="baud rate divider" scope="col">SS1</th>
-                        <th title="mode control register" scope="col">CC0</th>
-                        <th title="mode control register" scope="col">CC1</th>
-                        <th title="Not used" scope="col">NU</th>
-                        <th title="Not used" scope="col">NU</th>
-                        <th title="Not used" scope="col">NU</th>
-                        <th title="Not used" scope="col">NU</th>
+                        <th title="Not used" scope="col">b7</th>
+                        <th title="Not used" scope="col">b6</th>
+                        <th title="Not used" scope="col">b5</th>
+                        <th title="Clock divider Clock divider 000=E/16, 001=E/128, 010=E/1024, 011=E/4096" scope="col">SS2</th>
+                        <th title="Mode Control bits 01 = Asyncronous mode, 8-bit, internal clk 10 = synchronous 8-bit, internal clock " scope="col">CC1</th>
+                        <th title="Mode Control bits 01 = Asyncronous mode, 8-bit, internal clk 10 = synchronous 8-bit, internal clock " scope="col">CC0</th>
+                        <th title="Clock divider Clock divider 000=E/16, 001=E/128, 010=E/1024, 011=E/4096" scope="col">SS1</th>
+                        <th title="Clock divider Clock divider 000=E/16, 001=E/128, 010=E/1024, 011=E/4096" scope="col">SS0</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1074,18 +1089,14 @@
                   <table id="sci_scr-table" class="table">
                     <thead>
                       <tr>
-                        <th title="Wake-up on idle line" scope="col">WU</th>
-                        <th title="transmit enable, 1 = enable" scope="col">
-                          TI
+                        <th title="Read data register full" scope="col">
+                          RDRF
                         </th>
-                        <th title="Tx interrupt enable, reset to 0" scope="col">
-                          TIE
+                        <th title="Overrun and framing error" scope="col">
+                          ORFE
                         </th>
-                        <th
-                          title="Rx enable, checked for set before tx"
-                          scope="col"
-                        >
-                          RE
+                        <th title="transmit data register empty" scope="col">
+                          TDRE
                         </th>
                         <th
                           title="Rx interrupt enable,  Reset/set to 0/1 in real time int"
@@ -1093,15 +1104,19 @@
                         >
                           RIE
                         </th>
-                        <th title="transmit data register empty" scope="col">
-                          TDRE
+                        <th
+                          title="Rx enable, checked for set before tx"
+                          scope="col"
+                        >
+                          RE
                         </th>
-                        <th title="Overrun and framing error" scope="col">
-                          ORFE
+                        <th title="Tx interrupt enable, reset to 0" scope="col">
+                          TIE
                         </th>
-                        <th title="Read data register full" scope="col">
-                          RDRF
+                        <th title="transmit enable, 1 = enable" scope="col">
+                          TI
                         </th>
+                        <th title="Wake-up on idle line" scope="col">WU</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1190,8 +1205,8 @@
                   <table id="ram_control-table" class="table">
                     <thead>
                       <tr>
-                        <th scope="col">b7</th>
-                        <th scope="col">b6</th>
+                        <th scope="col" title="STBY PWR = 0 The standby power voltage has decreased to a value less than VSBB (minimum), STBY PWR = 1 The standby power voltage has remained above the VSBB minimum value">STBY PWR</th>
+                        <th scope="col" title="RAME = 0: Internal RAM addresses disabled, data read/written from external memory; RAME = 1: Internal RAM addresses enabled">RAME</th>
                         <th scope="col">b5</th>
                         <th scope="col">b4</th>
                         <th scope="col">b3</th>
@@ -1578,14 +1593,14 @@
                   <table id="adc_ctl-table" class="table">
                     <thead>
                       <tr>
-                        <th scope="col">C1</th>
-                        <th scope="col">C2</th>
-                        <th scope="col">C3</th>
-                        <th scope="col">Start</th>
-                        <th scope="col">b3</th>
-                        <th scope="col">b2</th>
-                        <th scope="col">b1</th>
-                        <th scope="col">b0</th>
+                        <th scope="col">b7</th>
+                        <th scope="col">b6</th>
+                        <th scope="col" title="Set to 1 when conversion complete">DONE</th>
+                        <th scope="col" title="Clock Control/Format Select">b4</th>
+                        <th scope="col" title="Start Bit set to 1 to start conversion">START</th>
+                        <th scope="col" title="ADC channel number">C3</th>
+                        <th scope="col" title="ADC channel number">C2</th>
+                        <th scope="col" title="ADC channel number">C1</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1733,15 +1748,15 @@
               </tr>
               <tr>
                 <th scope="row">0x24</th>
-                <td>L0024</td>
+                <td title="Pulse Accumulator Control Register">PACTL</td>
                 <td>
-                  <table id="l0024-table" class="table">
+                  <table id="pactl-table" class="table">
                     <thead>
                       <tr>
-                        <th scope="col">b7</th>
+                        <th scope="col" title="Pulse Accumulator Interupt Flag">PAOVIF</th>
                         <th scope="col">b6</th>
                         <th scope="col">b5</th>
-                        <th scope="col">b4</th>
+                        <th scope="col" title="Pulse Accumulator Interrupt Enable">PAOVIE</th>
                         <th scope="col">b3</th>
                         <th scope="col">b2</th>
                         <th scope="col">b1</th>
@@ -1765,9 +1780,9 @@
               </tr>
               <tr>
                 <th scope="row">0x25</th>
-                <td>L0025</td>
+                <td title="Pulse Accumulator Counter">PACNT</td>
                 <td>
-                  <table id="l0025-table" class="table">
+                  <table id="pacnt-table" class="table">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
@@ -1797,13 +1812,13 @@
               </tr>
               <tr>
                 <th scope="row">0x26</th>
-                <td>RTI CTL</td>
+                <td title="Timer control and status register used for real time interrupt? init to $64 = 1.25ms?">RTI CTL</td>
                 <td>
                   <table id="rti_ctl-table" class="table">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
-                        <th scope="col">b6</th>
+                        <th scope="col">TIE</th>
                         <th scope="col">b5</th>
                         <th scope="col">b4</th>
                         <th scope="col">b3</th>
@@ -1829,7 +1844,7 @@
               </tr>
               <tr>
                 <th scope="row">0x27</th>
-                <td>RTI FREQ</td>
+                <td title="Real time interrupt frequency setting: Freq = 125000/(256-x) where x is the content of rti_freq">RTI FREQ</td>
                 <td>
                   <table id="rti_freq-table" class="table">
                     <thead>
@@ -2623,6 +2638,116 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div
+          id="events"
+          class="tab-pane fade"
+          role="tabpanel"
+          aria-labelledby="events-tab"
+        >
+          <div class="col-sm">
+            <input
+              id="trigger-t1-ic-input"
+              class="btn btn-primary"
+              type="button"
+              value="T1 IC"
+            />
+
+            <label class="" for="trigger-t1-ic-input">
+              Trigger Timer 1's Input Capture
+            </label>
+          </div>
+
+          <div class="col-sm">
+            <input
+              id="trigger-t2-ic-input"
+              class="btn btn-primary"
+              type="button"
+              value="T2 IC"
+            />
+
+            <label class="" for="trigger-t2-ic-input">
+              Trigger Timer 2's Input Capture
+            </label>
+          </div>
+
+          <div class="col-sm">
+            <input
+              id="trigger-stby-pwr-fail-input"
+              class="btn btn-primary"
+              type="button"
+              value="STBY PWR Fail"
+            />
+
+            <label class="" for="trigger-stby-pwr-fail-input">
+              Trigger STBY PWR failure
+            </label>
+          </div>
+
+          <div class="col-sm">
+            <input
+              id="trigger-rti-input"
+              class="btn btn-primary"
+              type="button"
+              value="Trigger RTI"
+            />
+
+            <label class="" for="trigger-rti-input">
+              Trigger Real-Time Interrupt
+            </label>
+          </div>
+
+          <div class="col-sm">
+            <input
+              id="trigger-irq-input"
+              class="btn btn-primary"
+              type="button"
+              value="Trigger IRQ"
+            />
+
+            <label class="" for="trigger-irq-input">
+              Trigger External Masked Interrupt
+            </label>
+          </div>
+
+          <div class="col-sm">
+            <input
+              id="trigger-swi-input"
+              class="btn btn-primary"
+              type="button"
+              value="Trigger SWI"
+            />
+
+            <label class="" for="trigger-swi-input">
+              Trigger Software Interrupt
+            </label>
+          </div>
+
+          <div class="col-sm">
+            <input
+              id="trigger-nmi-input"
+              class="btn btn-primary"
+              type="button"
+              value="Trigger NMI"
+            />
+
+            <label class="" for="trigger-nmi-input">
+              Trigger Not-Masked External Interrupt
+            </label>
+          </div>
+          <div class="col-sm">
+            <input
+              id="trigger-reset-input"
+              class="btn btn-primary"
+              type="button"
+              value="Trigger RESET"
+            />
+
+            <label class="" for="trigger-reset-input">
+              Trigger Reset Interrupt
+            </label>
+          </div>
         </div>
 
         <div

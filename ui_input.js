@@ -143,6 +143,10 @@ $("#set-breakpoint-pc-button-input").bind("click", function() {
 $('#myTab button').bind("click", function() {
   if(this.id == "registers-tab") {
     updateDataRegisters = 1;
+
+    for(let i = 0; i < 0x40; i++) {
+      updateRegisters(i);
+    }
   } else {
     updateDataRegisters = 0;
   }
@@ -166,4 +170,37 @@ $('#updateLogOutput-input').bind('click', function(){
 
 $('#updateBatchOutput-input').bind('click', function(){
   updateBatchOutput = $(this).is(':checked');
+});
+
+$('#trigger-t1-ic-input').bind('click', function(){
+  ;
+});
+
+$('#trigger-t2-ic-input').bind('click', function(){
+  ;
+});
+
+$('#trigger-stby-pwr-fail-input').bind('click', function(){
+  let ramCtrlReg = readRAM(0x14,1);
+  writeRAM(0x14,ramCtrlReg & 0b01000000, 1);
+});
+
+$('#trigger-rti-input').bind('click', function(){
+  interruptStack.push(0xFFE4);
+});
+
+$('#trigger-irq-input').bind('click', function(){
+  interruptStack.push(0xFFF8);
+});
+
+$('#trigger-swi-input').bind('click', function(){
+  interruptStack.push(0xFFFA);
+});
+
+$('#trigger-nmi-input').bind('click', function(){
+  interruptStack.push(0xFFFC);
+});
+
+$('#trigger-reset-input').bind('click', function(){
+  interruptStack.push(0xFFFE);
 });
