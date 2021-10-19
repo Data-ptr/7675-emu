@@ -2509,7 +2509,31 @@ let instructionTable = {
     }
   },
   0x6e: { name: "jmp", len: 2, type: "INDEXED", cycles: 0 },
-  0x6f: { name: "clr", len: 2, type: "INDEXED", cycles: 0 },
+  0x6f: { name: "clr", len: 2, type: "INDEXED", cycles: 6,
+  microcode: function(view) {
+    let offset = view[cpu.PC - 0x8000 + 1];
+    let addr = offset + cpu.X;
+
+    writeRAM(addr, 0x00);
+
+    // Do flag stuff
+    /*
+      N: Cleared.
+      Z: Set.
+      V: Cleared.
+      C: Cleared.
+    */
+    clearStatusFlag("N");
+    setStatusFlag("Z");
+    clearStatusFlag("V");
+    clearStatusFlag("C");
+
+    //Next
+    setPC(cpu.PC + this.len);
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
   0x70: { name: "neg", len: 3, type: "EXTENDED", cycles: 0 },
   0x71: { name: "0x71", len: 0, type: "EXTENDED", cycles: 0 },
   0x72: { name: "0x72", len: 0, type: "EXTENDED", cycles: 0 },
@@ -2901,11 +2925,11 @@ let instructionTable = {
 
       // Do flag stuff
       /*
-      N: Cleared.
-      Z: Set.
-      V: Cleared.
-      C: Cleared.
-    */
+        N: Cleared.
+        Z: Set.
+        V: Cleared.
+        C: Cleared.
+      */
       clearStatusFlag("N");
       setStatusFlag("Z");
       clearStatusFlag("V");

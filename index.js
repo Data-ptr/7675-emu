@@ -12,6 +12,11 @@ let clockUpdateInterval = -1;
 
 let redrawRAM = 0;
 
+let updateRAM = $('#updateRamOutput-input').is(":checked");
+let updateROM = $('#updateRomOutput-input').is(":checked");
+let updateUI = $('#updateUiOutput-input').is(":checked");
+let updateBatchOutput = $('#updateBatchOutput-input').is(":checked");
+
 const romTextarea = $("#hex-output-textarea");
 const logOutputDiv = $("#log-output-div");
 
@@ -21,12 +26,14 @@ function step() {
   let view = cpu.ROM.view;
   let textareaIndex = (cpu.PC - 0x8000) * 2;
 
-  romTextarea.blur();
-  romTextarea[0].setSelectionRange(
-    textareaIndex,
-    textareaIndex + 2
-  );
-  romTextarea.focus();
+  if(updateROM) {
+    romTextarea.blur();
+    romTextarea[0].setSelectionRange(
+      textareaIndex,
+      textareaIndex + 2
+    );
+    romTextarea.focus();
+  }
 
   let fullInst;
 
@@ -52,20 +59,24 @@ function step() {
       fullInst += " " + cleanHexify(view[cpu.PC - 0x8000 + i]);
     }
   }
+  
+  if(updateUI) {
+    $("#instruction").text(fullInst);
+  }
 
-  $("#instruction").text(fullInst);
+  if(logEnabled) {
+    logElement.append(
+      "<li>----------</li>"
+    );
 
-  logElement.append(
-    "<li>----------</li>"
-  );
+    logElement.append(
+      "<li>" + cpu.PC.toString(16) + ": " + fullInst + "</li>"
+    );
 
-  logElement.append(
-    "<li>" + cpu.PC.toString(16) + ": " + fullInst + "</li>"
-  );
-
-  if($("#log-follow-input").is(":checked")) {
-    let d = logOutputDiv;
-    d.scrollTop(d.prop("scrollHeight"));
+    if($("#log-follow-input").is(":checked")) {
+      let d = logOutputDiv;
+      d.scrollTop(d.prop("scrollHeight"));
+    }
   }
 
   //Execute
@@ -117,7 +128,7 @@ function step() {
     }
   }
 
-  if(redrawRAM) {
+  if(updateRAM && redrawRAM) {
     redrawRAM = 0;
     drawRAMOutput(cpu.memory.view, RAMSize, 0);
   }

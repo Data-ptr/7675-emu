@@ -1,5 +1,5 @@
+let logEnabled = $('#updateLogOutput-input').is(":checked");
 const RAMSize = 0x7fff;
-
 const logElement = $("#log-output-div > ul");
 
 const elementCache = {
@@ -16,7 +16,13 @@ const elementCache = {
   zRegisterOutput: $("#register-Z-output"),
   vRegisterOutput: $("#register-V-output"),
   cRegisterOutput: $("#register-C-output"),
+  clockCyclesOutput: $("#clock-cycles-output"),
+  simTimeOutput: $("#sim-time-output"),
+  realSpeedOutput: $("#real-speed-output"),
+  realTimeOutput: $("#real-time-output")
 }
+
+let updateDataRegisters = 0;
 
 let cpu = {
   D: 0,
@@ -53,11 +59,15 @@ function setPC(addr) {
 
   cpu.PC = addr;
 
-  updatePCOutput();
+  if(updateUI) {
+    updatePCOutput();
+  }
 
-  logElement.append(
-    "<li>Set PC: " + ("000" + Number(cpu.PC).toString(16)).slice(-4).toUpperCase() + "</li>"
-  );
+  if(logEnabled) {
+    logElement.append(
+      "<li>Set PC: " + ("000" + Number(cpu.PC).toString(16)).slice(-4).toUpperCase() + "</li>"
+    );
+  }
 }
 
 function setSP(addr) {
@@ -65,13 +75,17 @@ function setSP(addr) {
 
   cpu.SP = addr;
 
-  elementCache.spRegisterOutput.val(
-    ("000" + Number(cpu.SP).toString(16)).slice(-4).toUpperCase()
-  );
+  if(updateUI) {
+    elementCache.spRegisterOutput.val(
+      ("000" + Number(cpu.SP).toString(16)).slice(-4).toUpperCase()
+    );
+  }
 
-  logElement.append(
-    "<li>Set SP: " + ("000" + Number(cpu.SP).toString(16)).slice(-4).toUpperCase() + "</li>"
-  );
+  if(logEnabled) {
+    logElement.append(
+      "<li>Set SP: " + ("000" + Number(cpu.SP).toString(16)).slice(-4).toUpperCase() + "</li>"
+    );
+  }
 }
 
 function setA(bytes) {
@@ -80,17 +94,21 @@ function setA(bytes) {
   cpu.A = bytes;
   cpu.D = (bytes << 8) + cpu.B;
 
-  elementCache.aRegisterOutput.val(
-    ("0" + Number(cpu.A).toString(16)).slice(-2).toUpperCase()
-  );
+  if(updateUI) {
+    elementCache.aRegisterOutput.val(
+      ("0" + Number(cpu.A).toString(16)).slice(-2).toUpperCase()
+    );
 
-  elementCache.dRegisterOutput.val(
-    ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
-  );
+    elementCache.dRegisterOutput.val(
+      ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
+    );
+  }
 
-  logElement.append(
-    "<li>Set A: " + ("0" + Number(bytes).toString(16)).slice(-2).toUpperCase() + "</li>"
-  );
+  if(logEnabled) {
+    logElement.append(
+      "<li>Set A: " + ("0" + Number(bytes).toString(16)).slice(-2).toUpperCase() + "</li>"
+    );
+  }
 }
 
 function setB(bytes) {
@@ -99,17 +117,21 @@ function setB(bytes) {
   cpu.B = bytes;
   cpu.D = (cpu.A << 8) + bytes;
 
-  elementCache.bRegisterOutput.val(
-    ("0" + Number(cpu.B).toString(16)).slice(-2).toUpperCase()
-  );
+  if(updateUI) {
+    elementCache.bRegisterOutput.val(
+      ("0" + Number(cpu.B).toString(16)).slice(-2).toUpperCase()
+    );
 
-  elementCache.dRegisterOutput.val(
-    ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
-  );
+    elementCache.dRegisterOutput.val(
+      ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
+    );
+  }
 
-  logElement.append(
-    "<li>Set B: " + ("0" + Number(bytes).toString(16)).slice(-2).toUpperCase() + "</li>"
-  );
+  if(logEnabled) {
+    logElement.append(
+      "<li>Set B: " + ("0" + Number(bytes).toString(16)).slice(-2).toUpperCase() + "</li>"
+    );
+  }
 }
 
 function setD(bytes) {
@@ -119,21 +141,25 @@ function setD(bytes) {
   cpu.A = bytes >> 8;
   cpu.B = bytes & 0xff;
 
-  elementCache.dRegisterOutput.val(
-    ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
-  );
+  if(updateUI) {
+    elementCache.dRegisterOutput.val(
+      ("000" + Number(cpu.D).toString(16)).slice(-4).toUpperCase()
+    );
 
-  elementCache.aRegisterOutput.val(
-    ("0" + Number(cpu.A).toString(16)).slice(-2).toUpperCase()
-  );
+    elementCache.aRegisterOutput.val(
+      ("0" + Number(cpu.A).toString(16)).slice(-2).toUpperCase()
+    );
 
-  elementCache.bRegisterOutput.val(
-    ("0" + Number(cpu.B).toString(16)).slice(-2).toUpperCase()
-  );
+    elementCache.bRegisterOutput.val(
+      ("0" + Number(cpu.B).toString(16)).slice(-2).toUpperCase()
+    );
+  }
 
-  logElement.append(
-    "<li>Set D: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
-  );
+  if(logEnabled) {
+    logElement.append(
+      "<li>Set D: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
+    );
+  }
 }
 
 function setX(bytes) {
@@ -141,13 +167,17 @@ function setX(bytes) {
 
   cpu.X = bytes;
 
-  elementCache.xRegisterOutput.val(
-    ("000" + Number(cpu.X).toString(16)).slice(-4).toUpperCase()
-  );
+  if(updateUI) {
+    elementCache.xRegisterOutput.val(
+      ("000" + Number(cpu.X).toString(16)).slice(-4).toUpperCase()
+    );
+  }
 
-  logElement.append(
-    "<li>Set X: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
-  );
+  if(logEnabled) {
+    logElement.append(
+      "<li>Set X: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
+    );
+  }
 }
 
 function setY(bytes) {
@@ -155,98 +185,134 @@ function setY(bytes) {
 
   cpu.Y = bytes;
 
-  elementCache.yRegisterOutput.val(
-    ("000" + Number(cpu.Y).toString(16)).slice(-4).toUpperCase()
-  );
+  if(updateUI) {
+    elementCache.yRegisterOutput.val(
+      ("000" + Number(cpu.Y).toString(16)).slice(-4).toUpperCase()
+    );
+  }
 
-  logElement.append(
-    "<li>Set Y: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
-  );
+  if(logEnabled) {
+    logElement.append(
+      "<li>Set Y: " + ("000" + Number(bytes).toString(16)).slice(-4).toUpperCase() + "</li>"
+    );
+  }
 }
 
 function setStatusFlag(flag) {
   switch (flag) {
     case "H":
       cpu.status.H = 1;
-      elementCache.hRegisterOutput.val(cpu.status.H);
+      if(updateUI) {
+        elementCache.hRegisterOutput.val(cpu.status.H);
+      }
       break;
     case "I":
       cpu.status.I = 1;
-      elementCache.iRegisterOutput.val(cpu.status.I);
+      if(updateUI) {
+        elementCache.iRegisterOutput.val(cpu.status.I);
+      }
       break;
     case "N":
       cpu.status.N = 1;
-      elementCache.nRegisterOutput.val(cpu.status.N);
+      if(updateUI) {
+        elementCache.nRegisterOutput.val(cpu.status.N);
+      }
       break;
     case "Z":
       cpu.status.Z = 1;
-      elementCache.zRegisterOutput.val(cpu.status.Z);
+      if(updateUI) {
+        elementCache.zRegisterOutput.val(cpu.status.Z);
+      }
       break;
     case "V":
       cpu.status.V = 1;
-      elementCache.vRegisterOutput.val(cpu.status.V);
+      if(updateUI) {
+        elementCache.vRegisterOutput.val(cpu.status.V);
+      }
       break;
     case "C":
       cpu.status.C = 1;
-      elementCache.cRegisterOutput.val(cpu.status.C);
+      if(updateUI) {
+        elementCache.cRegisterOutput.val(cpu.status.C);
+      }
       break;
   }
 
-  logElement.append(
-    "<li>Set " + flag + " flag</li>"
-  );
+  if(logEnabled) {
+    logElement.append(
+      "<li>Set " + flag + " flag</li>"
+    );
+  }
 }
 
 function clearStatusFlag(flag) {
   switch (flag) {
     case "H":
       cpu.status.H = 0;
-      elementCache.hRegisterOutput.val(cpu.status.H);
+      if(updateUI) {
+        elementCache.hRegisterOutput.val(cpu.status.H);
+      }
       break;
     case "I":
       cpu.status.I = 0;
-      elementCache.iRegisterOutput.val(cpu.status.I);
+      if(updateUI) {
+        elementCache.iRegisterOutput.val(cpu.status.I);
+      }
       break;
     case "N":
       cpu.status.N = 0;
-      elementCache.nRegisterOutput.val(cpu.status.N);
+      if(updateUI) {
+        elementCache.nRegisterOutput.val(cpu.status.N);
+      }
       break;
     case "Z":
       cpu.status.Z = 0;
-      elementCache.zRegisterOutput.val(cpu.status.Z);
+      if(updateUI) {
+        elementCache.zRegisterOutput.val(cpu.status.Z);
+      }
       break;
     case "V":
       cpu.status.V = 0;
-      elementCache.vRegisterOutput.val(cpu.status.V);
+      if(updateUI) {
+        elementCache.vRegisterOutput.val(cpu.status.V);
+      }
       break;
     case "C":
       cpu.status.C = 0;
-      elementCache.cRegisterOutput.val(cpu.status.C);
+      if(updateUI) {
+        elementCache.cRegisterOutput.val(cpu.status.C);
+      }
       break;
   }
 
-  logElement.append(
-    "<li>Clear " + flag + " flag</li>"
-  );
+  if(logEnabled) {
+    logElement.append(
+      "<li>Clear " + flag + " flag</li>"
+    );
+  }
 }
 
 function writeRAM(addr, byte, clockWrite) {
   cpu.memory.view[addr] = byte;
 
-  if (clockWrite) {
-    lastClockWrite.push(addr);
-  } else {
-    lastRAMWrite.push(addr);
+  if(updateRAM) {
+    if (clockWrite) {
+      lastClockWrite.push(addr);
+    } else {
+      lastRAMWrite.push(addr);
 
-    logElement.append(
-      "<li>Write RAM: " + ("0" + Number(byte).toString(16)).slice(-2).toUpperCase() + " @ " + ("000" + Number(addr).toString(16)).slice(-4).toUpperCase() +"</li>"
-    );
+      if(logEnabled) {
+        logElement.append(
+          "<li>Write RAM: " + ("0" + Number(byte).toString(16)).slice(-2).toUpperCase() + " @ " + ("000" + Number(addr).toString(16)).slice(-4).toUpperCase() +"</li>"
+        );
+      }
+    }
+
+    redrawRAM = 1;
   }
 
-  redrawRAM = 1;
-
   //Refresh if register
-  if (0x40 > addr) {
+  if (updateDataRegisters && 0x40 > addr) {
     updateRegisters(addr);
   }
 }
@@ -254,17 +320,21 @@ function writeRAM(addr, byte, clockWrite) {
 function readRAM(addr, clockRead) {
   let result = cpu.memory.view[addr];
 
-  if (clockRead) {
-    lastClockRead.push(addr);
-  } else {
-    lastRAMRead.push(addr);
+  if(updateRAM) {
+    if (clockRead) {
+      lastClockRead.push(addr);
+    } else {
+      lastRAMRead.push(addr);
 
-    logElement.append(
-      "<li>Read RAM: " + ("0" + Number(result).toString(16)).slice(-2).toUpperCase() + " @ " + ("000" + Number(addr).toString(16)).slice(-4).toUpperCase() + "</li>"
-    );
+      if(logEnabled) {
+        logElement.append(
+          "<li>Read RAM: " + ("0" + Number(result).toString(16)).slice(-2).toUpperCase() + " @ " + ("000" + Number(addr).toString(16)).slice(-4).toUpperCase() + "</li>"
+        );
+      }
+    }
+
+    redrawRAM = 1;
   }
-
-  redrawRAM = 1;
 
   return result;
 }

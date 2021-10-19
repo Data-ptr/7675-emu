@@ -1,3 +1,8 @@
+let timeLast = 0;
+let cyclesLast = 0;
+let intervalSpeed = 0;
+let stepsPerInterval = 1;
+
 // iOS hack
 $(
   "#load-button-input, #load-reset-button-input, #save-button-input, #restore-button-input, #execute-button-input"
@@ -72,18 +77,49 @@ $("#run-button-input").bind("click", function() {
 
   clockUpdateInterval = setInterval(function(){
     let cycles = cpu.clock.cycleCount;
+    let now = new Date().getTime();
     let simTimeNow = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.cycleCount;
-    let rtcNow = rtcStash + (((new Date().getTime()) - rtcStart) / 1000);
+    let rtcNow = rtcStash + ((now - rtcStart) / 1000);
+    let realSpeed = (cycles - cyclesLast) / ((now-timeLast) * 1000);
 
-    $("#clock-cycles-output").val(cycles);
-    $("#sim-time-output").val(simTimeNow);
-    $("#real-time-output").val(rtcNow);
+    cyclesLast = cycles;
+    timeLast = now;
+
+    elementCache.clockCyclesOutput.val(cycles);
+    elementCache.simTimeOutput.val(simTimeNow);
+    elementCache.realSpeedOutput.val(realSpeed);
+    elementCache.realTimeOutput.val(rtcNow);
   }, 500);
 
+  intervalSpeed = window.parseInt($("#clock-speed-input").val());
 
   stepInterval = setInterval(
-    step,
-    window.parseInt($("#clock-speed-input").val())
+    function(){
+      if(updateBatchOutput){
+        let start = new Date().getTime();
+
+        for(let i = 0; i < stepsPerInterval; i++) {
+          step();
+        }
+
+        let end = new Date().getTime();
+
+        let t = end - start;
+
+        if(t > intervalSpeed + (intervalSpeed / 2)) {
+          stepsPerInterval -= Math.ceil((t - intervalSpeed) / 2);
+        } else if(t < intervalSpeed - (intervalSpeed / 2)) {
+          stepsPerInterval += Math.ceil((intervalSpeed - t) / 2);
+        }
+
+        if(stepsPerInterval < 0) {
+          stepsPerInterval = 1;
+        }
+      } else {
+        step();
+      }
+    },
+    intervalSpeed
   );
 });
 
@@ -102,4 +138,32 @@ $("#clear-log-button-input").bind("click", function() {
 
 $("#set-breakpoint-pc-button-input").bind("click", function() {
   $('#breakpoint-input').val($('#register-PC-output').val());
+});
+
+$('#myTab button').bind("click", function() {
+  if(this.id == "registers-tab") {
+    updateDataRegisters = 1;
+  } else {
+    updateDataRegisters = 0;
+  }
+})
+
+$('#updateRamOutput-input').bind('click', function(){
+  updateRAM = $(this).is(':checked');
+});
+
+$('#updateRomOutput-input').bind('click', function(){
+  updateROM = $(this).is(':checked');
+});
+
+$('#updateUiOutput-input').bind('click', function(){
+  updateUI = $(this).is(':checked');
+});
+
+$('#updateLogOutput-input').bind('click', function(){
+  logEnabled = $(this).is(':checked');
+});
+
+$('#updateBatchOutput-input').bind('click', function(){
+  updateBatchOutput = $(this).is(':checked');
 });

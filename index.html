@@ -24,6 +24,8 @@
   crossorigin="anonymous"
 ></script>
 
+<link href="open-iconic/font/css/open-iconic-bootstrap.css" rel="stylesheet">
+
 <script src="tab.js"></script>
 
 <link href="index.css" rel="stylesheet" />
@@ -402,6 +404,19 @@
 
             <div class="col-sm">
               <div class="input-group">
+                <label for="real-speed-output">Real speed:</label>
+
+                <input
+                  id="real-speed-output"
+                  class="form-control"
+                  type="text"
+                  disabled="true"
+                />hz
+              </div>
+            </div>
+
+            <div class="col-sm">
+              <div class="input-group">
                 <label for="real-time-output">Realtime:</label>
 
                 <input
@@ -418,11 +433,7 @@
             <div class="col-sm">
               ROM:
 
-              <textarea
-                id="hex-output-textarea"
-                cols="55"
-                rows="16"
-              >
+              <textarea id="hex-output-textarea" cols="55" rows="16">
               </textarea>
             </div>
 
@@ -459,7 +470,7 @@
                   id="clock-speed-input"
                   class="form-control"
                   type="text"
-                  value="500"
+                  value="10"
                 />
               </div>
             </div>
@@ -744,14 +755,51 @@
                   <table id="t1_csr-table" class="table">
                     <thead>
                       <tr>
-                        <th scope="col" title="Input Capture Flag 1: Set when an Input Capture 1 Event occurs">ICF1</th>
-                        <th scope="col" title="Output Compare Flag 1: Set when an Output Compare 1 event occurs">OCF1</th>
-                        <th scope="col" title="Timer 1 overflow Interrupt flag">OIF</th>
-                        <th scope="col" title="Enable Input Capture 1 Interrupt: Input Capture Interrupt 1 Enable">EICIn</th>
-                        <th scope="col" title="Enable Output Compare 1 Interrupt: Set to enable an interrupt on output compare event">EOC1I</th>
-                        <th scope="col" title="Timer 1 Overflow Interrupt Enable: Set to enable">OIE</th>
-                        <th scope="col" title="Input Edge Select 1: This bit selects which edge causes an Input Capture event; 0=negative edge, 1=positive edge">IEDG1</th>
-                        <th scope="col" title="Output Level 1: This bit is transferred to P21/OC1 when an Output Compare 1 event occurs">OLVL1</th>
+                        <th
+                          scope="col"
+                          title="Input Capture Flag 1: Set when an Input Capture 1 Event occurs"
+                        >
+                          ICF1
+                        </th>
+                        <th
+                          scope="col"
+                          title="Output Compare Flag 1: Set when an Output Compare 1 event occurs"
+                        >
+                          OCF1
+                        </th>
+                        <th scope="col" title="Timer 1 overflow Interrupt flag">
+                          OIF
+                        </th>
+                        <th
+                          scope="col"
+                          title="Enable Input Capture 1 Interrupt: Input Capture Interrupt 1 Enable"
+                        >
+                          EICIn
+                        </th>
+                        <th
+                          scope="col"
+                          title="Enable Output Compare 1 Interrupt: Set to enable an interrupt on output compare event"
+                        >
+                          EOC1I
+                        </th>
+                        <th
+                          scope="col"
+                          title="Timer 1 Overflow Interrupt Enable: Set to enable"
+                        >
+                          OIE
+                        </th>
+                        <th
+                          scope="col"
+                          title="Input Edge Select 1: This bit selects which edge causes an Input Capture event; 0=negative edge, 1=positive edge"
+                        >
+                          IEDG1
+                        </th>
+                        <th
+                          scope="col"
+                          title="Output Level 1: This bit is transferred to P21/OC1 when an Output Compare 1 event occurs"
+                        >
+                          OLVL1
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1270,14 +1318,54 @@
                   <table id="t2_csr-table" class="table">
                     <thead>
                       <tr>
-                        <th scope="col" title="Input Capture Flag 2: Set when an Input Capture 2 Event occurs">ICF2</th>
-                        <th scope="col" title="Output Compare Flag 2: Set when an Output Compare 2 event occurs">OCF2</th>
-                        <th scope="col" title="Output Level 4: This bit is transferred to P13/OC4 when an Output Compare event occurs">OILVL4</th>
-                        <th scope="col" title="Enable Input Capture 2 Interrupt: Input Capture Interrupt 2 Enable">EICI2</th>
-                        <th scope="col" title="Enable Output Compare 2 Interrupt: Set to enable an interrupt on output compare event">EOC12</th>
-                        <th scope="col" title="Output Level 3: This bit is transferred to P12/OC3 when an Output Compare 2 event occurs">OLVL3</th>
-                        <th scope="col" title="Input Edge Select 2: This bit selects which edge causes an Input Capture event; 0=negative edge, 1=positive edge">IEDG2</th>
-                        <th scope="col" title="Output Level 2: This bit is transferred to P11/OC2 when an Output Compare 2 event occurs">OLVL2</th>
+                        <th
+                          scope="col"
+                          title="Input Capture Flag 2: Set when an Input Capture 2 Event occurs"
+                        >
+                          ICF2
+                        </th>
+                        <th
+                          scope="col"
+                          title="Output Compare Flag 2: Set when an Output Compare 2 event occurs"
+                        >
+                          OCF2
+                        </th>
+                        <th
+                          scope="col"
+                          title="Output Level 4: This bit is transferred to P13/OC4 when an Output Compare event occurs"
+                        >
+                          OILVL4
+                        </th>
+                        <th
+                          scope="col"
+                          title="Enable Input Capture 2 Interrupt: Input Capture Interrupt 2 Enable"
+                        >
+                          EICI2
+                        </th>
+                        <th
+                          scope="col"
+                          title="Enable Output Compare 2 Interrupt: Set to enable an interrupt on output compare event"
+                        >
+                          EOC12
+                        </th>
+                        <th
+                          scope="col"
+                          title="Output Level 3: This bit is transferred to P12/OC3 when an Output Compare 2 event occurs"
+                        >
+                          OLVL3
+                        </th>
+                        <th
+                          scope="col"
+                          title="Input Edge Select 2: This bit selects which edge causes an Input Capture event; 0=negative edge, 1=positive edge"
+                        >
+                          IEDG2
+                        </th>
+                        <th
+                          scope="col"
+                          title="Output Level 2: This bit is transferred to P11/OC2 when an Output Compare 2 event occurs"
+                        >
+                          OLVL2
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2566,6 +2654,77 @@
               <label class="form-check-label" for="followRamWrite-input">
                 Follow RAM Write
               </label>
+            </div>
+
+            <!-- Experimental -->
+            <div class="alert alert-warning" role="alert">
+              <h4 class="alert-heading">!!!EXPERIMENTAL!!!</h4>
+              <p><span class="oi oi-warning"></span>WARNING! These options can cause browser freeze-up, using them in the "wrong order" absolutly will!</p>
+              <hr>
+              <div class="input-group">
+                <input
+                  id="updateRamOutput-input"
+                  class="form-check-input"
+                  type="checkbox"
+                  checked="true"
+                />
+
+                <label class="form-check-label" for="updateRamOutput-input">
+                  Update RAM Output (Off for Big speed-up)
+                </label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  id="updateRomOutput-input"
+                  class="form-check-input"
+                  type="checkbox"
+                  checked="true"
+                />
+
+                <label class="form-check-label" for="updateRomOutput-input">
+                  Update ROM output (Off for Speed-up)
+                </label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  id="updateUiOutput-input"
+                  class="form-check-input"
+                  type="checkbox"
+                  checked="true"
+                />
+
+                <label class="form-check-label" for="updateUiOutput-input">
+                  Update UI output (Off for Pure speed)
+                </label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  id="updateLogOutput-input"
+                  class="form-check-input"
+                  type="checkbox"
+                />
+
+                <label class="form-check-label" for="updateLogOutput-input">
+                  Update Log output (gets slow as the log grows)
+                </label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  id="updateBatchOutput-input"
+                  class="form-check-input"
+                  type="checkbox"
+                />
+
+                <label class="form-check-label" for="updateBatchOutput-input">
+                  Aim for self adjusting speed (batching operations) - You will
+                  not see every instruction, RAM read/write, registers update etc.
+                  But, you can get faster thru-put
+                </label>
+              </div>
             </div>
           </div>
         </div>
