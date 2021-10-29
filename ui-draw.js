@@ -120,7 +120,7 @@ function updateRegisters(i) {
   // Special cases
   switch (i) {
     case 0:
-      $("#data-registers-table > tbody > tr:eq(2) table th").each(function(
+      $("#data-registers-table > tbody > tr:eq(2) tr:eq(0) th").each(function(
         index,
         elem
       ) {
@@ -130,7 +130,7 @@ function updateRegisters(i) {
       });
       break;
     case 1:
-      $("#data-registers-table > tbody > tr:eq(3) table th").each(function(
+      $("#data-registers-table > tbody > tr:eq(3) tr:eq(0) th").each(function(
         index,
         elem
       ) {
@@ -140,7 +140,7 @@ function updateRegisters(i) {
       });
       break;
     case 4:
-      $("#data-registers-table > tbody > tr:eq(6) table th").each(function(
+      $("#data-registers-table > tbody > tr:eq(6) tr:eq(0) th").each(function(
         index,
         elem
       ) {
@@ -150,7 +150,7 @@ function updateRegisters(i) {
       });
       break;
     case 5:
-      $("#data-registers-table > tbody > tr:eq(7) table th").each(function(
+      $("#data-registers-table > tbody > tr:eq(7) tr:eq(0) th").each(function(
         index,
         elem
       ) {
@@ -160,7 +160,7 @@ function updateRegisters(i) {
       });
       break;
     case 0x15:
-      $("#data-registers-table > tbody > tr:eq(0x16) table th").each(function(
+      $("#data-registers-table > tbody > tr:eq(0x16) tr:eq(0) th").each(function(
         index,
         elem
       ) {

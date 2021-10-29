@@ -1,6 +1,9 @@
-<meta charset="utf-8" />
+<meta charset="utf-8"></meta>
 
-<meta name="viewport" content="width=device-width" />
+<meta
+  name="viewport"
+  content="width=device-width">
+</meta>
 
 <title>7675-emu</title>
 
@@ -8,33 +11,44 @@
   src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
   integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
   crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-></script>
+  referrerpolicy="no-referrer">
+</script>
 
 <link
   href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.min.css"
   rel="stylesheet"
   integrity="sha384-uWxY/CJNBR+1zjPWmfnSnVxwRheevXITnMqoEIeG1LJrdI0GlVs/9cVSyPYXdcSF"
-  crossorigin="anonymous"
-/>
+  crossorigin="anonymous">
+</link>
 
 <script
   src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/js/bootstrap.min.js"
   integrity="sha384-PsUw7Xwds7x08Ew3exXhqzbhuEYmA2xnwc8BuD6SEr+UmEHlX8/MCltYEodzWA4u"
-  crossorigin="anonymous"
-></script>
+  crossorigin="anonymous">
+</script>
 
-<link href="open-iconic/font/css/open-iconic-bootstrap.css" rel="stylesheet">
+<link
+  href="open-iconic/font/css/open-iconic-bootstrap.css"
+  rel="stylesheet">
+</link>
 
 <script src="tab.js"></script>
 
-<link href="index.css" rel="stylesheet" />
+<link
+  href="index.css"
+  rel="stylesheet">
+</link>
 
 <div class="container">
   <div class="row">
     <div class="col-lg">
-      <ul id="myTab" class="nav nav-tabs" role="tablist">
-        <li class="nav-item" role="presentation">
+      <ul
+        id="myTab"
+        class="nav nav-tabs"
+        role="tablist">
+        <li
+          class="nav-item"
+          role="presentation">
           <button
             id="load-tab"
             class="nav-link"
@@ -43,13 +57,14 @@
             type="button"
             role="tab"
             aria-controls="load"
-            aria-selected="false"
-          >
+            aria-selected="false">
             Load
           </button>
         </li>
 
-        <li class="nav-item" role="presentation">
+        <li
+          class="nav-item"
+          role="presentation">
           <button
             id="home-tab"
             class="nav-link active"
@@ -58,13 +73,14 @@
             type="button"
             role="tab"
             aria-controls="home"
-            aria-selected="true"
-          >
+            aria-selected="true">
             Home
           </button>
         </li>
 
-        <li class="nav-item" role="presentation">
+        <li
+          class="nav-item"
+          role="presentation">
           <button
             id="registers-tab"
             class="nav-link"
@@ -73,13 +89,14 @@
             type="button"
             role="tab"
             aria-controls="data-registers"
-            aria-selected="false"
-          >
+            aria-selected="false">
             Data Registers
           </button>
         </li>
 
-        <li class="nav-item" role="presentation">
+        <li
+          class="nav-item"
+          role="presentation">
           <button
             id="events-tab"
             class="nav-link"
@@ -88,13 +105,14 @@
             type="button"
             role="tab"
             aria-controls="events"
-            aria-selected="false"
-          >
+            aria-selected="false">
             Events
           </button>
         </li>
 
-        <li class="nav-item" role="presentation">
+        <li
+          class="nav-item"
+          role="presentation">
           <button
             id="settings-tab"
             class="nav-link"
@@ -103,13 +121,14 @@
             type="button"
             role="tab"
             aria-controls="settings"
-            aria-selected="false"
-          >
+            aria-selected="false">
             Settings
           </button>
         </li>
 
-        <li class="nav-item" role="presentation">
+        <li
+          class="nav-item"
+          role="presentation">
           <button
             id="debug-tab"
             class="nav-link"
@@ -118,13 +137,14 @@
             type="button"
             role="tab"
             aria-controls="debug"
-            aria-selected="false"
-          >
+            aria-selected="false">
             Debug
           </button>
         </li>
 
-        <li class="nav-item" role="presentation">
+        <li
+          class="nav-item"
+          role="presentation">
           <button
             id="log-tab"
             class="nav-link"
@@ -133,73 +153,189 @@
             type="button"
             role="tab"
             aria-controls="log"
-            aria-selected="false"
-          >
+            aria-selected="false">
             Log
+          </button>
+        </li>
+
+        <li
+          class="nav-item"
+          role="presentation">
+          <button
+            id="dsm-tab"
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#dsm"
+            type="button"
+            role="tab"
+            aria-controls="dsm"
+            aria-selected="false">
+            DSM
           </button>
         </li>
       </ul>
 
-      <div id="myTabContent" class="tab-content">
+      <div
+        id="myTabContent"
+        class="tab-content">
         <div
           id="load"
           class="tab-pane fade"
           role="tabpanel"
-          aria-labelledby="load-tab"
-        >
+          aria-labelledby="load-tab">
           <div class="row">
             <div class="col-sm">
               <div id="input-div">
-                <label>Paste Base64 of binary here:</label>
+                <label class="form-label">Paste Base64 of binary here:</label>
 
-                <br />
+                <br/>
 
-                <textarea id="base64-textarea" cols="50" rows="10"> </textarea>
+                <textarea
+                  id="base64-textarea"
+                  cols="50"
+                  rows="10">
+                </textarea>
 
-                <br />
+                <br/>
 
-                <input id="load-button-input" type="button" value="load" />
-                <input id="save-button-input" type="button" value="save" />
+                <input
+                  id="load-button-input"
+                  type="button"
+                  value="load"/>
+                <input
+                  id="save-button-input"
+                  type="button"
+                  value="save"/>
                 <input
                   id="restore-button-input"
                   type="button"
-                  value="restore"
-                />
+                  value="restore"/>
                 Entrypoint: 0x
 
-                <input id="entrypoint-text-input" type="text" value="CEFF" />
+                <input
+                  id="entrypoint-text-input"
+                  type="text"
+                  value="CEFF"/>
               </div>
 
-              <div id="input-hidden-div" style="display: none;">
+              <div
+                id="input-hidden-div"
+                style="display: none;">
                 Loaded
 
                 <input
                   id="load-reset-button-input"
                   type="button"
-                  value="reset"
-                />
+                  value="reset"/>
               </div>
 
               <div id="instructions">
                 <p>E931/2 entrypoint: 0xCEFF</p>
+
                 <p>E900 entrypoint: 0xD57F</p>
+
                 <p>In a terminal:</p>
-                <pre>
-                    $ base64 mybin.bin
-                  </pre
-                >
+
+                <pre>$ base64 mybin.bin</pre>
+
                 <p>
-                  then copy that and paste it above. Click "load". Go to the
-                  home tab and click "Run".
+                  then copy that and paste it above. Click "load". Go to the                   home
+                  tab and click "Run".
                 </p>
+
                 <p>
                   If you click "save" instead the binary will be stashed into
                   local storage. After that you can just click "restore" to pull
                   it from the browser
                 </p>
-                <p>
-                  reset is buggy, just refresh the page.
-                </p>
+
+                <p>reset is buggy, just refresh the page.</p>
+              </div>
+            </div>
+
+            <div class="col-sm">
+              Mode:
+
+              <div class="input-group">
+                <input
+                  id="p2p0-mode-input"
+                  class="form-check-input"
+                  type="checkbox"/>
+                <label
+                  class="form-check-label"
+                  for="p2p0-mode-input">
+                  Port 2 pin 0
+                </label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  id="p2p1-mode-input"
+                  class="form-check-input"
+                  type="checkbox"/>
+                <label
+                  class="form-check-label"
+                  for="p2p1-mode-input">
+                  Port 2 pin 1
+                </label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  id="p2p2-mode-input"
+                  class="form-check-input"
+                  type="checkbox"/>
+                <label
+                  class="form-check-label"
+                  for="p2p2-mode-input">
+                  Port 2 pin 2
+                </label>
+              </div>
+
+              <div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+
+                      <th>P2-0<br/>PC0</th>
+
+                      <th>P2-1<br/>PC1</th>
+
+                      <th>P2-2<br/>PC2</th>
+
+                      <th>Mode</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr><td>0</td><td>L</td><td>L</td><td>L</td><td>Test</td></tr>
+
+                    <tr><td>1</td><td>H</td><td>L</td><td>L</td><td>Expanded Multiplexed</td></tr>
+
+                    <tr><td>2</td><td>L</td><td>H</td><td>L</td><td>Expanded Multiplexed</td></tr>
+
+                    <tr><td>3</td><td>H</td><td>H</td><td>L</td><td>Expanded Multiplexed</td></tr>
+
+                    <tr><td>4</td><td>L</td><td>L</td><td>H</td><td>Test</td></tr>
+
+                    <tr>
+                      <td>5</td>
+
+                      <td>H</td>
+
+                      <td>L</td>
+
+                      <td>H</td>
+
+                      <td>Expanded Non-Multiplexed</td>
+                    </tr>
+
+                    <tr><td>6</td><td>L</td><td>H</td><td>H</td><td>Expanded Multiplexed</td></tr>
+
+                    <tr><td>7</td><td>H</td><td>H</td><td>H</td><td>Single Chip</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -209,57 +345,50 @@
           id="home"
           class="tab-pane fade show active"
           role="tabpanel"
-          aria-labelledby="home-tab"
-        >
+          aria-labelledby="home-tab">
           <div class="row">
             <div class="col-sm">
               <div class="input-group two-digit">
-                <label for="register-A-output">A</label>
+                <label class="form-label" for="register-A-output">A</label>
 
-                <div class="input-group-prepend">
-                  <span class="input-group-text">0x</span>
-                </div>
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
 
                 <input
                   id="register-A-output"
                   class="form-control"
                   type="text"
                   maxlength="2"
-                />
+                  disabled="true"/>
               </div>
             </div>
 
             <div class="col-sm">
               <div class="input-group two-digit">
-                <label for="register-B-output">B</label>
+                <label class="form-label" for="register-B-output">B</label>
 
-                <div class="input-group-prepend">
-                  <span class="input-group-text">0x</span>
-                </div>
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
 
                 <input
                   id="register-B-output"
                   class="form-control"
                   type="text"
                   maxlength="2"
-                />
+                  disabled="true"/>
               </div>
             </div>
 
             <div class="col-sm">
               <div class="input-group four-digit">
-                <label for="register-D-output">D</label>
+                <label class="form-label" for="register-D-output">D</label>
 
-                <div class="input-group-prepend">
-                  <span class="input-group-text">0x</span>
-                </div>
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
 
                 <input
                   id="register-D-output"
                   class="form-control"
                   type="text"
                   maxlength="4"
-                />
+                  disabled="true"/>
               </div>
             </div>
           </div>
@@ -267,179 +396,171 @@
           <div class="row">
             <div class="col-sm">
               <div class="input-group four-digit">
-                <label for="register-X-output">X</label>
+                <label class="form-label" for="register-X-output">X</label>
 
-                <div class="input-group-prepend">
-                  <span class="input-group-text">0x</span>
-                </div>
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
 
                 <input
                   id="register-X-output"
                   class="form-control"
                   type="text"
                   maxlength="4"
-                />
+                  disabled="true"/>
               </div>
             </div>
 
             <div class="col-sm">
               <div class="input-group four-digit">
-                <label for="register-Y-output">Y</label>
-                <div class="input-group-prepend">
-                  <span class="input-group-text">0x</span>
-                </div>
+                <label class="form-label" for="register-Y-output">Y</label>
+
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
 
                 <input
                   id="register-Y-output"
                   class="form-control"
                   type="text"
                   maxlength="4"
-                  ,
-                  disabled="true"
-                />
+                  disabled="true"/>
               </div>
             </div>
 
             <div class="col-sm">
               <div class="input-group four-digit">
-                <label for="register-PC-output">PC</label>
+                <label class="form-label" for="register-PC-output">PC</label>
 
-                <div class="input-group-prepend">
-                  <span class="input-group-text">0x</span>
-                </div>
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
 
                 <input
                   id="register-PC-output"
                   class="form-control"
                   type="text"
                   maxlength="4"
-                />
-
+                  disabled="true"/>
                 <input
                   id="set-breakpoint-pc-button-input"
                   type="button"
-                  value="Set as breakpoint"
-                />
+                  value="Set as breakpoint"/>
               </div>
             </div>
 
             <div class="col-sm">
               <div class="input-group four-digit">
-                <label for="register-SP-output">SP</label>
+                <label class="form-label" for="register-SP-output">SP</label>
 
-                <div class="input-group-prepend">
-                  <span class="input-group-text">0x</span>
-                </div>
+                <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
 
                 <input
                   id="register-SP-output"
                   class="form-control"
                   type="text"
-                  maxlength="2"
-                />
+                  maxlength="4"
+                  disabled="true"/>
               </div>
             </div>
           </div>
 
           <div class="row">
             <div class="col">
-              <div id="status-registers" class="input-group">
+              <div
+                id="status-registers"
+                class="input-group">
                 <span class="input-group-text">H:</span>
 
                 <input
                   id="register-H-output"
                   class="form-control one-digit"
                   type="text"
-                />
+                  disabled="true"/>
                 <span class="input-group-text">I:</span>
 
                 <input
                   id="register-I-output"
                   class="form-control one-digit"
                   type="text"
-                />
+                  disabled="true"/>
                 <span class="input-group-text">N:</span>
 
                 <input
                   id="register-N-output"
                   class="form-control one-digit"
                   type="text"
-                />
+                  disabled="true"/>
                 <span class="input-group-text">Z:</span>
 
                 <input
                   id="register-Z-output"
                   class="form-control one-digit"
                   type="text"
-                />
+                  disabled="true"/>
                 <span class="input-group-text">V:</span>
 
                 <input
                   id="register-V-output"
                   class="form-control one-digit"
                   type="text"
-                />
+                  disabled="true"/>
                 <span class="input-group-text">C:</span>
 
                 <input
                   id="register-C-output"
                   class="form-control one-digit"
                   type="text"
-                />
+                  disabled="true"/>
               </div>
             </div>
           </div>
 
-          <div id="clocks" class="row">
+          <div
+            id="clocks"
+            class="row">
             <div class="col-sm">
               <div class="input-group">
-                <label for="clock-cycles-output">Cycles:</label>
+                <label class="form-label" for="clock-cycles-output">Cycles:</label>
 
                 <input
                   id="clock-cycles-output"
                   class="form-control"
                   type="text"
-                  disabled="true"
-                />
+                  disabled="true"/>
               </div>
             </div>
 
             <div class="col-sm">
               <div class="input-group">
-                <label for="sim-time-output">Simulated Time:</label>
+                <label class="form-label" for="sim-time-output">Simulated Time:</label>
 
                 <input
                   id="sim-time-output"
                   class="form-control"
                   type="text"
-                  disabled="true"
-                />s
+                  disabled="true"/>
+                s
               </div>
             </div>
 
             <div class="col-sm">
               <div class="input-group">
-                <label for="real-speed-output">Real speed:</label>
+                <label class="form-label" for="real-speed-output">Real speed:</label>
 
                 <input
                   id="real-speed-output"
                   class="form-control"
                   type="text"
-                  disabled="true"
-                />hz
+                  disabled="true"/>
+                hz
               </div>
             </div>
 
             <div class="col-sm">
               <div class="input-group">
-                <label for="real-time-output">Realtime:</label>
+                <label class="form-label" for="real-time-output">Realtime:</label>
 
                 <input
                   id="real-time-output"
                   class="form-control"
                   type="text"
-                  disabled="true"
-                />s
+                  disabled="true"/>
+                s
               </div>
             </div>
           </div>
@@ -448,45 +569,50 @@
             <div class="col-sm">
               ROM:
 
-              <textarea id="hex-output-textarea" cols="55" rows="16">
+              <textarea
+                id="hex-output-textarea"
+                cols="55"
+                rows="16"
+                readonly="true">
               </textarea>
             </div>
 
-            <div class="col-sm">
-              RAM:
-
-              <div id="RAM-output-div"></div>
-            </div>
+            <div class="col-sm">RAM:<div id="RAM-output-div"></div></div>
           </div>
 
           <div class="row">
+            <div class="col-sm">Instruction:<div id="instruction"></div></div>
+
             <div class="col-sm">
-              Instruction:
-              <div id="instruction"></div>
+              <input
+                id="step-button-input"
+                type="button"
+                value="Step"/>
             </div>
 
             <div class="col-sm">
-              <input id="step-button-input" type="button" value="Step" />
+              <input
+                id="run-button-input"
+                type="button"
+                value="Run"/>
             </div>
 
             <div class="col-sm">
-              <input id="run-button-input" type="button" value="Run" />
+              <input
+                id="pause-button-input"
+                type="button"
+                value="Pause"/>
             </div>
 
             <div class="col-sm">
-              <input id="pause-button-input" type="button" value="Pause" />
-            </div>
-
-            <div class="col-sm">
-              <label for="clock-speed-input">Clock speed:</label>
+              <label class="form-label" for="clock-speed-input">Clock speed:</label>
 
               <div class="input-group">
                 <input
                   id="clock-speed-input"
                   class="form-control"
                   type="text"
-                  value="10"
-                />
+                  value="10"/>
               </div>
             </div>
           </div>
@@ -496,2140 +622,4052 @@
           id="data-registers"
           class="tab-pane fade"
           role="tabpanel"
-          aria-labelledby="data-registers-tab"
-        >
-          <table id="data-registers-table" class="table table-striped">
+          aria-labelledby="data-registers-tab">
+          <table
+            id="data-registers-table"
+            class="table">
             <thead>
               <tr>
                 <th scope="col">#</th>
+
                 <th scope="col">Register</th>
+
                 <th scope="col">Values</th>
               </tr>
             </thead>
+
             <tbody>
               <tr>
                 <th scope="row">0x00</th>
+
                 <td>DDR1</td>
+
                 <td>
-                  <table id="ddr1-table" class="table">
+                  <table
+                    id="ddr1-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x01</th>
+
                 <td>DDR2</td>
+
                 <td>
-                  <table id="ddr2-table" class="table">
+                  <table
+                    id="ddr2-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x02</th>
+
                 <td>PORT 1</td>
+
                 <td>
-                  <table id="port1-table" class="table">
+                  <table
+                    id="port1-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
+                        <th scope="col">b0</th>
+                      </tr>
+
+                      <tr>
+                        <th
+                          scope="col"
+                          title="4 square pulse (square wave) per odometer rotation, each of the 4 complete square wave correspond to ~40cm (20cm for each rising or falling edge)">
+                          Reed Switch
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="reset to 0 on init and first sub">
+                          ???
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Air conditioning clutch">
+                          A/C
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Fuel Pump">
+                          Fuel Pump
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Injector 4 Activation">
+                          INJ4
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Injector 2 Activation">
+                          INJ2
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Injector 3 Activation">
+                          INJ3
+                        </th>
+
+                        <th scope="col">CAS?</th>
+                      </tr>
+
+                      <tr>
+                        <th scope="col">b7</th>
+
+                        <th scope="col">b6</th>
+
+                        <th scope="col">b5</th>
+
+                        <th scope="col">b4</th>
+
+                        <th scope="col">b3</th>
+
+                        <th scope="col">b2</th>
+
+                        <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x03</th>
+
                 <td>PORT 2</td>
+
                 <td>
-                  <table id="port2-table" class="table">
+                  <table
+                    id="port2-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
+                        <th scope="col">b0</th>
+                      </tr>
+
+                      <tr>
+                        <th
+                          scope="col"
+                          title="Mode Pin 3">
+                          M2
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Mode Pin 2">
+                          M1
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Mode Pin 1">
+                          M0
+                        </th>
+
+                        <th scope="col">TX</th>
+
+                        <th scope="col">RX</th>
+
+                        <th
+                          scope="col"
+                          title="Serical clock? / Output Compare 1">
+                          SCL/OC1
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Injector 1 Activation">
+                          INJ1
+                        </th>
+
+                        <th scope="col">CAS?</th>
+                      </tr>
+
+                      <tr>
+                        <th scope="col">b7</th>
+
+                        <th scope="col">b6</th>
+
+                        <th scope="col">b5</th>
+
+                        <th scope="col">b4</th>
+
+                        <th scope="col">b3</th>
+
+                        <th scope="col">b2</th>
+
+                        <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x04</th>
+
                 <td>DDR3</td>
+
                 <td>
-                  <table id="ddr3-table" class="table">
+                  <table
+                    id="ddr3-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x05</th>
+
                 <td>DDR4</td>
+
                 <td>
-                  <table id="ddr4-table" class="table">
+                  <table
+                    id="ddr4-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x06</th>
+
                 <td>PORT 3</td>
+
                 <td>
-                  <table id="port2-table" class="table">
+                  <table
+                    id="port3-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
+                        <th scope="col">b0</th>
+                      </tr>
+
+                      <tr>
+                        <th
+                          scope="col"
+                          title="Set to 1 when the idle switch is on">
+                          IDLE
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="0 if key is in start position">
+                          START
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Inhibitor switch (A/T only) Set to 1 when transmission is in park or neutral">
+                          INHBT
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Air cond. switch (1=off). 0 indicate that AC should be activated, if possible... Connected to the output of the A/C control unit through the the ECT switch (switch cuts signal therefore asking ECU to cut clutch...)">
+                          A/C
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Set to 1 if power steering pump is activated">
+                          PS Pump
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Set to 0 when TDC signal is active">
+                          TDC
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="0 when IG1 at +12V. Set to 1 when power has been turned off and control relay is about to turn off. i.e. ECU is going to loose power in a short while.">
+                          IG1
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="0 when IG2 at +12V??? (ABS unit?????)">
+                          IG2
+                        </th>
+                      </tr>
+
+                      <tr>
+                        <th scope="col">b7</th>
+
+                        <th scope="col">b6</th>
+
+                        <th scope="col">b5</th>
+
+                        <th scope="col">b4</th>
+
+                        <th scope="col">b3</th>
+
+                        <th scope="col">b2</th>
+
+                        <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x07</th>
+
                 <td>PORT 4</td>
+
                 <td>
-                  <table id="port4-table" class="table">
+                  <table
+                    id="port4-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
+                        <th scope="col">b0</th>
+                      </tr>
+
+                      <tr>
+                        <th
+                          scope="col"
+                          title="njector driven feedback. Set to 0 when injector circuit is working properly??? Bit is tested when an injector to test was just deactivated and no other injector is active??? Bit might be loaded on the falling edge of the injector driving current???">
+                          INJ FB
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Fuel pump driven feedback? 0 when FP is driven?">
+                          FP FB
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Knock sensor feedback? (set to 1 indicates it works...)???">
+                          KNK FB
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Set to 1 when the timing terminal is grounded">
+                          TIMG
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Set to 1 when ECU test mode terminal is grounded">
+                          TEST MODE
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Signal from the ignition sensing circuit. Toggled on every ignition signal sent to the coil (toggled on every cylinder ignition if the power transistor output changed...), stays at the given level from one ignition to the other">
+                          IGN
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="set when config resistor R130 is installed. used in conjucntion with c0 in #t_strap1 lookup, FWD (0) or AWD (1)">
+                          c1
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="set when config resistor R129 is installed. used in conjucntion with c1 in #t_strap1 lookup, FEDERAL (0) or CALIFORNIA (1)">
+                          c0
+                        </th>
+                      </tr>
+
+                      <tr>
+                        <th scope="col">b7</th>
+
+                        <th scope="col">b6</th>
+
+                        <th scope="col">b5</th>
+
+                        <th scope="col">b4</th>
+
+                        <th scope="col">b3</th>
+
+                        <th scope="col">b2</th>
+
+                        <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x08</th>
+
                 <td>T1 CSR</td>
+
                 <td>
-                  <table id="t1_csr-table" class="table">
+                  <table
+                    id="t1_csr-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th
                           scope="col"
-                          title="Input Capture Flag 1: Set when an Input Capture 1 Event occurs"
-                        >
+                          title="Input Capture Flag 1: Set when an Input Capture 1 Event occurs">
                           ICF1
                         </th>
+
                         <th
                           scope="col"
-                          title="Output Compare Flag 1: Set when an Output Compare 1 event occurs"
-                        >
+                          title="Output Compare Flag 1: Set when an Output Compare 1 event occurs">
                           OCF1
                         </th>
-                        <th scope="col" title="Timer 1 overflow Interrupt flag">
+
+                        <th
+                          scope="col"
+                          title="Timer 1 overflow Interrupt flag">
                           OIF
                         </th>
+
                         <th
                           scope="col"
-                          title="Enable Input Capture 1 Interrupt: Input Capture Interrupt 1 Enable"
-                        >
+                          title="Enable Input Capture 1 Interrupt: Input Capture Interrupt 1 Enable">
                           EICIn
                         </th>
+
                         <th
                           scope="col"
-                          title="Enable Output Compare 1 Interrupt: Set to enable an interrupt on output compare event"
-                        >
+                          title="Enable Output Compare 1 Interrupt: Set to enable an interrupt on output compare event">
                           EOC1I
                         </th>
+
                         <th
                           scope="col"
-                          title="Timer 1 Overflow Interrupt Enable: Set to enable"
-                        >
+                          title="Timer 1 Overflow Interrupt Enable: Set to enable">
                           OIE
                         </th>
+
                         <th
                           scope="col"
-                          title="Input Edge Select 1: This bit selects which edge causes an Input Capture event; 0=negative edge, 1=positive edge"
-                        >
+                          title="Input Edge Select 1: This bit selects which edge causes an Input Capture event; 0=negative edge, 1=positive edge">
                           IEDG1
                         </th>
+
                         <th
                           scope="col"
-                          title="Output Level 1: This bit is transferred to P21/OC1 when an Output Compare 1 event occurs"
-                        >
+                          title="Output Level 1: This bit is transferred to P21/OC1 when an Output Compare 1 event occurs">
                           OLVL1
                         </th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
-                <th scope="row" rowspan="2">0x09:0x0A</th>
+                <th
+                  scope="row"
+                  rowspan="2">
+                  0x09:0x0A
+                </th>
+
                 <td rowspan="2">T1T2_CLK</td>
+
                 <td>
-                  <table id="t1t2_clk_1-table" class="table">
+                  <table
+                    id="t1t2_clk_1-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b15</th>
+
                         <th scope="col">b14</th>
+
                         <th scope="col">b13</th>
+
                         <th scope="col">b12</th>
+
                         <th scope="col">b11</th>
+
                         <th scope="col">b10</th>
+
                         <th scope="col">b9</th>
+
                         <th scope="col">b8</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <td>
-                  <table id="t1t2_clk_2-table" class="table">
+                  <table
+                    id="t1t2_clk_2-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
-                <th scope="row" rowspan="2">0x0B:0x0C</th>
+                <th
+                  scope="row"
+                  rowspan="2">
+                  0x0B:0x0C
+                </th>
+
                 <td rowspan="2">T1 OUT CMP</td>
+
                 <td>
-                  <table id="t1_outCmp_1-table" class="table">
+                  <table
+                    id="t1_outCmp_1-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b15</th>
+
                         <th scope="col">b14</th>
+
                         <th scope="col">b13</th>
+
                         <th scope="col">b12</th>
+
                         <th scope="col">b11</th>
+
                         <th scope="col">b10</th>
+
                         <th scope="col">b9</th>
+
                         <th scope="col">b8</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <td>
-                  <table id="t1_outCmp_2-table" class="table">
+                  <table
+                    id="t1_outCmp_2-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
-                <th scope="row" rowspan="2">0x0D:0x0E</th>
+                <th
+                  scope="row"
+                  rowspan="2">
+                  0x0D:0x0E
+                </th>
+
                 <td rowspan="2">T1 IN CMP</td>
+
                 <td>
-                  <table id="t1_inCmp_1-table" class="table">
+                  <table
+                    id="t1_inCmp_1-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b15</th>
+
                         <th scope="col">b14</th>
+
                         <th scope="col">b13</th>
+
                         <th scope="col">b12</th>
+
                         <th scope="col">b11</th>
+
                         <th scope="col">b10</th>
+
                         <th scope="col">b9</th>
+
                         <th scope="col">b8</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <td>
-                  <table id="t1_inCmp_2-table" class="table">
+                  <table
+                    id="t1_inCmp_2-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x0F</th>
-                <td>L000F</td>
+
+                <td title="is accessible only in Single Chip Mode">PORT 3 CSR</td>
+
                 <td>
-                  <table id="l000f-table" class="table">
+                  <table
+                    id="p3-csr-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x10</th>
+
                 <td>SCI BAUD</td>
+
                 <td>
-                  <table id="sci_baud-table" class="table">
+                  <table
+                    id="sci_baud-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
-                        <th title="Not used" scope="col">b7</th>
-                        <th title="Not used" scope="col">b6</th>
-                        <th title="Not used" scope="col">b5</th>
-                        <th title="Clock divider Clock divider 000=E/16, 001=E/128, 010=E/1024, 011=E/4096" scope="col">SS2</th>
-                        <th title="Mode Control bits 01 = Asyncronous mode, 8-bit, internal clk 10 = synchronous 8-bit, internal clock " scope="col">CC1</th>
-                        <th title="Mode Control bits 01 = Asyncronous mode, 8-bit, internal clk 10 = synchronous 8-bit, internal clock " scope="col">CC0</th>
-                        <th title="Clock divider Clock divider 000=E/16, 001=E/128, 010=E/1024, 011=E/4096" scope="col">SS1</th>
-                        <th title="Clock divider Clock divider 000=E/16, 001=E/128, 010=E/1024, 011=E/4096" scope="col">SS0</th>
+                        <th
+                          title="Not used"
+                          scope="col">
+                          b7
+                        </th>
+
+                        <th
+                          title="Not used"
+                          scope="col">
+                          b6
+                        </th>
+
+                        <th
+                          title="Not used"
+                          scope="col">
+                          b5
+                        </th>
+
+                        <th
+                          title="Clock divider Clock divider 000=E/16, 001=E/128, 010=E/1024, 011=E/4096"
+                          scope="col">
+                          SS2
+                        </th>
+
+                        <th
+                          title="Mode Control bits 01 = Asyncronous mode, 8-bit, internal clk 10 = synchronous 8-bit, internal clock "
+                          scope="col">
+                          CC1
+                        </th>
+
+                        <th
+                          title="Mode Control bits 01 = Asyncronous mode, 8-bit, internal clk 10 = synchronous 8-bit, internal clock "
+                          scope="col">
+                          CC0
+                        </th>
+
+                        <th
+                          title="Clock divider Clock divider 000=E/16, 001=E/128, 010=E/1024, 011=E/4096"
+                          scope="col">
+                          SS1
+                        </th>
+
+                        <th
+                          title="Clock divider Clock divider 000=E/16, 001=E/128, 010=E/1024, 011=E/4096"
+                          scope="col">
+                          SS0
+                        </th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x11</th>
+
                 <td>SCI SCR</td>
+
                 <td>
-                  <table id="sci_scr-table" class="table">
+                  <table
+                    id="sci_scr-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
-                        <th title="Read data register full" scope="col">
+                        <th
+                          title="Read data register full"
+                          scope="col">
                           RDRF
                         </th>
-                        <th title="Overrun and framing error" scope="col">
+
+                        <th
+                          title="Overrun and framing error"
+                          scope="col">
                           ORFE
                         </th>
-                        <th title="transmit data register empty" scope="col">
+
+                        <th
+                          title="transmit data register empty"
+                          scope="col">
                           TDRE
                         </th>
+
                         <th
                           title="Rx interrupt enable,  Reset/set to 0/1 in real time int"
-                          scope="col"
-                        >
+                          scope="col">
                           RIE
                         </th>
+
                         <th
                           title="Rx enable, checked for set before tx"
-                          scope="col"
-                        >
+                          scope="col">
                           RE
                         </th>
-                        <th title="Tx interrupt enable, reset to 0" scope="col">
+
+                        <th
+                          title="Tx interrupt enable, reset to 0"
+                          scope="col">
                           TIE
                         </th>
-                        <th title="transmit enable, 1 = enable" scope="col">
+
+                        <th
+                          title="transmit enable, 1 = enable"
+                          scope="col">
                           TI
                         </th>
-                        <th title="Wake-up on idle line" scope="col">WU</th>
+
+                        <th
+                          title="Wake-up on idle line"
+                          scope="col">
+                          WU
+                        </th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x12</th>
+
                 <td>SCI RX</td>
+
                 <td>
-                  <table id="sci_rx-table" class="table">
+                  <table
+                    id="sci_rx-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x13</th>
+
                 <td>SCI TX</td>
+
                 <td>
-                  <table id="sci_tx-table" class="table">
+                  <table
+                    id="sci_tx-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x14</th>
+
                 <td>RAM CONTROL</td>
+
                 <td>
-                  <table id="ram_control-table" class="table">
+                  <table
+                    id="ram_control-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
-                        <th scope="col" title="STBY PWR = 0 The standby power voltage has decreased to a value less than VSBB (minimum), STBY PWR = 1 The standby power voltage has remained above the VSBB minimum value">STBY PWR</th>
-                        <th scope="col" title="RAME = 0: Internal RAM addresses disabled, data read/written from external memory; RAME = 1: Internal RAM addresses enabled">RAME</th>
+                        <th
+                          scope="col"
+                          title="STBY PWR = 0 The standby power voltage has decreased to a value less than VSBB (minimum), STBY PWR = 1 The standby power voltage has remained above the VSBB minimum value">
+                          STBY PWR
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="RAME = 0: Internal RAM addresses disabled, data read/written from external memory; RAME = 1: Internal RAM addresses enabled">
+                          RAME
+                        </th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x15</th>
+
                 <td>P5 DDR</td>
+
                 <td>
-                  <table id="ram_control-table" class="table">
+                  <table
+                    id="ddr5-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
-                        <th title="0=Input/1=Output" scope="col">I/O</th>
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
+
+                        <th
+                          title="0=Input/1=Output"
+                          scope="col">
+                          I/O
+                        </th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x16</th>
+
                 <td>PORT 5</td>
+
                 <td>
-                  <table id="port_5-table" class="table">
+                  <table
+                    id="port_5-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
+                        <th scope="col">b0</th>
+                      </tr>
+
+                      <tr>
+                        <th
+                          scope="col"
+                          title="ISC step control, see table t_iscPattern">
+                          ISC B
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="ISC step control, see table t_iscPattern">
+                          ISC A
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Boost control solenoid output">
+                          BC SOL
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Fuel pressure solenoid output (0=activated)">
+                          FP SOL
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="EGR control solenoid output">
+                          EGR
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Power transistor output for cyl 2 and 3. Set to 0 to energize the coil.">
+                          IGN 2-3
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Power transistor output for cyl 1 and 4. Set to 0 to energize the coil.">
+                          IGN 1-4
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="CAS, crank angle sensor signal. Set to 0 when the CAS signal is activated">
+                          CAS
+                        </th>
+                      </tr>
+
+                      <tr>
+                        <th scope="col">b7</th>
+
+                        <th scope="col">b6</th>
+
+                        <th scope="col">b5</th>
+
+                        <th scope="col">b4</th>
+
+                        <th scope="col">b3</th>
+
+                        <th scope="col">b2</th>
+
+                        <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x17</th>
+
                 <td>L0017</td>
+
                 <td>
-                  <table id="l0017-table" class="table">
+                  <table
+                    id="l0017-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x18</th>
+
                 <td>T2 CSR</td>
+
                 <td>
-                  <table id="t2_csr-table" class="table">
+                  <table
+                    id="t2_csr-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th
                           scope="col"
-                          title="Input Capture Flag 2: Set when an Input Capture 2 Event occurs"
-                        >
+                          title="Input Capture Flag 2: Set when an Input Capture 2 Event occurs">
                           ICF2
                         </th>
+
                         <th
                           scope="col"
-                          title="Output Compare Flag 2: Set when an Output Compare 2 event occurs"
-                        >
+                          title="Output Compare Flag 2: Set when an Output Compare 2 event occurs">
                           OCF2
                         </th>
+
                         <th
                           scope="col"
-                          title="Output Level 4: This bit is transferred to P13/OC4 when an Output Compare event occurs"
-                        >
+                          title="Output Level 4: This bit is transferred to P13/OC4 when an Output Compare event occurs">
                           OILVL4
                         </th>
+
                         <th
                           scope="col"
-                          title="Enable Input Capture 2 Interrupt: Input Capture Interrupt 2 Enable"
-                        >
+                          title="Enable Input Capture 2 Interrupt: Input Capture Interrupt 2 Enable">
                           EICI2
                         </th>
+
                         <th
                           scope="col"
-                          title="Enable Output Compare 2 Interrupt: Set to enable an interrupt on output compare event"
-                        >
+                          title="Enable Output Compare 2 Interrupt: Set to enable an interrupt on output compare event">
                           EOC12
                         </th>
+
                         <th
                           scope="col"
-                          title="Output Level 3: This bit is transferred to P12/OC3 when an Output Compare 2 event occurs"
-                        >
+                          title="Output Level 3: This bit is transferred to P12/OC3 when an Output Compare 2 event occurs">
                           OLVL3
                         </th>
+
                         <th
                           scope="col"
-                          title="Input Edge Select 2: This bit selects which edge causes an Input Capture event; 0=negative edge, 1=positive edge"
-                        >
+                          title="Input Edge Select 2: This bit selects which edge causes an Input Capture event; 0=negative edge, 1=positive edge">
                           IEDG2
                         </th>
+
                         <th
                           scope="col"
-                          title="Output Level 2: This bit is transferred to P11/OC2 when an Output Compare 2 event occurs"
-                        >
+                          title="Output Level 2: This bit is transferred to P11/OC2 when an Output Compare 2 event occurs">
                           OLVL2
                         </th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x19</th>
+
                 <td>T3 CSR 0</td>
+
                 <td>
-                  <table id="t3_csr_0-table" class="table">
+                  <table
+                    id="t3_csr_0-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x1A</th>
+
                 <td>T3 CSR 1</td>
+
                 <td>
-                  <table id="t3_csr_1-table" class="table">
+                  <table
+                    id="t3_csr_1-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
-                <th scope="row" rowspan="2">0x1B:0x1C</th>
+                <th
+                  scope="row"
+                  rowspan="2">
+                  0x1B:0x1C
+                </th>
+
                 <td rowspan="2">T2 OUT CMP</td>
+
                 <td>
-                  <table id="t2_outCmp_1-table" class="table">
+                  <table
+                    id="t2_outCmp_1-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b15</th>
+
                         <th scope="col">b14</th>
+
                         <th scope="col">b13</th>
+
                         <th scope="col">b12</th>
+
                         <th scope="col">b11</th>
+
                         <th scope="col">b10</th>
+
                         <th scope="col">b9</th>
+
                         <th scope="col">b8</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <td>
-                  <table id="t2_outCmp_2-table" class="table">
+                  <table
+                    id="t2_outCmp_2-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
-                <th scope="row" rowspan="2">0x1D:0x1E</th>
+                <th
+                  scope="row"
+                  rowspan="2">
+                  0x1D:0x1E
+                </th>
+
                 <td rowspan="2">T2 IN CMP</td>
+
                 <td>
-                  <table id="t1_inCmp_1-table" class="table">
+                  <table
+                    id="t1_inCmp_1-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b15</th>
+
                         <th scope="col">b14</th>
+
                         <th scope="col">b13</th>
+
                         <th scope="col">b12</th>
+
                         <th scope="col">b11</th>
+
                         <th scope="col">b10</th>
+
                         <th scope="col">b9</th>
+
                         <th scope="col">b8</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <td>
-                  <table id="t2_inCmp_2-table" class="table">
+                  <table
+                    id="t2_inCmp_2-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x1F</th>
+
                 <td>ADC CTL</td>
+
                 <td>
-                  <table id="adc_ctl-table" class="table">
+                  <table
+                    id="adc_ctl-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
-                        <th scope="col" title="Set to 1 when conversion complete">DONE</th>
-                        <th scope="col" title="Clock Control/Format Select">b4</th>
-                        <th scope="col" title="Start Bit set to 1 to start conversion">START</th>
-                        <th scope="col" title="ADC channel number">C3</th>
-                        <th scope="col" title="ADC channel number">C2</th>
-                        <th scope="col" title="ADC channel number">C1</th>
+
+                        <th
+                          scope="col"
+                          title="Set to 1 when conversion complete">
+                          DONE
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Clock Control/Format Select">
+                          b4
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Start Bit set to 1 to start conversion">
+                          START
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="ADC channel number">
+                          C3
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="ADC channel number">
+                          C2
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="ADC channel number">
+                          C1
+                        </th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x20</th>
+
                 <td>ADC DATA</td>
+
                 <td>
-                  <table id="adc_data-table" class="table">
+                  <table
+                    id="adc_data-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x21</th>
+
                 <td>L0021</td>
+
                 <td>
-                  <table id="l0021-table" class="table">
+                  <table
+                    id="l0021-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x22</th>
+
                 <td>L0022</td>
+
                 <td>
-                  <table id="l0022-table" class="table">
+                  <table
+                    id="l0022-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x23</th>
+
                 <td>L0023</td>
+
                 <td>
-                  <table id="l0023-table" class="table">
+                  <table
+                    id="l0023-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x24</th>
+
                 <td title="Pulse Accumulator Control Register">PACTL</td>
+
                 <td>
-                  <table id="pactl-table" class="table">
+                  <table
+                    id="pactl-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
-                        <th scope="col" title="Pulse Accumulator Interupt Flag">PAOVIF</th>
+                        <th
+                          scope="col"
+                          title="Pulse Accumulator Interupt Flag">
+                          PAOVIF
+                        </th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
-                        <th scope="col" title="Pulse Accumulator Interrupt Enable">PAOVIE</th>
+
+                        <th
+                          scope="col"
+                          title="Pulse Accumulator Interrupt Enable">
+                          PAOVIE
+                        </th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x25</th>
+
                 <td title="Pulse Accumulator Counter">PACNT</td>
+
                 <td>
-                  <table id="pacnt-table" class="table">
+                  <table
+                    id="pacnt-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x26</th>
-                <td title="Timer control and status register used for real time interrupt? init to $64 = 1.25ms?">RTI CTL</td>
+
+                <td title="Timer control and status register used for real time interrupt? init to $64 = 1.25ms?">
+                  RTI CTL
+                </td>
+
                 <td>
-                  <table id="rti_ctl-table" class="table">
+                  <table
+                    id="rti_ctl-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
-                        <th scope="col">TIE</th>
+
+                        <th
+                          scope="col"
+                          title="Set to 1 to enable rti interrupts?">
+                          TIE
+                        </th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x27</th>
-                <td title="Real time interrupt frequency setting: Freq = 125000/(256-x) where x is the content of rti_freq">RTI FREQ</td>
+
+                <td title="Real time interrupt frequency setting: Freq = 125000/(256-x) where x is the content of rti_freq">
+                  RTI FREQ
+                </td>
+
                 <td>
-                  <table id="rti_freq-table" class="table">
+                  <table
+                    id="rti_freq-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x28</th>
+
                 <td>L0028</td>
+
                 <td>
-                  <table id="l0028-table" class="table">
+                  <table
+                    id="l0028-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
-                <th scope="row" rowspan="2">0x29:0x2A</th>
+                <th
+                  scope="row"
+                  rowspan="2">
+                  0x29:0x2A
+                </th>
+
                 <td rowspan="2">T3 CLOCK 1</td>
+
                 <td>
-                  <table id="t3_clock1_1-table" class="table">
+                  <table
+                    id="t3_clock1_1-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b15</th>
+
                         <th scope="col">b14</th>
+
                         <th scope="col">b13</th>
+
                         <th scope="col">b12</th>
+
                         <th scope="col">b11</th>
+
                         <th scope="col">b10</th>
+
                         <th scope="col">b9</th>
+
                         <th scope="col">b8</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <td>
-                  <table id="t3_clock1_2-table" class="table">
+                  <table
+                    id="t3_clock1_2-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
-                <th scope="row" rowspan="2">0x2B:0x2C</th>
+                <th
+                  scope="row"
+                  rowspan="2">
+                  0x2B:0x2C
+                </th>
+
                 <td rowspan="2">T3 OUT CMP</td>
+
                 <td>
-                  <table id="t3_outCmp_1-table" class="table">
+                  <table
+                    id="t3_outCmp_1-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b15</th>
+
                         <th scope="col">b14</th>
+
                         <th scope="col">b13</th>
+
                         <th scope="col">b12</th>
+
                         <th scope="col">b11</th>
+
                         <th scope="col">b10</th>
+
                         <th scope="col">b9</th>
+
                         <th scope="col">b8</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <td>
-                  <table id="t3_outCmp_2-table" class="table">
+                  <table
+                    id="t3_outCmp_2-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
-                <th scope="row" rowspan="2">0x2D:0x2E</th>
+                <th
+                  scope="row"
+                  rowspan="2">
+                  0x2D:0x2E
+                </th>
+
                 <td rowspan="2">T3 CLOCK 2</td>
+
                 <td>
-                  <table id="t3_clock2_1-table" class="table">
+                  <table
+                    id="t3_clock2_1-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b15</th>
+
                         <th scope="col">b14</th>
+
                         <th scope="col">b13</th>
+
                         <th scope="col">b12</th>
+
                         <th scope="col">b11</th>
+
                         <th scope="col">b10</th>
+
                         <th scope="col">b9</th>
+
                         <th scope="col">b8</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <td>
-                  <table id="t3_clock2_2-table" class="table">
+                  <table
+                    id="t3_clock2_2-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x2F</th>
+
                 <td>PORT 6</td>
+
                 <td>
-                  <table id="port_6-table" class="table">
+                  <table
+                    id="port_6-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
+                        <th
+                          scope="col"
+                          title="Not used?">
+                          NU
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Not used?">
+                          NU
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Toggled at F924 if main loop frequency >20Hz, could be tied to ECU reset in case of trouble (COP clock)">
+                          COP
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Reset to 0 to activate purge solenoid?">
+                          PRG SOL
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Check engine (CE) light">
+                          CE
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Boost gauge output">
+                          BOOST
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="??? Set to 0 when rpm>4688rpm, set to 1 when rpm<4600, could be some kind of ECU board filter setting for the knock sensor???">
+                          SPEED KNK
+                        </th>
+
+                        <th
+                          scope="col"
+                          title="Write 1 to reset instant knock count???">
+                          RST KNK
+                        </th>
+                      </tr>
+
+                      <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x30</th>
+
                 <td>L0030</td>
+
                 <td>
-                  <table id="l0030-table" class="table">
+                  <table
+                    id="l0030-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x31</th>
+
                 <td>L0031</td>
+
                 <td>
-                  <table id="l0031-table" class="table">
+                  <table
+                    id="l0031-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x32</th>
+
                 <td>L0032</td>
+
                 <td>
-                  <table id="l0032-table" class="table">
+                  <table
+                    id="l0032-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x33</th>
+
                 <td>L0033</td>
+
                 <td>
-                  <table id="l00-table" class="table">
+                  <table
+                    id="l00-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x34</th>
+
                 <td>L0034</td>
+
                 <td>
-                  <table id="l0034-table" class="table">
+                  <table
+                    id="l0034-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x35</th>
+
                 <td>L0035</td>
+
                 <td>
-                  <table id="l0035-table" class="table">
+                  <table
+                    id="l0035-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x36</th>
+
                 <td>L0036</td>
+
                 <td>
-                  <table id="l0036-table" class="table">
+                  <table
+                    id="l0036-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x37</th>
+
                 <td>L0037</td>
+
                 <td>
-                  <table id="l0037-table" class="table">
+                  <table
+                    id="l0037-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x38</th>
+
                 <td>L0038</td>
+
                 <td>
-                  <table id="l0038-table" class="table">
+                  <table
+                    id="l0038-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x39</th>
+
                 <td>L0039</td>
+
                 <td>
-                  <table id="l0039-table" class="table">
+                  <table
+                    id="l0039-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x3A</th>
+
                 <td>L003A</td>
+
                 <td>
-                  <table id="l003a-table" class="table">
+                  <table
+                    id="l003a-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x3B</th>
+
                 <td>L003B</td>
+
                 <td>
-                  <table id="l00-table" class="table">
+                  <table
+                    id="l00-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x3C</th>
+
                 <td>L003C</td>
+
                 <td>
-                  <table id="l003c-table" class="table">
+                  <table
+                    id="l003c-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x3D</th>
+
                 <td>L003D</td>
+
                 <td>
-                  <table id="l003d-table" class="table">
+                  <table
+                    id="l003d-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x3E</th>
+
                 <td>L003E</td>
+
                 <td>
-                  <table id="l003e-table" class="table">
+                  <table
+                    id="l003e-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </td>
               </tr>
+
               <tr>
                 <th scope="row">0x3F</th>
+
                 <td>L003F</td>
+
                 <td>
-                  <table id="l003f-table" class="table">
+                  <table
+                    id="l003f-table"
+                    class="table table-bordered">
                     <thead>
                       <tr>
                         <th scope="col">b7</th>
+
                         <th scope="col">b6</th>
+
                         <th scope="col">b5</th>
+
                         <th scope="col">b4</th>
+
                         <th scope="col">b3</th>
+
                         <th scope="col">b2</th>
+
                         <th scope="col">b1</th>
+
                         <th scope="col">b0</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       <tr>
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
+
                         <td>0</td>
                       </tr>
                     </tbody>
@@ -2644,17 +4682,15 @@
           id="events"
           class="tab-pane fade"
           role="tabpanel"
-          aria-labelledby="events-tab"
-        >
+          aria-labelledby="events-tab">
           <div class="col-sm">
             <input
               id="trigger-t1-ic-input"
               class="btn btn-primary"
               type="button"
-              value="T1 IC"
-            />
-
-            <label class="" for="trigger-t1-ic-input">
+              value="T1 IC"/>
+            <label class="form-label"
+              for="trigger-t1-ic-input">
               Trigger Timer 1's Input Capture
             </label>
           </div>
@@ -2664,10 +4700,9 @@
               id="trigger-t2-ic-input"
               class="btn btn-primary"
               type="button"
-              value="T2 IC"
-            />
-
-            <label class="" for="trigger-t2-ic-input">
+              value="T2 IC"/>
+            <label class="form-label"
+              for="trigger-t2-ic-input">
               Trigger Timer 2's Input Capture
             </label>
           </div>
@@ -2677,10 +4712,9 @@
               id="trigger-stby-pwr-fail-input"
               class="btn btn-primary"
               type="button"
-              value="STBY PWR Fail"
-            />
-
-            <label class="" for="trigger-stby-pwr-fail-input">
+              value="STBY PWR Fail"/>
+            <label class="form-label"
+              for="trigger-stby-pwr-fail-input">
               Trigger STBY PWR failure
             </label>
           </div>
@@ -2690,10 +4724,9 @@
               id="trigger-rti-input"
               class="btn btn-primary"
               type="button"
-              value="Trigger RTI"
-            />
-
-            <label class="" for="trigger-rti-input">
+              value="Trigger RTI"/>
+            <label class="form-label"
+              for="trigger-rti-input">
               Trigger Real-Time Interrupt
             </label>
           </div>
@@ -2703,10 +4736,9 @@
               id="trigger-irq-input"
               class="btn btn-primary"
               type="button"
-              value="Trigger IRQ"
-            />
-
-            <label class="" for="trigger-irq-input">
+              value="Trigger IRQ"/>
+            <label class="form-label"
+              for="trigger-irq-input">
               Trigger External Masked Interrupt
             </label>
           </div>
@@ -2716,10 +4748,9 @@
               id="trigger-swi-input"
               class="btn btn-primary"
               type="button"
-              value="Trigger SWI"
-            />
-
-            <label class="" for="trigger-swi-input">
+              value="Trigger SWI"/>
+            <label class="form-label"
+              for="trigger-swi-input">
               Trigger Software Interrupt
             </label>
           </div>
@@ -2729,22 +4760,21 @@
               id="trigger-nmi-input"
               class="btn btn-primary"
               type="button"
-              value="Trigger NMI"
-            />
-
-            <label class="" for="trigger-nmi-input">
+              value="Trigger NMI"/>
+            <label class="form-label"
+              for="trigger-nmi-input">
               Trigger Not-Masked External Interrupt
             </label>
           </div>
+
           <div class="col-sm">
             <input
               id="trigger-reset-input"
               class="btn btn-primary"
               type="button"
-              value="Trigger RESET"
-            />
-
-            <label class="" for="trigger-reset-input">
+              value="Trigger RESET"/>
+            <label class="form-label"
+              for="trigger-reset-input">
               Trigger Reset Interrupt
             </label>
           </div>
@@ -2754,17 +4784,16 @@
           id="settings"
           class="tab-pane fade"
           role="tabpanel"
-          aria-labelledby="settings-tab"
-        >
+          aria-labelledby="settings-tab">
           <div class="col-sm">
             <div class="input-group">
               <input
                 id="followRamRead-input"
                 class="form-check-input"
-                type="checkbox"
-              />
-
-              <label class="form-check-label" for="followRamRead-input">
+                type="checkbox"/>
+              <label
+                class="form-check-label"
+                for="followRamRead-input">
                 Follow RAM Read
               </label>
             </div>
@@ -2773,28 +4802,39 @@
               <input
                 id="followRamWrite-input"
                 class="form-check-input"
-                type="checkbox"
-              />
-
-              <label class="form-check-label" for="followRamWrite-input">
+                type="checkbox"/>
+              <label
+                class="form-check-label"
+                for="followRamWrite-input">
                 Follow RAM Write
               </label>
             </div>
 
             <!-- Experimental -->
-            <div class="alert alert-warning" role="alert">
+
+            <div
+              class="alert alert-warning"
+              role="alert">
               <h4 class="alert-heading">!!!EXPERIMENTAL!!!</h4>
-              <p><span class="oi oi-warning"></span>WARNING! These options can cause browser freeze-up, using them in the "wrong order" absolutly will!</p>
-              <hr>
+
+              <p>
+                <span class="oi oi-warning"></span>
+
+                WARNING! These options can cause browser freeze-up, using them in the "wrong order"
+                absolutly will!
+              </p>
+
+              <hr></hr>
+
               <div class="input-group">
                 <input
                   id="updateRamOutput-input"
                   class="form-check-input"
                   type="checkbox"
-                  checked="true"
-                />
-
-                <label class="form-check-label" for="updateRamOutput-input">
+                  checked="true"/>
+                <label
+                  class="form-check-label"
+                  for="updateRamOutput-input">
                   Update RAM Output (Off for Big speed-up)
                 </label>
               </div>
@@ -2804,10 +4844,10 @@
                   id="updateRomOutput-input"
                   class="form-check-input"
                   type="checkbox"
-                  checked="true"
-                />
-
-                <label class="form-check-label" for="updateRomOutput-input">
+                  checked="true"/>
+                <label
+                  class="form-check-label"
+                  for="updateRomOutput-input">
                   Update ROM output (Off for Speed-up)
                 </label>
               </div>
@@ -2817,10 +4857,10 @@
                   id="updateUiOutput-input"
                   class="form-check-input"
                   type="checkbox"
-                  checked="true"
-                />
-
-                <label class="form-check-label" for="updateUiOutput-input">
+                  checked="true"/>
+                <label
+                  class="form-check-label"
+                  for="updateUiOutput-input">
                   Update UI output (Off for Pure speed)
                 </label>
               </div>
@@ -2829,10 +4869,10 @@
                 <input
                   id="updateLogOutput-input"
                   class="form-check-input"
-                  type="checkbox"
-                />
-
-                <label class="form-check-label" for="updateLogOutput-input">
+                  type="checkbox"/>
+                <label
+                  class="form-check-label"
+                  for="updateLogOutput-input">
                   Update Log output (gets slow as the log grows)
                 </label>
               </div>
@@ -2841,10 +4881,10 @@
                 <input
                   id="updateBatchOutput-input"
                   class="form-check-input"
-                  type="checkbox"
-                />
-
-                <label class="form-check-label" for="updateBatchOutput-input">
+                  type="checkbox"/>
+                <label
+                  class="form-check-label"
+                  for="updateBatchOutput-input">
                   Aim for self adjusting speed (batching operations) - You will
                   not see every instruction, RAM read/write, registers update etc.
                   But, you can get faster thru-put
@@ -2858,26 +4898,26 @@
           id="debug"
           class="tab-pane fade"
           role="tabpanel"
-          aria-labelledby="debug-tab"
-        >
+          aria-labelledby="debug-tab">
           <div class="col-sm">
             <div class="input-group">
-              <label for="breakpoint-input">Addr Breakpoint:</label>
+              <label class="form-label" for="breakpoint-input">Addr Breakpoint:</label>
+
               <input
                 id="breakpoint-input"
                 class="form-control"
                 type="text"
-                value="D06F"
-              />
+                value="D06F"/>
             </div>
 
             <div class="input-group">
               <input
                 id="break-input"
                 class="form-check-input"
-                type="checkbox"
-              />
-              <label class="form-check-label" for="break-input">
+                type="checkbox"/>
+              <label
+                class="form-check-label"
+                for="break-input">
                 Break on addr
               </label>
             </div>
@@ -2885,22 +4925,23 @@
 
           <div class="col-sm">
             <div class="input-group">
-              <label for="op-breakpoint-input">Op Breakpoint:</label>
+              <label class="form-label" for="op-breakpoint-input">Op Breakpoint:</label>
+
               <input
                 id="op-breakpoint-input"
                 class="form-control"
                 type="text"
-                value="FDIV"
-              />
+                value="FDIV"/>
             </div>
 
             <div class="input-group">
               <input
                 id="op-break-input"
                 class="form-check-input"
-                type="checkbox"
-              />
-              <label class="form-check-label" for="op-break-input">
+                type="checkbox"/>
+              <label
+                class="form-check-label"
+                for="op-break-input">
                 Break on op
               </label>
             </div>
@@ -2909,10 +4950,10 @@
               <input
                 id="ignoreInterrupts-input"
                 class="form-check-input"
-                type="checkbox"
-              />
-
-              <label class="form-check-label" for="ignoreInterrupts-input">
+                type="checkbox"/>
+              <label
+                class="form-check-label"
+                for="ignoreInterrupts-input">
                 Ignore interrupts
               </label>
             </div>
@@ -2923,34 +4964,261 @@
           id="log"
           class="tab-pane fade"
           role="tabpanel"
-          aria-labelledby="log-tab"
-        >
-          <div id="log-output-div" style="font-family: monospace;">
+          aria-labelledby="log-tab">
+          <div
+            id="log-output-div"
+            style="font-family: monospace;">
             <ul></ul>
           </div>
 
-          <input type="button" id="clear-log-button-input" value="Clear Log" />
-
+          <input
+            id="clear-log-button-input"
+            type="button"
+            value="Clear Log"/>
           <div class="input-group">
             <input
               id="log-follow-input"
               class="form-check-input"
-              type="checkbox"
-            />
-
-            <label class="form-check-label" for="log-follow-input">
+              type="checkbox"/>
+            <label
+              class="form-check-label"
+              for="log-follow-input">
               Follow
             </label>
           </div>
+        </div>
+
+        <div
+          id="dsm"
+          class="tab-pane fade"
+          role="tabpanel"
+          aria-labelledby="dsm-tab">
+          <div id="dsm-div">
+            <input
+              id="dsm-cel"
+              class="btn btn-secondary"
+              type="button"
+              value="CEL"
+              disabled="true"/>
+            <div
+              id="chartContainer"
+              style="height: 150px; width:25%;">
+            </div>
+
+            <div class="input-group">
+              <input
+                id="dsm-test-mode-input"
+                class="btn btn-primary"
+                type="button"
+                value="Test Mode"/>
+              <label
+                for="dsm-test-mode-input">
+                Toggle ECU Test mode
+              </label>
+            </div>
+
+            <div
+              id="dsm-key"
+              class="input-group">
+              <input
+                id="dsm-key-off"
+                class="btn btn-primary"
+                type="button"
+                value="OFF"/>
+              <input
+                id="dsm-key-acc"
+                class="btn btn-primary"
+                type="button"
+                value="ACC."/>
+              <input
+                id="dsm-key-run"
+                class="btn btn-primary"
+                type="button"
+                value="RUN"/>
+              <input
+                id="dsm-key-start"
+                class="btn btn-primary"
+                type="button"
+                value="START"/>
+            </div>
+
+            <input
+              id="dsm-clear-cas-inputs"
+              class="btn btn-primary"
+              type="button"
+              value="Clear CAS flag"/>
+
+            <!--
+              Port $00: ECT (engine coolant temp) See curve             Port $01: IAT         See
+              curve             Port $02: BARO        (.00486x)bar  [x = b / .00486]
+              Port $03: O2          (.0195x)v   [x = v / .0195]             Port $04: EGRT
+              (-2.7x + 597.7)deg F this is unofficial             Port $05: BATT        (.0733x)v
+              [x = v / .0733]             Port $06: KNOCK count             Port $07: TPS
+              (100x/255)% [x = 51y/20]
+            -->
+            <div id="dsm-adc" class="row">
+              <div class="col-auto">
+                <div class="input-group">
+                  <label class="form-label" for="ect-temp-input">ECT Temp (°C):</label>
+
+                  <select
+                    id="ect-temp-input"
+                    name="ect-temp-input" class="form-select">
+                  </select>
+                </div>
+
+                <div class="input-group">
+                  <label class="form-label" for="iat-temp-input">IAT Temp (°C):</label>
+
+                  <select
+                    id="iat-temp-input"
+                    name="iat-temp-input" class="form-select">
+                  </select>
+                </div>
+
+                <div class="input-group">
+                  <label class="form-label" for="dsm-baro-input">BARO (bar):</label>
+
+                  <input
+                    id="dsm-baro-input"
+                    class="form-control"
+                    type="number"
+                    value="1"/>
+                </div>
+
+                <div class="input-group">
+                  <label class="form-label" for="dsm-o2-input">O2 Sensor (Volts):</label>
+
+                  <input
+                    id="dsm-o2-input"
+                    class="form-control"
+                    type="number"
+                    value="0.5"/>
+                </div>
+              </div>
+
+              <div class="col-auto">
+                <div class="input-group">
+                  <label class="form-label" for="dsm-egrt-input">EGR Temp (°F):</label>
+
+                  <input
+                    id="dsm-egrt-input"
+                    class="form-control"
+                    type="number"
+                    value="100"/>
+                </div>
+
+                <div class="input-group">
+                  <label  class="form-label" for="dsm-batt-input">Battery (Volts):</label>
+
+                  <input
+                    id="dsm-batt-input"
+                    class="form-control"
+                    type="number"
+                    value="12"/>
+                </div>
+
+                <div class="input-group">
+                  <label  class="form-label" for="dsm-knock-count-input">Knock (count):</label>
+
+                  <input
+                    id="dsm-knock-count-input"
+                    class="form-control"
+                    type="number"
+                    value="0"/>
+                </div>
+
+                <div class="input-group">
+                  <label  class="form-label" for="dsm-tps-input">TPS (%):</label>
+
+                  <input
+                    id="dsm-tps-input"
+                    class="form-control"
+                    type="number"
+                    value="3"/>
+                </div>
+              </div>
+            </div>
+          </div> <!-- /DSM-DIV -->
         </div>
       </div>
     </div>
   </div>
 
+  <script>
+    const elementCache = {       spRegisterOutput:   $("#register-SP-output"),
+    pcRegisterOutput:   $("#register-PC-output"),       aRegisterOutput:    $("#register-A-output"),
+    bRegisterOutput:    $("#register-B-output"),       dRegisterOutput:    $("#register-D-output"),
+    xRegisterOutput:    $("#register-X-output"),       yRegisterOutput:    $("#register-Y-output"),
+    hRegisterOutput:    $("#register-H-output"),       iRegisterOutput:    $("#register-I-output"),
+    nRegisterOutput:    $("#register-N-output"),       zRegisterOutput:    $("#register-Z-output"),
+    vRegisterOutput:    $("#register-V-output"),       cRegisterOutput:    $("#register-C-output"),
+    clockCyclesOutput:  $("#clock-cycles-output"),       simTimeOutput:      $("#sim-time-output"),
+    realSpeedOutput:    $("#real-speed-output"),       realTimeOutput:     $("#real-time-output"),
+    dsmCelOutput:       $("#dsm-cel"),       dsmEctInput:        $("#ect-temp-input"),
+    dsmIatInput:        $("#iat-temp-input"),       dsmBaroInput:       $("#dsm-baro-input"),
+    dsmO2Input:         $("#dsm-o2-input"),       dsmEgrtInput:       $("#dsm-egrt-input"),
+    dsmBattInput:       $("#dsm-batt-input"),       dsmBaroInput:       $("#dsm-baro-input"),
+    dsmKnockCntInput:   $("#dsm-knock-count-input"),       dsmTpsInput:        $("#dsm-tps-input"),
+    };
+  </script>
+
+  <script src="curves.js"></script>
+
+  <script>
+    $(ectCurve).each(function(i, n) {       let isDefault = 131 == i;       let selected = isDefault
+    ? ' selected="true"' : " ";       elementCache.dsmEctInput.append('<option value="' + i + '"' +
+    selected +'>' + n + '</option>');     });      $(iatCurve).each(function(i, n) {       let
+    isDefault = 131 == i;       let selected = isDefault ? ' selected="true"' : " ";
+    elementCache.dsmIatInput.append('<option value="' + i + '"' + selected +'>' + n + '</option>');
+    });
+  </script>
+
   <script src="helpers.js"></script>
+
   <script src="instruction_set.js"></script>
+
   <script src="cpu.js"></script>
+
   <script src="ui_input.js"></script>
+
   <script src="ui-draw.js"></script>
+
   <script src="index.js"></script>
+
+  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+  <script>
+    var chart = new CanvasJS.Chart(
+      "chartContainer",
+      {
+        title : {
+          text: "CEL"
+        },
+        data: [{
+          type: "line",
+          dataPoints: dps
+        }]
+      });
+
+      var xVal = 0;
+      var yVal = 100;
+      var updateInterval = 10;
+      var dataLength = 250; // number of dataPoints visible at any point
+      var updateChart = function(count) {
+        while(dps.length > dataLength) {
+          dps.shift();
+        }
+
+        chart.render();
+      };
+
+      updateChart(dataLength);
+
+      setInterval(
+        function() {
+          updateChart()
+        },
+        updateInterval);
+  </script>
 </div>

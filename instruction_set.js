@@ -453,6 +453,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       //Clock
@@ -487,16 +489,16 @@ let instructionTable = {
       let resultA = r > 0xff ? r >> 8 : r;
       let resultB = Math.floor(q);
 
-      console.log(
-        "n / d = q, r : " +
-          cleanHexify(n, 4) +
-          " / " +
-          cleanHexify(d, 4) +
-          " = " +
-          cleanHexify(resultB, 5) +
-          ", " +
-          cleanHexify(resultA, 5)
-      );
+      // console.log(
+      //   "n / d = q, r : " +
+      //     cleanHexify(n, 4) +
+      //     " / " +
+      //     cleanHexify(d, 4) +
+      //     " = " +
+      //     cleanHexify(resultB, 5) +
+      //     ", " +
+      //     cleanHexify(resultA, 5)
+      // );
 
       setA(resultA);
       setB(resultB);
@@ -849,6 +851,8 @@ let instructionTable = {
         setPC(cpu.PC + jmpOffset);
       }
 
+      //subroutineLevel++;
+
       // Do flag stuff
       // Not affected.
 
@@ -888,6 +892,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       // Do flag stuff
@@ -913,6 +919,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       // Do flag stuff
@@ -938,6 +946,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       // Do flag stuff
@@ -963,6 +973,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       // Do flag stuff
@@ -988,6 +1000,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       // Do flag stuff
@@ -1013,6 +1027,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       // Do flag stuff
@@ -1038,6 +1054,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       // Do flag stuff
@@ -1063,6 +1081,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       // Do flag stuff
@@ -1088,6 +1108,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       // Do flag stuff
@@ -1113,6 +1135,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       // Do flag stuff
@@ -1138,6 +1162,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       // Do flag stuff
@@ -1264,6 +1290,8 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 5,
     microcode: function(view) {
+      subroutineChange(0, cpu.SP);
+
       setSP(cpu.SP + 1);
       let b1 = readRAM(cpu.SP);
 
@@ -3294,6 +3322,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       //Clock
@@ -3552,6 +3582,8 @@ let instructionTable = {
         setPC(cpu.PC + b1);
       }
 
+      subroutineChange(1, cpu.PC);
+
       //Clock
       advanceClock(this.cycles);
     }
@@ -3609,6 +3641,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       //Clock
@@ -4114,6 +4148,8 @@ let instructionTable = {
 
     //Clock
     advanceClock(this.cycles);
+
+    subroutineChange(1, cpu.PC);
   } },
   0x9e: { name: "lds", len: 2, type: "DIRECT", cycles: 0 },
   0x9f: { name: "sts", len: 2, type: "DIRECT", cycles: 0 },
@@ -4436,6 +4472,8 @@ let instructionTable = {
 
     //Clock
     advanceClock(this.cycles);
+
+    subroutineChange(1, cpu.PC);
   } },
   0xae: { name: "lds", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
   0xaf: { name: "sts", len: 2, type: "INDEXED", hasSubops: true, cycles: 0 },
@@ -4757,6 +4795,8 @@ let instructionTable = {
 
       //Clock
       advanceClock(this.cycles);
+
+      subroutineChange(1, cpu.PC);
     }
   },
   0xbe: { name: "lds", len: 3, type: "EXTENDED", cycles: 0 },
@@ -5356,6 +5396,8 @@ let instructionTable = {
         } else {
           setPC(cpu.PC + jmpOffset);
         }
+
+        //subroutineLevel++;
       }
 
       //Clock
@@ -7368,6 +7410,8 @@ let subOps = {
 
       //Clock
       advanceClock(this.cycles);
+
+      subroutineChange(1, cpu.PC);
     } }
   },
   0xae: {
@@ -7690,3 +7734,18 @@ let subOps = {
     0x80: { name: "stx", len: 2, type: "INDEXEDY", cycles: 1 }
   }
 };
+
+function subroutineChange(dir, addr) {
+  let string = "Moving ";
+  if(dir > 0) {
+    subroutineLevel++;
+    string += "into";
+  } else {
+    subroutineLevel--;
+    string += "out of";
+  }
+
+  string += " subroutine: " + cleanHexify(addr, 4);
+
+  //console.log(string);
+}

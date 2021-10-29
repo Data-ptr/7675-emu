@@ -7,8 +7,12 @@ let interruptStack = [];
 let lastClockOutCmp = 0;
 let rtcStart = 0;
 let rtcStash = 0;
+let rtcNow = 0;
+let simTimeNow = 0;
 let stepInterval = -1;
 let clockUpdateInterval = -1;
+
+let dps = [];
 
 let redrawRAM = 0;
 
@@ -21,6 +25,14 @@ const romTextarea = $("#hex-output-textarea");
 const logOutputDiv = $("#log-output-div");
 
 fullReset();
+
+// DSM initilization
+writeRAM(0x06, 128 + 64 + 32 + 16 + 4, 1);
+// 128 = IDLE switch is on (TB switch?)
+// 64 = Key is NOT in START position
+// 32 = A/T is in park or nutral
+// 16 = A/C is OFF
+// 4 = NOT at TDC
 
 function step() {
   let view = cpu.ROM.view;
@@ -180,6 +192,15 @@ function advanceClock(cycles) {
 
   workInterrupts();
 
+  // ADC pending
+  if(adcObj && adcObj.countdown > -1) {
+    adcObj.countdown--;
+
+    if(0 == adcObj.countdown) {
+      doAdc();
+    }
+  }
+
   // New clocks values
   cpu.timer_1_2 += (timer1Freq / cpu.clockSpeed) * cycles;
   cpu.timer_3 += (timer3Freq / cpu.clockSpeed) * cycles;
@@ -187,7 +208,12 @@ function advanceClock(cycles) {
   // Clk 1-2 rollover
   if (cpu.timer_1_2 > 0xFFFF) {
     cpu.timer_1_2 -= 0xFFFF;
-    interruptStack.push(0xFFEA);
+    // check if enabled
+    if (!ignoreInterrupts && (readRAM(0x0008, 1) & 0b00000100)) {
+      interruptStack.push(0xFFEA);
+      // set overflow interrupt flag
+      writeRAM(readRAM(0x0008, 1) & 0b00100000, 1);
+    }
   }
 
   // Clk 3 rollover

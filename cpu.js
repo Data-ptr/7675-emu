@@ -1,28 +1,12 @@
 let logEnabled = $('#updateLogOutput-input').is(":checked");
-const RAMSize = 0x7fff;
+const RAMSize = 0x0200;
 const logElement = $("#log-output-div > ul");
 
-const elementCache = {
-  spRegisterOutput: $("#register-SP-output"),
-  pcRegisterOutput: $("#register-PC-output"),
-  aRegisterOutput: $("#register-A-output"),
-  bRegisterOutput: $("#register-B-output"),
-  dRegisterOutput: $("#register-D-output"),
-  xRegisterOutput: $("#register-X-output"),
-  yRegisterOutput: $("#register-Y-output"),
-  hRegisterOutput: $("#register-H-output"),
-  iRegisterOutput: $("#register-I-output"),
-  nRegisterOutput: $("#register-N-output"),
-  zRegisterOutput: $("#register-Z-output"),
-  vRegisterOutput: $("#register-V-output"),
-  cRegisterOutput: $("#register-C-output"),
-  clockCyclesOutput: $("#clock-cycles-output"),
-  simTimeOutput: $("#sim-time-output"),
-  realSpeedOutput: $("#real-speed-output"),
-  realTimeOutput: $("#real-time-output")
-}
+let subroutineLevel = 0;
 
 let updateDataRegisters = 0;
+
+let adcObj = undefined;
 
 let cpu = {
   D: 0,
@@ -43,16 +27,18 @@ let cpu = {
   clock: { auto: false, cycleCount: 0 },
   timer_1_2: 0,
   timer_3: 0,
-  clockSpeed: 2 //mhz
+  clockSpeed: 2, //mhz,
+  mode: 0
 };
 
 // Initialize memory
 cpu.memory.data = new ArrayBuffer(RAMSize);
 cpu.memory.view = new Uint8ClampedArray(cpu.memory.data);
 
-//Initialize ROM
+// Initialize ROM
 cpu.ROM.data = new ArrayBuffer(0x8000);
 cpu.ROM.view = new Uint8ClampedArray(cpu.ROM.data);
+
 
 function setPC(addr) {
   checkBytes(addr, 4);
@@ -292,7 +278,7 @@ function clearStatusFlag(flag) {
   }
 }
 
-function writeRAM(addr, byte, clockWrite) {
+function writeRAM(addr, byte, clockWrite, adcIgnore) {
   cpu.memory.view[addr] = byte;
 
   if(updateRAM) {
@@ -311,10 +297,89 @@ function writeRAM(addr, byte, clockWrite) {
     redrawRAM = 1;
   }
 
+  // Update to port 6 (CEL)
+  if(addr == 0x2F) {
+    let sTime = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.cycleCount;
+
+    if(readRAM(0x2F, 1) & 0b00001000) { // CEL is on
+      elementCache.dsmCelOutput.addClass("btn-danger").removeClass("btn-secondary");
+      dps.push({y: 1, x: sTime});
+    } else { // CEL is off
+      elementCache.dsmCelOutput.addClass("btn-secondary").removeClass("btn-danger");
+      dps.push({y: 0, x: sTime});
+    }
+  }
+
+  // ADC scan
+  if(!adcIgnore && addr == 0x1F) { // ADC ctrl write
+    let adcCtrl = byte; //readRAM(0x1F, 1);
+
+    if(adcCtrl & 0b00001000) { // START bit set
+      const adcChan = adcCtrl & 0b00000111; // ADC channel
+      let adcVal = 0;
+
+      switch(adcChan) {
+        case 0:
+          // ECT
+          adcVal = elementCache.dsmEctInput.val();
+        break;
+        case 1:
+          // IAT
+          adcVal = elementCache.dsmIatInput.val();
+        break;
+        case 2:
+          // BARO
+          // (.00486x)bar  [x = b / .00486]
+          adcVal = Math.ceil(parseInt(elementCache.dsmBaroInput.val()) / 0.00486);
+        break;
+        case 3:
+          // O2
+          // (.0195x)v   [x = v / .0195]
+          adcVal = Math.ceil(parseFloat(elementCache.dsmO2Input.val()) / 0.0195);
+        break;
+        case 4:
+          // EGRT
+          // (-2.7x + 597.7)deg F this is unofficial []
+          adcVal = Math.ceil(0.037 * ( 5977 - 10 * elementCache.dsmEgrtInput.val()));
+        break;
+        case 5:
+          // BATT
+          // (.0733x)v   [x = v / .0733]
+          adcVal = Math.ceil(elementCache.dsmBattInput.val() / 0.0733);
+        break;
+        case 6:
+          // KNOCK count
+          adcVal = parseInt(elementCache.dsmKnockCntInput.val());
+        break;
+        case 7:
+          // TPS
+          // (100x/255)% [x = 51y/20]
+          adcVal = Math.ceil((51 * elementCache.dsmTpsInput.val()) / 20);
+        break;
+      };
+
+      adcObj = {
+        countdown: 3,
+        val: adcVal,
+        chan: adcChan
+      }
+    }
+  }
+
   //Refresh if register
   if (updateDataRegisters && 0x40 > addr) {
     updateRegisters(addr);
   }
+}
+
+function doAdc() {
+  writeRAM(0x20, adcObj.val);
+
+  // Set done flag
+  writeRAM(0x1F, 0b00101000 + adcObj.chan, 1, 1);
+
+  updateRegisters(0x1F);
+  updateRegisters(0x20);
 }
 
 function readRAM(addr, clockRead) {
@@ -386,13 +451,32 @@ function cpuReset() {
   lastRAMRead.length = 0;
 
   cpu.clock.cycleCount = 0;
+
+  /*
+      the MPU I-bit is set which masks (disables) both IRQI and IRQ2 interrupts;
+    • the NMI interrupt latch is cleared which effectively disregards NMI interrupts occurring while the MPU is held in Reset;
+    • the E (Enable) clock is active;
+    • all Data Direction Registers are cleared;
+    • the SCI Rate and Mode Control Register is cleared;
+    • the SCI Transmit/Receive Control and Status Register is preset to $20;
+    • the Receive Data Register is cleared;
+    • the Timer Control and Status Register is cleared;
+    • the free-running Counter is cleared;
+    • the buffer for the LSB of the Counter and output level register are cleared;
+    X the Output Compare Register is preset to $FFFF;
+    • the Port 3 Control and Status Register is cleared;
+    • Ports I, 2 and 3 are forced to the high impedance state;
+    • Port 4 is also held in a high impedance state but internal pull-up resistors are provided to pull the lines high;
+    • SCI is held high in a high impedance state with an internal pull-up resistor if the inputs to P20, P21, and P22 indicate the Single Chip modes; otherwise it is actively held high;
+    • SC2 is actively held high.
+  */
 }
 
 function uiReset() {
   let elementString = "";
 
   for (let i = 0; i < RAMSize; i++) {
-    elementString += "<span title='" + i.toString(16) + "'>00</span>";
+    elementString += "<span class='ram-byte' title='0x" + cleanHexify(i, 4) + "'>00</span>";
   }
 
   $("#RAM-output-div")
@@ -413,7 +497,7 @@ function stackD(unstack) {
     let b1 = cpu.D >> 8;
     let b2 = cpu.D & 0xff;
 
-    console.log("Prev D: 0x" + cpu.D.toString(16));
+    //console.log("Prev D: 0x" + cpu.D.toString(16));
 
     writeRAM(cpu.SP, b2);
     setSP(cpu.SP - 1);
@@ -435,7 +519,7 @@ function stackX(unstack) {
     let b1 = cpu.X >> 8;
     let b2 = cpu.X & 0xff;
 
-    console.log("Prev X: 0x" + cpu.X.toString(16));
+    //console.log("Prev X: 0x" + cpu.X.toString(16));
 
     writeRAM(cpu.SP, b2);
     setSP(cpu.SP - 1);
@@ -457,7 +541,7 @@ function stackY(unstack) {
     let b1 = cpu.Y >> 8;
     let b2 = cpu.Y & 0xff;
 
-    console.log("Prev Y: 0x" + cpu.Y.toString(16));
+    //console.log("Prev Y: 0x" + cpu.Y.toString(16));
 
     writeRAM(cpu.SP, b2);
     setSP(cpu.SP - 1);
@@ -479,7 +563,7 @@ function stackPC(unstack) {
     let b1 = cpu.PC >> 8;
     let b2 = cpu.PC & 0xff;
 
-    console.log("Prev PC: 0x" + cpu.PC.toString(16));
+    //console.log("Prev PC: 0x" + cpu.PC.toString(16));
 
     writeRAM(cpu.SP, b2);
     setSP(cpu.SP - 1);
@@ -507,7 +591,7 @@ function stackFlags(unstack) {
     b1 += cpu.status.V << 4;
     b1 += cpu.status.C << 5;
 
-    console.log("Prev D: 0b" + b1.toString(2));
+    //console.log("Prev D: 0b" + b1.toString(2));
 
     writeRAM(cpu.SP, b1);
     setSP(cpu.SP - 1);

@@ -78,8 +78,8 @@ $("#run-button-input").bind("click", function() {
   clockUpdateInterval = setInterval(function(){
     let cycles = cpu.clock.cycleCount;
     let now = new Date().getTime();
-    let simTimeNow = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.cycleCount;
-    let rtcNow = rtcStash + ((now - rtcStart) / 1000);
+    simTimeNow = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.cycleCount;
+    rtcNow = rtcStash + ((now - rtcStart) / 1000);
     let realSpeed = (cycles - cyclesLast) / ((now-timeLast) * 1000);
 
     cyclesLast = cycles;
@@ -154,6 +154,7 @@ $('#myTab button').bind("click", function() {
 
 $('#updateRamOutput-input').bind('click', function(){
   updateRAM = $(this).is(':checked');
+  drawRAMOutput(cpu.memory.view, RAMSize, 1);
 });
 
 $('#updateRomOutput-input').bind('click', function(){
@@ -203,4 +204,29 @@ $('#trigger-nmi-input').bind('click', function(){
 
 $('#trigger-reset-input').bind('click', function(){
   interruptStack.push(0xFFFE);
+});
+
+$('#dsm-test-mode-input').bind('click', function(){
+  let prevVal = readRAM(0x07, 1);
+
+  // ECU test mode
+  if(prevVal & 0b00001000) { // If bit is set
+    writeRAM(0x07, prevVal & 0b11110111, 1);    // Clear it
+  } else {
+    writeRAM(0x07, prevVal | 8, 1);    // Set it
+  }
+});
+
+// Clear START bit
+$('#dsm-key-start-input').bind('click', function() {
+  writeRAM(0x06, readRAM(0x06, 1) & 0b10111111, 1);
+});
+
+// Set START bit
+$('#dsm-key-off-input').bind('click', function() {
+  writeRAM(0x06, readRAM(0x06, 1) | 0b01000000, 1);
+});
+
+$('#dsm-clear-cas-input').bind('click', function() {
+  writeRAM(0x16, readRAM(0x16, 1) & 0b11111110, 1);
 });

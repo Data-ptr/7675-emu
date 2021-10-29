@@ -10,17 +10,66 @@
   margin: .5rem !important;
 }
 
+/*
+RAM output
+*/
+
+span.ram-byte:hover {
+    border: black solid 1px;
+    background-color: lightblue;
+    margin: 0;
+}
+
+.ram-byte.hilight.stack-pointer {
+     background-color: blue;
+     border: blue solid 1px;
+     margin: 0;
+}
+
+.ram-byte.hilight-read.stack-pointer {
+  background-color: pink;
+  border: pink solid 1px;
+  margin: 0;
+}
+
+.ram-byte.hilight.hilight-read {
+  background-color: yellow;
+  border: yellow solid 1px;
+  margin: 0;
+}
+
+.ram-byte.hilight {
+    background-color: green;
+    border: green solid 1px;
+    margin: 0;
+}
+
+.ram-byte.hilight-read{
+    background-color: red;
+    border: red solid 1px;
+    margin: 0;
+}
+
+.ram-byte.stack-pointer {
+    background-color: orange;
+    border: orange solid 1px;
+    margin: 0;
+}
+
+.ram-byte {
+    display: inline-block;
+    margin: 1px;
+}
+
 #RAM-output-div {
     width: 600px;
     height: 450px;
     overflow: scroll;
+    cursor: none;
 }
 
-#RAM-output-div > span {
-    display: inline-block
-}
-
-#hex-output-textarea, #RAM-output-div {
+#hex-output-textarea,
+#RAM-output-div {
   font-family: monospace;
 }
 
@@ -30,44 +79,26 @@
     overflow: scroll;
 }
 
-.hilight.stack-pointer {
-     background-color: blue;
-}
-
-.hilight-read.stack-pointer {
-  background-color: pink;
-}
-
-.hilight.hilight-read {
-  background-color: yellow;
-}
-
-.hilight {
-    background-color: green;
-}
-
-.hilight-read{
-    background-color: red;
-}
-
-.stack-pointer {
-    background-color: orange;
-}
 .table {
   margin-bottom: 0;
 }
 
-.table td {
-  padding: 0;
+th {
+  background-color: lightgray !important;
+}
+
+#data-registers {
+  height: 700px;
+  overflow: scroll;
 }
 
 #data-registers-table {
   width: 50%;
 }
 
-#data-registers {
-  height: 700px;
-  overflow: scroll;
+#data-registers-table td td,
+#data-registers-table td th {
+  text-align: center;
 }
 
 #status-registers {
@@ -99,6 +130,13 @@
   margin: 0 8px;
 }
 
-#data-registers-table td td, #data-registers-table td th {
-  text-align: center;
+/*
+ CEL
+*/
+.non-illu {
+  background-color: black;
+}
+
+.illu {
+  background-color: red;
 }
