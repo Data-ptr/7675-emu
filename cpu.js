@@ -297,6 +297,61 @@ function writeRAM(addr, byte, clockWrite, adcIgnore) {
     redrawRAM = 1;
   }
 
+  //0x0013 sci tx catch
+  if(addr == 0x0013 && 0 != byte) {
+    console.log("Caught sci tx: " + cleanHexify(byte));
+  }
+
+  //0x004C str faultHi catch
+  if(addr == 0x004C && 0 != byte) {
+    console.log("Caught str faultHi: " + cleanHexify(byte));
+  }
+
+  //0x004D str faultLo catch
+  if(addr == 0x004D && 0 != byte) {
+    console.log("Caught str faultLo: " + cleanHexify(byte));
+  }
+
+  //0x004E faultHi catch
+  if(addr == 0x004E && 0 != byte) {
+    console.log("Caught faultHi: " + cleanHexify(byte));
+  }
+
+  //0x004F faultLo catch
+  if(addr == 0x004F && 0 != byte) {
+    console.log("Caught faultLo: " + cleanHexify(byte));
+  }
+
+  //0x00FA obdFlag catch
+  if(addr == 0x00FA && 0 != byte) {
+    console.log("Caught OBD flag: " + cleanHexify(byte));
+  }
+
+  //0x00FB obdactcmd catch
+  if(addr == 0x00FB && 0 != byte) {
+    console.log("Caught OBD act cmd: " + cleanHexify(byte));
+  }
+
+  //0x0179 sensrchkidx catch
+  // if(addr == 0x0179 && 0 != byte) {
+  //   console.log("Caught sensor chk IDX: " + cleanHexify(byte));
+  // }
+
+  //0x017A obdCode catch
+  if(addr == 0x017A && 0 != byte) {
+    console.log("Caught OBD code: " + cleanHexify(byte));
+  }
+
+  //0x017B erridx catch
+  if(addr == 0x017B && 0 != byte) {
+    console.log("Caught err IDX: " + cleanHexify(byte));
+  }
+
+  //0x017C errcodeproc catch
+  if(addr == 0x017C && 0 != byte) {
+    console.log("Caught err code proc code: " + cleanHexify(byte));
+  }
+
   // Update to port 6 (CEL)
   if(addr == 0x2F) {
     let sTime = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.cycleCount;
@@ -376,7 +431,7 @@ function doAdc() {
   writeRAM(0x20, adcObj.val);
 
   // Set done flag
-  writeRAM(0x1F, 0b00101000 + adcObj.chan, 1, 1);
+  writeRAM(0x1F, 0b00100000 + adcObj.chan, 1, 1); //0b00101000
 
   updateRegisters(0x1F);
   updateRegisters(0x20);

@@ -12,14 +12,16 @@ let simTimeNow = 0;
 let stepInterval = -1;
 let clockUpdateInterval = -1;
 
-let dps = [];
-
 let redrawRAM = 0;
 
 let updateRAM = $('#updateRamOutput-input').is(":checked");
 let updateROM = $('#updateRomOutput-input').is(":checked");
 let updateUI = $('#updateUiOutput-input').is(":checked");
 let updateBatchOutput = $('#updateBatchOutput-input').is(":checked");
+let updateSrc = $('#updateSrcOutput-input').is(":checked");
+
+let tdcCheckCnt = 0;
+let casCheckCnt = 0;
 
 const romTextarea = $("#hex-output-textarea");
 const logOutputDiv = $("#log-output-div");
@@ -34,6 +36,15 @@ writeRAM(0x06, 128 + 64 + 32 + 16 + 4, 1);
 // 16 = A/C is OFF
 // 4 = NOT at TDC
 
+// Set rx buffer empty
+//writeRAM(0x11, 8, 1);
+
+// Put test value into rx buffer
+//writeRAM(0x12, 0xFD, 1);
+
+// Set knock sensor ok
+writeRAM(0x07, 0b00100000, 1);
+
 function step() {
   let view = cpu.ROM.view;
   let textareaIndex = (cpu.PC - 0x8000) * 2;
@@ -45,6 +56,22 @@ function step() {
       textareaIndex + 2
     );
     romTextarea.focus();
+  }
+
+  if(updateSrc) {
+    const match = new RegExp(cleanHexify(cpu.PC, 4), "gims");
+    const matches = match.exec(elementCache.srcTextarea.val());
+
+    if(null != matches) {
+      const lastMatch = matches.index;
+
+      elementCache.srcTextarea.blur();
+      elementCache.srcTextarea[0].setSelectionRange(
+        lastMatch,
+        lastMatch + 4
+      );
+      elementCache.srcTextarea.focus();
+    }
   }
 
   let fullInst;
@@ -147,96 +174,68 @@ function step() {
 }
 
 function advanceClock(cycles) {
-  let preTick = cpu.clock.cycleCount;
   cpu.clock.cycleCount += cycles;
 
-  let timer1Freq = 1;     //2Mhz
-  let timer3Freq = 0.25;  //250khz
+  const timer1Freq = 1;     // 1Mhz
+  const timer3Freq = 0.25;  // 250khz
 
-  let ignoreInterrupts = $('#ignoreInterrupts-input').is(":checked");
+  const ignoreInterrupts = $('#ignoreInterrupts-input').is(":checked");
 
-  // Output compare 1
-  let t1OutCmp = (readRAM(0x000B, 1) << 8) + readRAM(0x000C, 1);
-  let t2OutCmp = (readRAM(0x001B, 1) << 8) + readRAM(0x001C, 1);
-  let t3OutCmp = (readRAM(0x002B, 1) << 8) + readRAM(0x002C, 1);
-
-  let t1_2 = Math.ceil(cpu.timer_1_2);
-  let t3 = Math.ceil(cpu.timer_3);
-
-  for (let i = 0; i < cycles; i++) {
-    //Output compare 1 vector = 0xFFF0
-    if (!ignoreInterrupts && (readRAM(0x0008, 1) & 0b00001000) && t1_2 + i == t1OutCmp) {
-      console.log("Timer 1 output compare match!");
-
-      writeRAM(0x0008, readRAM(0x0008, 1) | 0b01000000, 1);
-
-      interruptStack.push(0xFFF0);
-    }
-
-    //Output compare 2 vector = 0xFFEE
-    if (!ignoreInterrupts && (readRAM(0x0018, 1) & 0b00001000) && t1_2 + i == t2OutCmp) {
-      console.log("Timer 2 output compare match!");
-
-      writeRAM(0x0018, readRAM(0x0018, 1) | 0b01000000, 1);
-
-      interruptStack.push(0xFFEE);
-    }
-
-    //Output compare 3 vector = 0xFFEC
-    if (!ignoreInterrupts && t3 + i == t3OutCmp) {
-      console.log("Timer 3 output compare match!");
-
-      interruptStack.push(0xFFEC);
-    }
-  }
+  workOutputCompare(cycles, ignoreInterrupts);
 
   workInterrupts();
 
-  // ADC pending
-  if(adcObj && adcObj.countdown > -1) {
-    adcObj.countdown--;
-
-    if(0 == adcObj.countdown) {
-      doAdc();
-    }
-  }
+  workAdc();
 
   // New clocks values
   cpu.timer_1_2 += (timer1Freq / cpu.clockSpeed) * cycles;
   cpu.timer_3 += (timer3Freq / cpu.clockSpeed) * cycles;
 
-  // Clk 1-2 rollover
-  if (cpu.timer_1_2 > 0xFFFF) {
-    cpu.timer_1_2 -= 0xFFFF;
-    // check if enabled
-    if (!ignoreInterrupts && (readRAM(0x0008, 1) & 0b00000100)) {
-      interruptStack.push(0xFFEA);
-      // set overflow interrupt flag
-      writeRAM(readRAM(0x0008, 1) & 0b00100000, 1);
-    }
+  workTimerOverflows(ignoreInterrupts);
+
+  storeTimers();
+
+  let simTime = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.cycleCount;
+
+  updateEngine(simTime * 1000);
+
+  // Update data registers
+  const port3Prev = readRAM(0x06, 1) & 0b11111011;
+  const port5Prev = readRAM(0x16, 1) & 0b11111110;
+
+  // Write TDC and CAS flag into RAM
+  writeRAM(0x06, port3Prev + (m_4G63.TDC ? 0 : 0b00000100), 1);
+  writeRAM(0x16, port5Prev + (m_4G63.CAS ? 0 : 1), 1);
+
+  if(1000 == ++tdcCheckCnt) {
+    tdcCheckCnt = 0;
+    m_4G63.TDC_list.push(m_4G63.TDC ? 1 : 0);
   }
 
-  // Clk 3 rollover
-  if (cpu.timer_3 > 0xFFFF) {
-    cpu.timer_3 -= 0xFFFF;
+  if(1000 == ++casCheckCnt) {
+    casCheckCnt = 0;
+    m_4G63.CAS_list.push(m_4G63.CAS ? -3 : -4);
   }
-
-  // Clk 1-2 store
-  let t2Ceil = Math.ceil(cpu.timer_1_2);
-
-  writeRAM(0x0009, t2Ceil >> 8, 1);
-  writeRAM(0x000a, t2Ceil & 0xFF, 1);
-
-  // Clk 3 1&2 store
-  let t3Ceil = Math.ceil(cpu.timer_3);
-  let t3B1 = t3Ceil >> 8;
-  let t3B2 = t3Ceil & 0xFF;
-
-  writeRAM(0x0029, t3B1, 1);
-  writeRAM(0x002a, t3B2, 1);
-  writeRAM(0x002d, t3B1, 1);
-  writeRAM(0x002e, t3B2, 1);
 }
+
+const tdcCasChartUpdate = setInterval(function() {
+  while(m_4G63.TDC_list.length > 50) {
+    m_4G63.TDC_list.shift();
+  }
+
+  while(m_4G63.CAS_list.length > 50) {
+    m_4G63.CAS_list.shift();
+  }
+
+  tdcChart.updateSeries([
+    {
+      data: m_4G63.TDC_list
+    },
+    {
+      data: m_4G63.CAS_list
+    }
+  ]);
+}, 500);
 
 function executeMicrocode(view) {
   if ("SUBOP" == instructionTable[view[cpu.PC - 0x8000]].type) {
@@ -261,10 +260,98 @@ function executeMicrocode(view) {
   }
 }
 
+function workOutputCompare(cycles, ignoreInterrupts) {
+  // Output compare 1
+  let t1OutCmp = (readRAM(0x000B, 1) << 8) + readRAM(0x000C, 1);
+  let t2OutCmp = (readRAM(0x001B, 1) << 8) + readRAM(0x001C, 1);
+  let t3OutCmp = (readRAM(0x002B, 1) << 8) + readRAM(0x002C, 1);
+
+  let t1_2 = Math.ceil(cpu.timer_1_2);
+  let t3 = Math.ceil(cpu.timer_3);
+
+  for (let i = 0; i < cycles; i++) {
+    //Output compare 1 vector = 0xFFF0
+    if (!ignoreInterrupts && (readRAM(0x0008, 1) & 0b00001000) && t1_2 + i == t1OutCmp) {
+      //console.log("Timer 1 output compare match!");
+
+      writeRAM(0x0008, readRAM(0x0008, 1) | 0b01000000, 1);
+
+      interruptStack.push(0xFFF0);
+    }
+
+    //Output compare 2 vector = 0xFFEE
+    if (!ignoreInterrupts && (readRAM(0x0018, 1) & 0b00001000) && t1_2 + i == t2OutCmp) {
+      //console.log("Timer 2 output compare match!");
+
+      writeRAM(0x0018, readRAM(0x0018, 1) | 0b01000000, 1);
+
+      interruptStack.push(0xFFEE);
+    }
+
+    //Output compare 3 vector = 0xFFEC
+    if (!ignoreInterrupts && t3 + i == t3OutCmp) {
+      console.log("Timer 3 output compare match!");
+
+      interruptStack.push(0xFFEC);
+    }
+  }
+}
+
 function workInterrupts() {
   if(interruptStack.length > 0 && !cpu.status.I) {
     interrupt(interruptStack.pop());
   }
+}
+
+function workTimerOverflows(ignoreInterrupts) {
+  let t1OverflowEnabled = readRAM(0x0008, 1) & 0b00000100;
+
+  // Clk 1-2 rollover
+  if (cpu.timer_1_2 > 0xFFFF) {
+    cpu.timer_1_2 -= 0xFFFF; //TODO: should this be after the interrupt is called?
+
+    // check if enabled
+    if (!ignoreInterrupts && t1OverflowEnabled) {
+      interruptStack.push(0xFFEA);
+      // set overflow interrupt flag
+      writeRAM(readRAM(0x0008, 1) & 0b00100000, 1);
+    }
+  }
+
+  // Clk 3 rollover
+  if (cpu.timer_3 > 0xFFFF) {
+    cpu.timer_3 -= 0xFFFF;
+    //TODO: is there a timer 3 overflow interrupt?
+  }
+}
+
+function workAdc() {
+  // ADC pending
+  if(adcObj && adcObj.countdown > -1) {
+    adcObj.countdown--;
+
+    if(0 == adcObj.countdown) {
+      doAdc();
+    }
+  }
+}
+
+function storeTimers() {
+  // Clk 1-2 store
+  let t2Ceil = Math.ceil(cpu.timer_1_2);
+
+  writeRAM(0x0009, t2Ceil >> 8, 1);
+  writeRAM(0x000a, t2Ceil & 0xFF, 1);
+
+  // Clk 3 1&2 store
+  let t3Ceil = Math.ceil(cpu.timer_3);
+  let t3B1 = t3Ceil >> 8;
+  let t3B2 = t3Ceil & 0xFF;
+
+  writeRAM(0x0029, t3B1, 1);
+  writeRAM(0x002a, t3B2, 1);
+  writeRAM(0x002d, t3B1, 1);
+  writeRAM(0x002e, t3B2, 1);
 }
 
 function interrupt(vector) {

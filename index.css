@@ -69,7 +69,8 @@ span.ram-byte:hover {
 }
 
 #hex-output-textarea,
-#RAM-output-div {
+#RAM-output-div,
+#src-output {
   font-family: monospace;
 }
 
@@ -130,6 +131,7 @@ th {
   margin: 0 8px;
 }
 
+
 /*
  CEL
 */
@@ -139,4 +141,29 @@ th {
 
 .illu {
   background-color: red;
+}
+
+
+/*
+  Engine
+*/
+
+#rect994 {
+  display: block;
+}
+
+.intake {
+  fill: lightblue;
+}
+
+.exhaust {
+  fill: orange;
+}
+
+.compression {
+  fill: yellow;
+}
+
+.combustion {
+  fill: red;
 }

@@ -34,6 +34,13 @@
 
 <script src="tab.js"></script>
 
+<!-- Include Handlebars from a CDN -->
+<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+<script>
+  Handlebars.registerPartial('test', 'test');
+</script>
+
+
 <link
   href="index.css"
   rel="stylesheet">
@@ -67,14 +74,30 @@
           role="presentation">
           <button
             id="home-tab"
-            class="nav-link active"
+            class="nav-link"
             data-bs-toggle="tab"
             data-bs-target="#home"
             type="button"
             role="tab"
             aria-controls="home"
-            aria-selected="true">
+            aria-selected="false">
             Home
+          </button>
+        </li>
+
+        <li
+          class="nav-item"
+          role="presentation">
+          <button
+            id="src-tab"
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#src"
+            type="button"
+            role="tab"
+            aria-controls="src"
+            aria-selected="false">
+            Src
           </button>
         </li>
 
@@ -173,6 +196,22 @@
             DSM
           </button>
         </li>
+
+        <li
+          class="nav-item"
+          role="presentation">
+          <button
+            id="4G63-tab"
+            class="nav-link active"
+            data-bs-toggle="tab"
+            data-bs-target="#engine-4G63"
+            type="button"
+            role="tab"
+            aria-controls="dsm"
+            aria-selected="true">
+            4G63
+          </button>
+        </li>
       </ul>
 
       <div
@@ -186,6 +225,7 @@
           <div class="row">
             <div class="col-sm">
               <div id="input-div">
+                {{> "test"}}
                 <label class="form-label">Paste Base64 of binary here:</label>
 
                 <br/>
@@ -343,7 +383,7 @@
 
         <div
           id="home"
-          class="tab-pane fade show active"
+          class="tab-pane fade"
           role="tabpanel"
           aria-labelledby="home-tab">
           <div class="row">
@@ -617,6 +657,16 @@
             </div>
           </div>
         </div>
+
+        <div
+          id="src"
+          class="tab-pane fade"
+          role="tabpanel"
+          aria-labelledby="src-tab">
+          <div class="row">
+            <textarea id="src-output" rows="30"></textarea>
+          </div>
+          </div>
 
         <div
           id="data-registers"
@@ -4879,6 +4929,18 @@
 
               <div class="input-group">
                 <input
+                  id="updateSrcOutput-input"
+                  class="form-check-input"
+                  type="checkbox"/>
+                <label
+                  class="form-check-label"
+                  for="updateSrcOutput-input">
+                  Update src output (also slows stuff way down...)
+                </label>
+              </div>
+
+              <div class="input-group">
+                <input
                   id="updateBatchOutput-input"
                   class="form-check-input"
                   type="checkbox"/>
@@ -5049,12 +5111,14 @@
               value="Clear CAS flag"/>
 
             <!--
-              Port $00: ECT (engine coolant temp) See curve             Port $01: IAT         See
-              curve             Port $02: BARO        (.00486x)bar  [x = b / .00486]
-              Port $03: O2          (.0195x)v   [x = v / .0195]             Port $04: EGRT
-              (-2.7x + 597.7)deg F this is unofficial             Port $05: BATT        (.0733x)v
-              [x = v / .0733]             Port $06: KNOCK count             Port $07: TPS
-              (100x/255)% [x = 51y/20]
+              Port $00: ECT (engine coolant temp) See curve
+              Port $01: IAT         See curve
+              Port $02: BARO        (.00486x)bar  [x = b / .00486]
+              Port $03: O2          (.0195x)v     [x = v / .0195]
+              Port $04: EGRT        (-2.7x + 597.7)deg F this is unofficial
+              Port $05: BATT        (.0733x)v     [x = v / .0733]
+              Port $06: KNOCK count
+              Port $07: TPS         (100x/255)%   [x = 51y/20]
             -->
             <div id="dsm-adc" class="row">
               <div class="col-auto">
@@ -5093,7 +5157,7 @@
                     id="dsm-o2-input"
                     class="form-control"
                     type="number"
-                    value="0.5"/>
+                    value="0.3"/>
                 </div>
               </div>
 
@@ -5105,7 +5169,7 @@
                     id="dsm-egrt-input"
                     class="form-control"
                     type="number"
-                    value="100"/>
+                    value="600"/>
                 </div>
 
                 <div class="input-group">
@@ -5135,15 +5199,422 @@
                     id="dsm-tps-input"
                     class="form-control"
                     type="number"
-                    value="3"/>
+                    value="1"/>
                 </div>
               </div>
             </div>
           </div> <!-- /DSM-DIV -->
         </div>
+
+        <div
+          id="engine-4G63"
+          class="tab-pane fade show active"
+          role="tabpanel"
+          aria-labelledby="4G63-tab">
+          <div id="4G63-div" class="row">
+            <div class="col" style="background: black; color: white;">
+              RPM:
+              <canvas id="rpm-gauge"></canvas>
+            </div>
+
+            <div class="col" style="background: black; color: white;">
+              Crank Angle: <input id="engine-crank-angle-output" type="text" value="0"/>°
+              <canvas id="crank-gauge"></canvas>
+            </div>
+
+            <div class="col">
+              TDC:
+              <span id="engine-tdc">true</span>
+              CAS:
+              <span id="engine-cas">true</span>
+              <div id="tdc-chart">
+              </div>
+            </div>
+
+            <div class="col">
+              <label for="rpm-range-input" class="form-label">Set RPM</label>
+              <input type="range" class="form-range" min="0" max="9000" step="1" value="700" id="rpm-range-input">
+            </div>
+
+            <div class="col">
+            </div>
+          </div>
+
+          <div id="4G63-div2" class="row">
+            <div class="col">
+              Cyl #1:
+              <span id="cly1-pos"></span>
+            </div>
+            <div class="col">
+              Cyl #2:
+              <span id="cly2-pos"></span>
+            </div>
+            <div class="col">
+              Cyl #3:
+              <span id="cly3-pos"></span>
+            </div>
+            <div class="col">
+              Cyl #4:
+              <span id="cly4-pos"></span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+              <svg
+                 width="173.72292mm"
+                 height="182.41644mm"
+                 viewBox="0 0 173.72292 182.41644"
+                 version="1.1"
+                 id="svg8"
+                 inkscape:version="1.1.1 (c3084ef, 2021-09-22)"
+                 sodipodi:docname="4G63-clyinders.svg"
+                 xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+                 xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+                 xmlns="http://www.w3.org/2000/svg"
+                 xmlns:svg="http://www.w3.org/2000/svg"
+                 xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                 xmlns:cc="http://creativecommons.org/ns#"
+                 xmlns:dc="http://purl.org/dc/elements/1.1/">
+                <defs
+                   id="defs2" />
+                <sodipodi:namedview
+                   id="base"
+                   pagecolor="#ffffff"
+                   bordercolor="#666666"
+                   borderopacity="1.0"
+                   inkscape:pageopacity="0.0"
+                   inkscape:pageshadow="2"
+                   inkscape:zoom="0.74258739"
+                   inkscape:cx="327.90753"
+                   inkscape:cy="358.207"
+                   inkscape:document-units="mm"
+                   inkscape:current-layer="layer13"
+                   inkscape:document-rotation="0"
+                   showgrid="false"
+                   showguides="true"
+                   inkscape:guide-bbox="true"
+                   inkscape:snap-global="false"
+                   inkscape:window-width="1680"
+                   inkscape:window-height="942"
+                   inkscape:window-x="0"
+                   inkscape:window-y="23"
+                   inkscape:window-maximized="0"
+                   inkscape:snap-to-guides="true"
+                   lock-margins="true"
+                   fit-margin-top="10"
+                   fit-margin-left="10"
+                   fit-margin-right="10"
+                   fit-margin-bottom="10"
+                   inkscape:pagecheckerboard="0">
+                  <sodipodi:guide
+                     position="-5.1183214,126.95533"
+                     orientation="1,0"
+                     id="guide1040" />
+                  <sodipodi:guide
+                     position="237.61836,10.512595"
+                     orientation="0,-1"
+                     id="guide1043" />
+                  <sodipodi:guide
+                     position="261.80884,172.66438"
+                     orientation="0,-1"
+                     id="guide1046" />
+                  <sodipodi:guide
+                     position="261.80884,114.45604"
+                     orientation="0,-1"
+                     id="guide1048" />
+                  <sodipodi:guide
+                     position="245.93384,160.19116"
+                     orientation="0,-1"
+                     id="guide1050" />
+                  <sodipodi:guide
+                     position="258.40706,152.25366"
+                     orientation="0,-1"
+                     id="guide1052" />
+                  <sodipodi:guide
+                     position="255.00527,32.435213"
+                     orientation="0,-1"
+                     id="guide1054" />
+                  <sodipodi:guide
+                     position="262.18682,51.334022"
+                     orientation="0,-1"
+                     id="guide1056" />
+                  <sodipodi:guide
+                     position="272.0142,63.807235"
+                     orientation="0,-1"
+                     id="guide1058" />
+                  <sodipodi:guide
+                     position="289.4011,67.964973"
+                     orientation="0,-1"
+                     id="guide1060" />
+                  <sodipodi:guide
+                     position="269.74634,16.93819"
+                     orientation="0,-1"
+                     id="guide1062" />
+                  <sodipodi:guide
+                     position="280.32968,165.48283"
+                     orientation="0,-1"
+                     id="guide1064" />
+                </sodipodi:namedview>
+                <metadata
+                   id="metadata5">
+                  <rdf:RDF>
+                    <cc:Work
+                       rdf:about="">
+                      <dc:format>image/svg+xml</dc:format>
+                      <dc:type
+                         rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+                    </cc:Work>
+                  </rdf:RDF>
+                </metadata>
+                <g
+                   inkscape:groupmode="layer"
+                   id="layer13"
+                   inkscape:label="Mock-side"
+                   style="display:inline">
+                  <g
+                     inkscape:groupmode="layer"
+                     id="layer16"
+                     inkscape:label="Cylinders"
+                     style="display:inline"
+                     transform="translate(-11.790325,-45.430208)">
+                    <rect
+                       style="display:inline;fill-opacity:1;stroke:#ff0000;stroke-width:0.264584;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                       id="cyl1"
+                       width="27.396557"
+                       height="23"
+                       x="132.29839"
+                       y="113.77084"
+                       inkscape:label="cyl1" />
+                    <rect
+                       style="display:inline;fill-opacity:1;stroke:#ff0000;stroke-width:0.264584;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                       id="cyl2"
+                       width="27.396557"
+                       height="23"
+                       x="102.6651"
+                       y="113.77084"
+                       inkscape:label="cyl2" />
+                    <rect
+                       style="display:inline;fill-opacity:1;stroke:#ff0000;stroke-width:0.264584;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                       id="cyl3"
+                       width="27.396557"
+                       height="23"
+                       x="73.560913"
+                       y="113.77084"
+                       inkscape:label="cyl3" />
+                    <rect
+                       style="display:inline;fill-opacity:1;stroke:#ff0000;stroke-width:0.264584;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                       id="cyl4"
+                       width="27.396557"
+                       height="23"
+                       x="43.927551"
+                       y="113.77084"
+                       inkscape:label="cyl4" />
+                  </g>
+                  <g
+                     inkscape:groupmode="layer"
+                     id="layer2"
+                     inkscape:label="Block"
+                     transform="translate(-11.790325,-45.430208)"
+                     style="display:inline">
+                    <path
+                       id="rect894"
+                       style="fill:#ff0000;stroke:#0000ff;stroke-width:0.999999;stroke-linecap:round;stroke-linejoin:round"
+                       d="M 121.42773,430 V 822.85742 H 627.14258 V 430 h -25.0918 V 605.71484 H 500.02539 V 430 h -8.97461 V 605.71484 H 389.02539 V 430 h -8.97461 V 605.71484 H 278.02539 V 430 h -8.97461 V 605.71484 H 167.02539 V 430 Z M 180,619.28516 h 414.28516 v 180 H 180 Z"
+                       transform="scale(0.26458333)" />
+                  </g>
+                  <g
+                     inkscape:groupmode="layer"
+                     id="layer3"
+                     inkscape:label="Head"
+                     style="display:inline"
+                     transform="translate(-11.790325,-45.430208)">
+                    <path
+                       id="rect897"
+                       style="fill:#ff0000;stroke:#0000ff;stroke-width:0.999999;stroke-linecap:round;stroke-linejoin:round"
+                       d="m 121.42773,210 v 220 h 44.59766 V 237.14258 H 602.14258 V 430 h 25 V 210 Z"
+                       transform="scale(0.26458333)" />
+                  </g>
+                  <g
+                     inkscape:groupmode="layer"
+                     id="layer4"
+                     inkscape:label="Crankshaft"
+                     style="display:inline"
+                     transform="translate(-11.790325,-45.430208)">
+                    <rect
+                       style="fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                       id="rect952"
+                       width="153.45833"
+                       height="18.898809"
+                       x="21.922617"
+                       y="176.70387"
+                       inkscape:label="shaft" />
+                    <g
+                       inkscape:groupmode="layer"
+                       id="layer6"
+                       inkscape:label="Horizontal"
+                       style="display:inline"
+                       sodipodi:insensitive="true">
+                      <rect
+                         style="display:inline;fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="rect968"
+                         width="19.644308"
+                         height="25.256966"
+                         x="106.80788"
+                         y="173.99246"
+                         inkscape:label="cra2" />
+                      <rect
+                         style="display:inline;fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="rect981"
+                         width="19.644308"
+                         height="25.256966"
+                         x="136.4411"
+                         y="173.99246"
+                         inkscape:label="cra1" />
+                      <rect
+                         style="display:inline;fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="rect983"
+                         width="19.644308"
+                         height="25.256966"
+                         x="77.174538"
+                         y="173.99246"
+                         inkscape:label="cra3" />
+                      <rect
+                         style="display:inline;fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="rect985"
+                         width="19.644308"
+                         height="25.256966"
+                         x="48.070343"
+                         y="173.99246"
+                         inkscape:label="cra4" />
+                    </g>
+                    <g
+                       inkscape:groupmode="layer"
+                       id="layer5"
+                       inkscape:label="Vertical"
+                       style="display:inline"
+                       sodipodi:insensitive="true">
+                      <rect
+                         style="display:inline;fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="rect962"
+                         width="19.644308"
+                         height="47.81398"
+                         x="136.44109"
+                         y="163.85268"
+                         inkscape:label="cra1" />
+                      <rect
+                         style="display:inline;fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="rect975"
+                         width="19.644308"
+                         height="47.81398"
+                         x="107.33704"
+                         y="163.85268"
+                         inkscape:label="cra2" />
+                      <rect
+                         style="display:inline;fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="rect977"
+                         width="19.644308"
+                         height="47.81398"
+                         x="77.174538"
+                         y="163.85268"
+                         inkscape:label="cra3" />
+                      <rect
+                         style="display:inline;fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="rect979"
+                         width="19.644308"
+                         height="47.81398"
+                         x="48.070343"
+                         y="163.85268"
+                         inkscape:label="cra4" />
+                    </g>
+                  </g>
+                  <g
+                     inkscape:groupmode="layer"
+                     id="layer7"
+                     inkscape:label="Pistons"
+                     transform="translate(-11.790325,-45.430208)">
+                    <g
+                       inkscape:groupmode="layer"
+                       id="layer8"
+                       inkscape:label="#1">
+                      <rect
+                         style="fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="pis1"
+                         width="27.396557"
+                         height="21.355658"
+                         x="132.29839"
+                         y="113.77083"
+                         inkscape:label="pis1" />
+                    </g>
+                    <g
+                       inkscape:groupmode="layer"
+                       id="layer9"
+                       inkscape:label="#2">
+                      <rect
+                         style="fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="pis2"
+                         width="27.396557"
+                         height="21.355658"
+                         x="102.66511"
+                         y="139.17065"
+                         inkscape:label="pis2" />
+                    </g>
+                    <g
+                       inkscape:groupmode="layer"
+                       id="layer10"
+                       inkscape:label="#3">
+                      <rect
+                         style="fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="pis3"
+                         width="27.396557"
+                         height="21.355658"
+                         x="73.031746"
+                         y="139.17065"
+                         inkscape:label="pis3" />
+                    </g>
+                    <g
+                       inkscape:groupmode="layer"
+                       id="layer11"
+                       inkscape:label="#4">
+                      <rect
+                         style="fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                         id="pis4"
+                         width="27.396557"
+                         height="21.355658"
+                         x="43.927551"
+                         y="113.77083"
+                         inkscape:label="pis4" />
+                    </g>
+                  </g>
+                  <g
+                     inkscape:groupmode="layer"
+                     id="layer12"
+                     inkscape:label="Camshaft"
+                     transform="translate(-11.790325,-45.430208)">
+                    <rect
+                       style="fill:#0000ff;fill-opacity:1;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                       id="rect1034"
+                       width="146.27678"
+                       height="8.1264896"
+                       x="26.458332"
+                       y="67.846725"
+                       inkscape:label="shaft" />
+                  </g>
+                </g>
+              </svg>
+
+
+
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+
+  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="gauge.min.js"></script>
 
   <script>
     const elementCache = {       spRegisterOutput:   $("#register-SP-output"),
@@ -5160,16 +5631,17 @@
     dsmO2Input:         $("#dsm-o2-input"),       dsmEgrtInput:       $("#dsm-egrt-input"),
     dsmBattInput:       $("#dsm-batt-input"),       dsmBaroInput:       $("#dsm-baro-input"),
     dsmKnockCntInput:   $("#dsm-knock-count-input"),       dsmTpsInput:        $("#dsm-tps-input"),
+    srcTextarea:        $('#src-output')
     };
   </script>
 
   <script src="curves.js"></script>
 
   <script>
-    $(ectCurve).each(function(i, n) {       let isDefault = 131 == i;       let selected = isDefault
+    $(ectCurve).each(function(i, n) {       let isDefault = 27 == i;       let selected = isDefault
     ? ' selected="true"' : " ";       elementCache.dsmEctInput.append('<option value="' + i + '"' +
     selected +'>' + n + '</option>');     });      $(iatCurve).each(function(i, n) {       let
-    isDefault = 131 == i;       let selected = isDefault ? ' selected="true"' : " ";
+    isDefault = 67 == i;       let selected = isDefault ? ' selected="true"' : " ";
     elementCache.dsmIatInput.append('<option value="' + i + '"' + selected +'>' + n + '</option>');
     });
   </script>
@@ -5180,45 +5652,11 @@
 
   <script src="cpu.js"></script>
 
+  <script src="4G63.js"></script>
+
   <script src="ui_input.js"></script>
 
   <script src="ui-draw.js"></script>
 
   <script src="index.js"></script>
-
-  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
-
-  <script>
-    var chart = new CanvasJS.Chart(
-      "chartContainer",
-      {
-        title : {
-          text: "CEL"
-        },
-        data: [{
-          type: "line",
-          dataPoints: dps
-        }]
-      });
-
-      var xVal = 0;
-      var yVal = 100;
-      var updateInterval = 10;
-      var dataLength = 250; // number of dataPoints visible at any point
-      var updateChart = function(count) {
-        while(dps.length > dataLength) {
-          dps.shift();
-        }
-
-        chart.render();
-      };
-
-      updateChart(dataLength);
-
-      setInterval(
-        function() {
-          updateChart()
-        },
-        updateInterval);
-  </script>
 </div>

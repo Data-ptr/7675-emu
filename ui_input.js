@@ -150,7 +150,11 @@ $('#myTab button').bind("click", function() {
   } else {
     updateDataRegisters = 0;
   }
-})
+
+  if(this.id == "4G63-tab") {
+    setTimeout(doRpmGauge, 500);
+  }
+});
 
 $('#updateRamOutput-input').bind('click', function(){
   updateRAM = $(this).is(':checked');
@@ -167,6 +171,10 @@ $('#updateUiOutput-input').bind('click', function(){
 
 $('#updateLogOutput-input').bind('click', function(){
   logEnabled = $(this).is(':checked');
+});
+
+$('#updateSrcOutput-input').bind('click', function(){
+  updateSrc = $(this).is(':checked');
 });
 
 $('#updateBatchOutput-input').bind('click', function(){
