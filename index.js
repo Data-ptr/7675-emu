@@ -7,10 +7,8 @@ let interruptStack = [];
 let lastClockOutCmp = 0;
 let rtcStart = 0;
 let rtcStash = 0;
-let rtcNow = 0;
-let simTimeNow = 0;
-let stepInterval = -1;
-let clockUpdateInterval = -1;
+// let rtcNow = 0;
+// let simTimeNow = 0;
 
 let redrawRAM = 0;
 
@@ -19,12 +17,18 @@ let updateROM = $('#updateRomOutput-input').is(":checked");
 let updateUI = $('#updateUiOutput-input').is(":checked");
 let updateBatchOutput = $('#updateBatchOutput-input').is(":checked");
 let updateSrc = $('#updateSrcOutput-input').is(":checked");
+let updateCelChart = $('#updateCelChart-input').is(":checked");
+let updateEngineUi = $('#updateEngineUi-input').is(":checked");
 
 let tdcCheckCnt = 0;
 let casCheckCnt = 0;
 
 const romTextarea = $("#hex-output-textarea");
 const logOutputDiv = $("#log-output-div");
+
+const MHZ = 0xF4240;
+
+let sciRxIntTriggered = 0;
 
 fullReset();
 
@@ -36,14 +40,11 @@ writeRAM(0x06, 128 + 64 + 32 + 16 + 4, 1);
 // 16 = A/C is OFF
 // 4 = NOT at TDC
 
-// Set rx buffer empty
-//writeRAM(0x11, 8, 1);
-
-// Put test value into rx buffer
-//writeRAM(0x12, 0xFD, 1);
-
 // Set knock sensor ok
 writeRAM(0x07, 0b00100000, 1);
+
+// Force ser 2Hz of Tclocks for heartbeat mode
+//writeRAM(0xD9, 0b00100000, 1);
 
 function step() {
   let view = cpu.ROM.view;
@@ -178,14 +179,14 @@ function advanceClock(cycles) {
 
   const timer1Freq = 1;     // 1Mhz
   const timer3Freq = 0.25;  // 250khz
-
-  const ignoreInterrupts = $('#ignoreInterrupts-input').is(":checked");
-
-  workOutputCompare(cycles, ignoreInterrupts);
-
-  workInterrupts();
+  const simTime = (1 / (cpu.clockSpeed * MHZ)) * cpu.clock.cycleCount;
+  const ignoreInterrupts = elementCache.ignoreInterrupts.is(":checked");
 
   workAdc();
+
+  sciClockCheck(cycles);
+
+  workOutputCompare(cycles, ignoreInterrupts);
 
   // New clocks values
   cpu.timer_1_2 += (timer1Freq / cpu.clockSpeed) * cycles;
@@ -193,49 +194,32 @@ function advanceClock(cycles) {
 
   workTimerOverflows(ignoreInterrupts);
 
-  storeTimers();
+  workInterrupts();
 
-  let simTime = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.cycleCount;
+  storeTimers();
 
   updateEngine(simTime * 1000);
 
   // Update data registers
-  const port3Prev = readRAM(0x06, 1) & 0b11111011;
-  const port5Prev = readRAM(0x16, 1) & 0b11111110;
+  const port3Prev = readRAM(0x06, 1) & 0b11111011; // tdc
+  const port5Prev = readRAM(0x16, 1) & 0b11111110; // cas
 
   // Write TDC and CAS flag into RAM
   writeRAM(0x06, port3Prev + (m_4G63.TDC ? 0 : 0b00000100), 1);
   writeRAM(0x16, port5Prev + (m_4G63.CAS ? 0 : 1), 1);
 
-  if(1000 == ++tdcCheckCnt) {
-    tdcCheckCnt = 0;
-    m_4G63.TDC_list.push(m_4G63.TDC ? 1 : 0);
-  }
+  if(updateEngineUi) {
+    if(1000 == ++tdcCheckCnt) {
+      tdcCheckCnt = 0;
+      m_4G63.TDC_list.push(m_4G63.TDC ? 1 : 0);
+    }
 
-  if(1000 == ++casCheckCnt) {
-    casCheckCnt = 0;
-    m_4G63.CAS_list.push(m_4G63.CAS ? -3 : -4);
+    if(1000 == ++casCheckCnt) {
+      casCheckCnt = 0;
+      m_4G63.CAS_list.push(m_4G63.CAS ? -3 : -4);
+    }
   }
 }
-
-const tdcCasChartUpdate = setInterval(function() {
-  while(m_4G63.TDC_list.length > 50) {
-    m_4G63.TDC_list.shift();
-  }
-
-  while(m_4G63.CAS_list.length > 50) {
-    m_4G63.CAS_list.shift();
-  }
-
-  tdcChart.updateSeries([
-    {
-      data: m_4G63.TDC_list
-    },
-    {
-      data: m_4G63.CAS_list
-    }
-  ]);
-}, 500);
 
 function executeMicrocode(view) {
   if ("SUBOP" == instructionTable[view[cpu.PC - 0x8000]].type) {
@@ -270,7 +254,7 @@ function workOutputCompare(cycles, ignoreInterrupts) {
   let t3 = Math.ceil(cpu.timer_3);
 
   for (let i = 0; i < cycles; i++) {
-    //Output compare 1 vector = 0xFFF0
+    // Output compare 1 vector = 0xFFF0
     if (!ignoreInterrupts && (readRAM(0x0008, 1) & 0b00001000) && t1_2 + i == t1OutCmp) {
       //console.log("Timer 1 output compare match!");
 
@@ -279,7 +263,7 @@ function workOutputCompare(cycles, ignoreInterrupts) {
       interruptStack.push(0xFFF0);
     }
 
-    //Output compare 2 vector = 0xFFEE
+    // Output compare 2 vector = 0xFFEE
     if (!ignoreInterrupts && (readRAM(0x0018, 1) & 0b00001000) && t1_2 + i == t2OutCmp) {
       //console.log("Timer 2 output compare match!");
 
@@ -288,7 +272,7 @@ function workOutputCompare(cycles, ignoreInterrupts) {
       interruptStack.push(0xFFEE);
     }
 
-    //Output compare 3 vector = 0xFFEC
+    // Output compare 3 vector = 0xFFEC
     if (!ignoreInterrupts && t3 + i == t3OutCmp) {
       console.log("Timer 3 output compare match!");
 

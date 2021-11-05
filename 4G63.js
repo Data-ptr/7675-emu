@@ -190,12 +190,6 @@ function updatePistons(rotPos) {
   }
 }
 
-// function updateClyState() {
-//   for(let i = 0; i < 4; i++) {
-//     m_4G63.cylinders.each[i].state = incClyState(m_4G63.cylinders.each[i].state);
-//   }
-// }
-
 function updateEngineUI() {
   $('#engine-crank-angle-output').val(m_4G63.crankAngle);
   $('#cly1-pos').text(m_4G63.cylinders.each[0].state);
@@ -237,35 +231,9 @@ function mapClyY(height) {
   return mappedHeight;
 }
 
-// function incClyState(state) {
-//   let ret = 0;
-//
-//   switch(state) {
-//     case cylinderState.COMPRESSION:
-//       ret = cylinderState.COMBUSTION;
-//     break;
-//     case cylinderState.COMBUSTION:
-//       ret = cylinderState.EXHAUST;
-//     break;
-//     case cylinderState.EXHAUST:
-//       ret = cylinderState.INTAKE;
-//     break;
-//     case cylinderState.INTAKE:
-//       ret = cylinderState.COMPRESSION;
-//     break;
-//   }
-//
-//   return ret;
-// }
-
-const engineUiInterval = setInterval(function() {
-  updateEngineUI();
-  //updateEngine(engineT+=0.5);
-}, 100);
-
-// Chart
+// CEL Chart
 let dps = [];
-var chart = new CanvasJS.Chart(
+var celChart = new CanvasJS.Chart(
   "chartContainer",
   {
     title : {
@@ -280,25 +248,15 @@ var chart = new CanvasJS.Chart(
 
 var xVal = 0;
 var yVal = 100;
-var updateInterval = 10;
 var dataLength = 250; // number of dataPoints visible at any point
 
-var updateChart = function(count) {
+var celChartUpdate = function(count) {
   while(dps.length > dataLength) {
     dps.shift();
   }
 
-  chart.render();
+  celChart.render();
 };
-
-updateChart(dataLength);
-
-setInterval(
-  function() {
-    updateChart()
-  },
-  updateInterval
-);
 
 // Gauge
 function doRpmGauge() {

@@ -1,7 +1,5 @@
 let timeLast = 0;
 let cyclesLast = 0;
-let intervalSpeed = 0;
-let stepsPerInterval = 1;
 
 // iOS hack
 $(
@@ -65,70 +63,35 @@ $("#restore-button-input").bind("click", function() {
   }
 });
 
-$("#step-button-input").bind("click", function() {
+$("#step-button-input, #src-step-button-input").bind("click", function() {
   step();
 });
 
-$("#run-button-input").bind("click", function() {
-  if(0 == rtcStart)
-  {
+$("#run-button-input, #src-run-button-input").bind("click", function() {
+  if(0 == rtcStart) {
     rtcStart = new Date().getTime();
   }
 
-  clockUpdateInterval = setInterval(function(){
-    let cycles = cpu.clock.cycleCount;
-    let now = new Date().getTime();
-    simTimeNow = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.cycleCount;
-    rtcNow = rtcStash + ((now - rtcStart) / 1000);
-    let realSpeed = (cycles - cyclesLast) / ((now-timeLast) * 1000);
+  intervalStepT = window.parseInt($("#clock-speed-input").val());
 
-    cyclesLast = cycles;
-    timeLast = now;
+  startIntervalStep(intervalStepT);
+  startIntervalClock(clockUpdateT);
 
-    elementCache.clockCyclesOutput.val(cycles);
-    elementCache.simTimeOutput.val(simTimeNow);
-    elementCache.realSpeedOutput.val(realSpeed);
-    elementCache.realTimeOutput.val(rtcNow);
-  }, 500);
+  if(updateEngineUi) {
+    startIntervalEngineUi(uiUpdateT);
+    startIntervalTdcCasChart(uiUpdateT);
+  }
 
-  intervalSpeed = window.parseInt($("#clock-speed-input").val());
-
-  stepInterval = setInterval(
-    function(){
-      if(updateBatchOutput){
-        let start = new Date().getTime();
-
-        for(let i = 0; i < stepsPerInterval; i++) {
-          step();
-        }
-
-        let end = new Date().getTime();
-
-        let t = end - start;
-
-        if(t > intervalSpeed + (intervalSpeed / 2)) {
-          stepsPerInterval -= Math.ceil((t - intervalSpeed) / 2);
-        } else if(t < intervalSpeed - (intervalSpeed / 2)) {
-          stepsPerInterval += Math.ceil((intervalSpeed - t) / 2);
-        }
-
-        if(stepsPerInterval < 0) {
-          stepsPerInterval = 1;
-        }
-      } else {
-        step();
-      }
-    },
-    intervalSpeed
-  );
+  if(updateCelChart) {
+    startIntervalCelChart(uiUpdateT);
+  }
 });
 
-$("#pause-button-input").bind("click", function() {
-  clearInterval(stepInterval);
-
+$("#pause-button-input, #src-pause-button-input").bind("click", function() {
   rtcStash = rtcStash + (((new Date().getTime()) - rtcStart) / 1000)
   rtcStart = 0;
 
+  clearInterval(stepInterval);
   clearInterval(clockUpdateInterval);
 });
 
@@ -152,9 +115,12 @@ $('#myTab button').bind("click", function() {
   }
 
   if(this.id == "4G63-tab") {
-    setTimeout(doRpmGauge, 500);
+    //TODO: only run once
+    setTimeout(doRpmGauge, 500); //delay
   }
 });
+
+// Settings
 
 $('#updateRamOutput-input').bind('click', function(){
   updateRAM = $(this).is(':checked');
@@ -181,6 +147,30 @@ $('#updateBatchOutput-input').bind('click', function(){
   updateBatchOutput = $(this).is(':checked');
 });
 
+$('#updateCelChart-input').bind('click', function(){
+  updateCelChart = $(this).is(':checked');
+
+  if(updateCelChart) {
+    startIntervalCelChart(uiUpdateT);
+  } else {
+    clearInterval(chartCelInterval);
+  }
+});
+
+$('#updateEngineUi-input').bind('click', function(){
+  updateEngineUi = $(this).is(':checked');
+
+  if(updateEngineUi) {
+    startIntervalEngineUi(uiUpdateT);
+    startIntervalTdcCasChart(uiUpdateT);
+  } else {
+    clearInterval(engineUiInterval);
+    clearInterval(tdcCasChartInterval);
+  }
+});
+
+// Events
+
 $('#trigger-t1-ic-input').bind('click', function(){
   ;
 });
@@ -192,6 +182,10 @@ $('#trigger-t2-ic-input').bind('click', function(){
 $('#trigger-stby-pwr-fail-input').bind('click', function(){
   let ramCtrlReg = readRAM(0x14,1);
   writeRAM(0x14,ramCtrlReg & 0b01000000, 1);
+});
+
+$('#trigger-sci-input').bind('click', function(){
+  interruptStack.push(0xFFE0);
 });
 
 $('#trigger-rti-input').bind('click', function(){
@@ -224,6 +218,8 @@ $('#dsm-test-mode-input').bind('click', function(){
     writeRAM(0x07, prevVal | 8, 1);    // Set it
   }
 });
+
+// DSM
 
 // Clear START bit
 $('#dsm-key-start-input').bind('click', function() {

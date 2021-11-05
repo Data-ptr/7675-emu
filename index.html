@@ -666,7 +666,29 @@
           <div class="row">
             <textarea id="src-output" rows="30"></textarea>
           </div>
+          <div class="row">
+            <div class="col-sm">
+              <input
+                id="src-step-button-input"
+                type="button"
+                value="Step"/>
+            </div>
+
+            <div class="col-sm">
+              <input
+                id="src-run-button-input"
+                type="button"
+                value="Run"/>
+            </div>
+
+            <div class="col-sm">
+              <input
+                id="src-pause-button-input"
+                type="button"
+                value="Pause"/>
+            </div>
           </div>
+        </div>
 
         <div
           id="data-registers"
@@ -2069,7 +2091,7 @@
                         <th
                           title="transmit enable, 1 = enable"
                           scope="col">
-                          TI
+                          TE
                         </th>
 
                         <th
@@ -4771,6 +4793,18 @@
 
           <div class="col-sm">
             <input
+              id="trigger-sci-input"
+              class="btn btn-primary"
+              type="button"
+              value="Trigger SCI"/>
+            <label class="form-label"
+              for="trigger-sci-input">
+              Trigger Serial Rx Interrupt
+            </label>
+          </div>
+
+          <div class="col-sm">
+            <input
               id="trigger-rti-input"
               class="btn btn-primary"
               type="button"
@@ -4936,6 +4970,30 @@
                   class="form-check-label"
                   for="updateSrcOutput-input">
                   Update src output (also slows stuff way down...)
+                </label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  id="updateCelChart-input"
+                  class="form-check-input"
+                  type="checkbox"/>
+                <label
+                  class="form-check-label"
+                  for="updateCelChart-input">
+                  Update CEL chart (also slows stuff down...)
+                </label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  id="updateEngineUi-input"
+                  class="form-check-input"
+                  type="checkbox"/>
+                <label
+                  class="form-check-label"
+                  for="updateEngineUi-input">
+                  Update engine UI (also slows stuff way down...)
                 </label>
               </div>
 
@@ -5631,7 +5689,7 @@
     dsmO2Input:         $("#dsm-o2-input"),       dsmEgrtInput:       $("#dsm-egrt-input"),
     dsmBattInput:       $("#dsm-batt-input"),       dsmBaroInput:       $("#dsm-baro-input"),
     dsmKnockCntInput:   $("#dsm-knock-count-input"),       dsmTpsInput:        $("#dsm-tps-input"),
-    srcTextarea:        $('#src-output')
+    srcTextarea:        $('#src-output'), ignoreInterrupts: $('#ignoreInterrupts-input')
     };
   </script>
 
@@ -5652,6 +5710,8 @@
 
   <script src="cpu.js"></script>
 
+  <script src="sci.js"></script>
+
   <script src="4G63.js"></script>
 
   <script src="ui_input.js"></script>
@@ -5659,4 +5719,6 @@
   <script src="ui-draw.js"></script>
 
   <script src="index.js"></script>
+
+  <script src="intervals.js"></script>
 </div>

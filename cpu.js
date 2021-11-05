@@ -297,11 +297,6 @@ function writeRAM(addr, byte, clockWrite, adcIgnore) {
     redrawRAM = 1;
   }
 
-  //0x0013 sci tx catch
-  if(addr == 0x0013 && 0 != byte) {
-    console.log("Caught sci tx: " + cleanHexify(byte));
-  }
-
   //0x004C str faultHi catch
   if(addr == 0x004C && 0 != byte) {
     console.log("Caught str faultHi: " + cleanHexify(byte));
@@ -322,10 +317,10 @@ function writeRAM(addr, byte, clockWrite, adcIgnore) {
     console.log("Caught faultLo: " + cleanHexify(byte));
   }
 
-  //0x00FA obdFlag catch
-  if(addr == 0x00FA && 0 != byte) {
-    console.log("Caught OBD flag: " + cleanHexify(byte));
-  }
+  // //0x00FA obdFlag catch
+  // if(addr == 0x00FA && 0 != byte) {
+  //   console.log("Caught OBD flag: " + cleanHexify(byte));
+  // }
 
   //0x00FB obdactcmd catch
   if(addr == 0x00FB && 0 != byte) {
@@ -352,9 +347,27 @@ function writeRAM(addr, byte, clockWrite, adcIgnore) {
     console.log("Caught err code proc code: " + cleanHexify(byte));
   }
 
+  // Update to port 2 (mode)
+  if(addr == 0x3) {
+    let modeBits = 0;
+
+    if($('#p2p0-mode-input').is(":checked")) {
+      modeBits += 0b00100000;
+    }
+    if($('#p2p1-mode-input').is(":checked")) {
+      modeBits += 0b01000000;
+    }
+    if($('#p2p2-mode-input').is(":checked")) {
+      modeBits += 0b10000000;
+    }
+
+    // Copy mode bits into port2
+    cpu.memory.view[addr] = byte | modeBits;
+  }
+
   // Update to port 6 (CEL)
   if(addr == 0x2F) {
-    let sTime = (1 / (cpu.clockSpeed * 0xF4240)) * cpu.clock.cycleCount;
+    let sTime = (1 / (cpu.clockSpeed * MHZ)) * cpu.clock.cycleCount;
 
     if(readRAM(0x2F, 1) & 0b00001000) { // CEL is on
       elementCache.dsmCelOutput.addClass("btn-danger").removeClass("btn-secondary");
