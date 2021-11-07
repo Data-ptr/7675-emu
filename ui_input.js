@@ -6,6 +6,8 @@ $(
   "#load-button-input, #load-reset-button-input, #save-button-input, #restore-button-input, #execute-button-input"
 ).css("cursor", "pointer");
 
+// Load Tab
+
 $("#load-button-input").bind("click", function() {
   let base64String = $("#base64-textarea").val();
   let binary_string = window.atob(base64String);
@@ -63,6 +65,8 @@ $("#restore-button-input").bind("click", function() {
   }
 });
 
+// Execution control
+
 $("#step-button-input, #src-step-button-input").bind("click", function() {
   step();
 });
@@ -88,12 +92,23 @@ $("#run-button-input, #src-run-button-input").bind("click", function() {
 });
 
 $("#pause-button-input, #src-pause-button-input").bind("click", function() {
-  rtcStash = rtcStash + (((new Date().getTime()) - rtcStart) / 1000)
-  rtcStart = 0;
-
-  clearInterval(stepInterval);
-  clearInterval(clockUpdateInterval);
+  pauseExec();
 });
+
+// Debug tab
+
+$('#write-break-input').bind('click', function() {
+  breakOnWrite = $(this).is(':checked');
+
+  writeBreakpoint = elementCache.writeBreakpointInput.val();
+});
+
+$('#write-breakpoint-input').bind('change', function() {
+  breakOnWrite = false;
+  $('#write-break-input').val('checked', 'false');
+});
+
+// Log tab
 
 $("#clear-log-button-input").bind("click", function() {
   $("#log-output-div > ul").empty();
@@ -102,6 +117,8 @@ $("#clear-log-button-input").bind("click", function() {
 $("#set-breakpoint-pc-button-input").bind("click", function() {
   $('#breakpoint-input').val($('#register-PC-output').val());
 });
+
+// Update Data Registers UI
 
 $('#myTab button').bind("click", function() {
   if(this.id == "registers-tab") {
@@ -208,6 +225,8 @@ $('#trigger-reset-input').bind('click', function(){
   interruptStack.push(0xFFFE);
 });
 
+// DSM
+
 $('#dsm-test-mode-input').bind('click', function(){
   let prevVal = readRAM(0x07, 1);
 
@@ -218,8 +237,6 @@ $('#dsm-test-mode-input').bind('click', function(){
     writeRAM(0x07, prevVal | 8, 1);    // Set it
   }
 });
-
-// DSM
 
 // Clear START bit
 $('#dsm-key-start-input').bind('click', function() {

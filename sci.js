@@ -2,10 +2,11 @@ let rxBuffer = 0xFD;
 let txBuffer = 0;
 
 function sciClockCheck(cycles) {
-  let t1_2 = Math.ceil(cpu.timer_1_2);
+
 
   for (let i = 0; i < cycles; i++) {
-    if(0 == (t1_2 + i) % getSciClockSpeed()) {
+    const eClock = (cpu.timer_1_2 + i) / 4;
+    if(0 == (eClock + i) % getSciClockSpeed()) {
       sciClock();
     }
   }

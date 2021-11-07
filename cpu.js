@@ -25,6 +25,7 @@ let cpu = {
   memory: { view: undefined, data: undefined },
   ROM: { view: undefined, data: undefined },
   clock: { auto: false, cycleCount: 0 },
+  eClock: 0,
   timer_1_2: 0,
   timer_3: 0,
   clockSpeed: 2, //mhz,
@@ -166,6 +167,14 @@ function setX(bytes) {
   }
 }
 
+function incY(bytes) {
+  if(0xFFFF < cpu.Y + bytes) {
+    bytes = (cpu.Y + bytes) - 0xFFFF;
+  }
+
+  setY(bytes);
+}
+
 function setY(bytes) {
   checkBytes(bytes, 4);
 
@@ -283,7 +292,7 @@ function writeRAM(addr, byte, clockWrite, adcIgnore) {
 
   if(updateRAM) {
     if (clockWrite) {
-      lastClockWrite.push(addr);
+      //lastClockWrite.push(addr);
     } else {
       lastRAMWrite.push(addr);
 
@@ -297,6 +306,35 @@ function writeRAM(addr, byte, clockWrite, adcIgnore) {
     redrawRAM = 1;
   }
 
+  // Memory write break (debug)
+  if(breakOnWrite && window.parseInt(writeBreakpoint, 16) == addr) {
+    breakExec();
+  }
+
+  tempWriteDebug(addr, byte);
+
+  // Update to port 2 (mode)
+  if(addr == 0x3) {
+    workMode(addr);
+  }
+
+  // Update to port 6 (CEL)
+  if(addr == 0x2F) {
+    workCel(byte);
+  }
+
+  // ADC scan
+  if(!adcIgnore && addr == 0x1F) { // ADC ctrl write
+    workAdc(byte);
+  }
+
+  //Refresh if register
+  if (updateDataRegisters && 0x40 > addr) {
+    updateRegisters(addr);
+  }
+}
+
+function tempWriteDebug(addr, byte) {
   //0x004C str faultHi catch
   if(addr == 0x004C && 0 != byte) {
     console.log("Caught str faultHi: " + cleanHexify(byte));
@@ -317,7 +355,7 @@ function writeRAM(addr, byte, clockWrite, adcIgnore) {
     console.log("Caught faultLo: " + cleanHexify(byte));
   }
 
-  // //0x00FA obdFlag catch
+  //0x00FA obdFlag catch
   // if(addr == 0x00FA && 0 != byte) {
   //   console.log("Caught OBD flag: " + cleanHexify(byte));
   // }
@@ -346,97 +384,88 @@ function writeRAM(addr, byte, clockWrite, adcIgnore) {
   if(addr == 0x017C && 0 != byte) {
     console.log("Caught err code proc code: " + cleanHexify(byte));
   }
+}
 
-  // Update to port 2 (mode)
-  if(addr == 0x3) {
-    let modeBits = 0;
+//TODO: Speed up with caching
+function workMode(addr) {
+  let modeBits = 0;
 
-    if($('#p2p0-mode-input').is(":checked")) {
-      modeBits += 0b00100000;
-    }
-    if($('#p2p1-mode-input').is(":checked")) {
-      modeBits += 0b01000000;
-    }
-    if($('#p2p2-mode-input').is(":checked")) {
-      modeBits += 0b10000000;
-    }
-
-    // Copy mode bits into port2
-    cpu.memory.view[addr] = byte | modeBits;
+  if($('#p2p0-mode-input').is(":checked")) {
+    modeBits += 0b00100000;
+  }
+  if($('#p2p1-mode-input').is(":checked")) {
+    modeBits += 0b01000000;
+  }
+  if($('#p2p2-mode-input').is(":checked")) {
+    modeBits += 0b10000000;
   }
 
-  // Update to port 6 (CEL)
-  if(addr == 0x2F) {
-    let sTime = (1 / (cpu.clockSpeed * MHZ)) * cpu.clock.cycleCount;
+  // Copy mode bits into port2
+  cpu.memory.view[addr] |= modeBits;
+}
 
-    if(readRAM(0x2F, 1) & 0b00001000) { // CEL is on
-      elementCache.dsmCelOutput.addClass("btn-danger").removeClass("btn-secondary");
-      dps.push({y: 1, x: sTime});
-    } else { // CEL is off
-      elementCache.dsmCelOutput.addClass("btn-secondary").removeClass("btn-danger");
-      dps.push({y: 0, x: sTime});
-    }
+function workCel(port2Byte) {
+  const sTime = (1 / (cpu.clockSpeed * MHZ)) * cpu.clock.cycleCount;
+
+  if(port2Byte & 0b00001000) { // CEL is on
+    elementCache.dsmCelOutput.addClass("btn-danger").removeClass("btn-secondary");
+    dps.push({y: 1, x: sTime});
+  } else { // CEL is off
+    elementCache.dsmCelOutput.addClass("btn-secondary").removeClass("btn-danger");
+    dps.push({y: 0, x: sTime});
   }
+}
 
-  // ADC scan
-  if(!adcIgnore && addr == 0x1F) { // ADC ctrl write
-    let adcCtrl = byte; //readRAM(0x1F, 1);
+function workAdc(adcCtrl) {
+  if(adcCtrl & 0b00001000) { // START bit set
+    const adcChan = adcCtrl & 0b00000111; // ADC channel
+    let adcVal = 0;
 
-    if(adcCtrl & 0b00001000) { // START bit set
-      const adcChan = adcCtrl & 0b00000111; // ADC channel
-      let adcVal = 0;
+    switch(adcChan) {
+      case 0:
+        // ECT
+        adcVal = elementCache.dsmEctInput.val();
+      break;
+      case 1:
+        // IAT
+        adcVal = elementCache.dsmIatInput.val();
+      break;
+      case 2:
+        // BARO
+        // (.00486x)bar  [x = b / .00486]
+        adcVal = Math.ceil(parseInt(elementCache.dsmBaroInput.val()) / 0.00486);
+      break;
+      case 3:
+        // O2
+        // (.0195x)v   [x = v / .0195]
+        adcVal = Math.ceil(parseFloat(elementCache.dsmO2Input.val()) / 0.0195);
+      break;
+      case 4:
+        // EGRT
+        // (-2.7x + 597.7)deg F this is unofficial []
+        adcVal = Math.ceil(0.037 * ( 5977 - 10 * elementCache.dsmEgrtInput.val()));
+      break;
+      case 5:
+        // BATT
+        // (.0733x)v   [x = v / .0733]
+        adcVal = Math.ceil(elementCache.dsmBattInput.val() / 0.0733);
+      break;
+      case 6:
+        // KNOCK count
+        adcVal = parseInt(elementCache.dsmKnockCntInput.val());
+      break;
+      case 7:
+        // TPS
+        // (100x/255)% [x = 51y/20]
+        adcVal = Math.ceil((51 * elementCache.dsmTpsInput.val()) / 20);
+      break;
+    };
 
-      switch(adcChan) {
-        case 0:
-          // ECT
-          adcVal = elementCache.dsmEctInput.val();
-        break;
-        case 1:
-          // IAT
-          adcVal = elementCache.dsmIatInput.val();
-        break;
-        case 2:
-          // BARO
-          // (.00486x)bar  [x = b / .00486]
-          adcVal = Math.ceil(parseInt(elementCache.dsmBaroInput.val()) / 0.00486);
-        break;
-        case 3:
-          // O2
-          // (.0195x)v   [x = v / .0195]
-          adcVal = Math.ceil(parseFloat(elementCache.dsmO2Input.val()) / 0.0195);
-        break;
-        case 4:
-          // EGRT
-          // (-2.7x + 597.7)deg F this is unofficial []
-          adcVal = Math.ceil(0.037 * ( 5977 - 10 * elementCache.dsmEgrtInput.val()));
-        break;
-        case 5:
-          // BATT
-          // (.0733x)v   [x = v / .0733]
-          adcVal = Math.ceil(elementCache.dsmBattInput.val() / 0.0733);
-        break;
-        case 6:
-          // KNOCK count
-          adcVal = parseInt(elementCache.dsmKnockCntInput.val());
-        break;
-        case 7:
-          // TPS
-          // (100x/255)% [x = 51y/20]
-          adcVal = Math.ceil((51 * elementCache.dsmTpsInput.val()) / 20);
-        break;
-      };
-
-      adcObj = {
-        countdown: 3,
-        val: adcVal,
-        chan: adcChan
-      }
+    adcObj = {
+      countdown: 3,
+      val: adcVal,
+      chan: adcChan
     }
-  }
-
-  //Refresh if register
-  if (updateDataRegisters && 0x40 > addr) {
-    updateRegisters(addr);
   }
 }
 
@@ -455,7 +484,7 @@ function readRAM(addr, clockRead) {
 
   if(updateRAM) {
     if (clockRead) {
-      lastClockRead.push(addr);
+      //lastClockRead.push(addr);
     } else {
       lastRAMRead.push(addr);
 
@@ -519,6 +548,7 @@ function cpuReset() {
   lastRAMRead.length = 0;
 
   cpu.clock.cycleCount = 0;
+  cpu.eClock = 0;
 
   /*
       the MPU I-bit is set which masks (disables) both IRQI and IRQ2 interrupts;

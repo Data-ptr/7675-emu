@@ -19,6 +19,8 @@ let updateBatchOutput = $('#updateBatchOutput-input').is(":checked");
 let updateSrc = $('#updateSrcOutput-input').is(":checked");
 let updateCelChart = $('#updateCelChart-input').is(":checked");
 let updateEngineUi = $('#updateEngineUi-input').is(":checked");
+let breakOnWrite = elementCache.writeBreakInput.is(":checked");
+let writeBreakpoint = elementCache.writeBreakpointInput.val();
 
 let tdcCheckCnt = 0;
 let casCheckCnt = 0;
@@ -45,6 +47,20 @@ writeRAM(0x07, 0b00100000, 1);
 
 // Force ser 2Hz of Tclocks for heartbeat mode
 //writeRAM(0xD9, 0b00100000, 1);
+
+function breakExec() {
+  pauseExec();
+  console.log("Hit the breakpoint");
+}
+
+function pauseExec() {
+  clearInterval(stepInterval);
+
+  rtcStash = rtcStash + (((new Date().getTime()) - rtcStart) / 1000);
+  rtcStart = 0;
+
+  clearInterval(clockUpdateInterval);
+}
 
 function step() {
   let view = cpu.ROM.view;
@@ -101,7 +117,7 @@ function step() {
   }
 
   if(updateUI) {
-    $("#instruction").text(fullInst);
+    elementCache.instruction.text(fullInst);
   }
 
   if(logEnabled) {
@@ -113,9 +129,13 @@ function step() {
       "<li>" + cpu.PC.toString(16) + ": " + fullInst + "</li>"
     );
 
-    if($("#log-follow-input").is(":checked")) {
+    if(elementCache.logFollowInput.is(":checked")) {
       let d = logOutputDiv;
       d.scrollTop(d.prop("scrollHeight"));
+    }
+
+    while(logElement[0].childElementCount > 5000) {
+      $(logElement).find("li:first-child").remove();
     }
   }
 
@@ -139,32 +159,20 @@ function step() {
     executeMicrocode(view);
   }
 
-  if ($("#break-input").is(":checked")) {
-    if (cpu.PC == window.parseInt($("#breakpoint-input").val(), 16)) {
-      clearInterval(stepInterval);
-
-      rtcStash = rtcStash + (((new Date().getTime()) - rtcStart) / 1000)
-      rtcStart = 0;
-
-      clearInterval(clockUpdateInterval);
-      console.log("Hit the breakpoint");
+  if (elementCache.breakInput.is(":checked")) {
+    if (cpu.PC == window.parseInt(elementCache.breakpointInput.val(), 16)) {
+      breakExec();
     }
   }
 
-  if ($("#op-break-input").is(":checked")) {
+  if (elementCache.opBreakInput.is(":checked")) {
     if (
       instructionTable[view[cpu.PC - 0x8000]].name.toLowerCase() ==
-      $("#op-breakpoint-input")
+      elementCache.opBreakpointInput
         .val()
         .toLowerCase()
     ) {
-      clearInterval(stepInterval);
-
-      rtcStash = rtcStash + (((new Date().getTime()) - rtcStart) / 1000)
-      rtcStart = 0;
-
-      clearInterval(clockUpdateInterval);
-      console.log("Hit the op-breakpoint");
+      breakExec();
     }
   }
 
@@ -188,9 +196,12 @@ function advanceClock(cycles) {
 
   workOutputCompare(cycles, ignoreInterrupts);
 
+  ic_check(); // Input compare
+
   // New clocks values
   cpu.timer_1_2 += (timer1Freq / cpu.clockSpeed) * cycles;
   cpu.timer_3 += (timer3Freq / cpu.clockSpeed) * cycles;
+  cpu.eClock = cpu.timer_1_2 / 4;
 
   workTimerOverflows(ignoreInterrupts);
 

@@ -41,20 +41,20 @@ let instructionTable = {
 
       // Do flag stuff
       /*
-        N  = R7: Set  if the  result's MSB is  "1"; cleared  otherwise_
-        Z = R7-R6-RS-R4-R3-R2-Rl-RO: Set  if  the  "resul t is  zero;  cleared otherwise_
+        N  = R7: Set  if the  result's MSB is  "1"; cleared  otherwise
+        Z = R7-R6-RS-R4-R3-R2-Rl-RO: Set  if  the  result is  zero; cleared otherwise
         V  =  0: Cleared
       */
-      if (0 === result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
       if (0x80 == (result & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
+      }
+
+      if (0 === result) {
+        setStatusFlag("Z");
+      } else {
+        clearStatusFlag("Z");
       }
 
       clearStatusFlag("V");
@@ -92,7 +92,7 @@ let instructionTable = {
         clearStatusFlag("N");
       }
 
-      if (0 === result) {
+      if (0 == result) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
@@ -114,7 +114,7 @@ let instructionTable = {
     cycles: 3,
     microcode: function(view) {
       const acc = cpu.D;
-      const result = cpu.D >>> 1;
+      const result = acc >>> 1;
 
       setD(result);
 
@@ -141,7 +141,7 @@ let instructionTable = {
         clearStatusFlag("C");
       }
 
-      if ((cpu.status.N && !cpu.status.C) || (!cpu.status.N && cpu.status.C)) {
+      if (1 == cpu.status.N + cpu.status.C) {
         setStatusFlag("V");
       } else {
         clearStatusFlag("V");
@@ -161,18 +161,18 @@ let instructionTable = {
     cycles: 3,
     microcode: function(view) {
       const acc = cpu.D;
-      const result = (cpu.D << 1) & 0xffff;
+      const result = (acc << 1) & 0xFFFF;
 
       setD(result);
 
       // Do flag stuff
       /*
-      N: Set if most significant bit of result is set; cleared otherwise.
-      Z: Set if all bits of the result are cleared; cleared otherwise.
-      V: Set if, after the completion of the shift operation, (N is set and Cis cleared)
-      OR (N is cleared and C is set); cleared otherwise.
-      C: Set if before the operation the most significant bit of ACCD was set;
-      cleared otherwise.
+        N: Set if most significant bit of result is set; cleared otherwise.
+        Z: Set if all bits of the result are cleared; cleared otherwise.
+        V: Set if, after the completion of the shift operation, (N is set and Cis cleared)
+        OR (N is cleared and C is set); cleared otherwise.
+        C: Set if before the operation the most significant bit of ACCD was set;
+        cleared otherwise.
       */
       if (0x8000 == (result & 0x8000)) {
         setStatusFlag("N");
@@ -192,7 +192,7 @@ let instructionTable = {
         clearStatusFlag("C");
       }
 
-      if ((cpu.status.N && !cpu.status.C) || (!cpu.status.N && cpu.status.C)) {
+      if (1 == cpu.status.N + cpu.status.C) {
         setStatusFlag("V");
       } else {
         clearStatusFlag("V");
@@ -213,19 +213,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 3,
     microcode: function(view) {
-      if (0xffff == cpu.X) {
-        setX(0x0);
-      } else {
-        setX(cpu.X + 1);
-      }
-
-      // Do flag stuff
-      // Z: Set if all 16 bits of the result are cleared; cleared otherwise.
-      if (0 == cpu.X) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
+      add16(LOC.IMM, LOC.X, 0, 1, FLAG.INX);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -240,19 +228,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 3,
     microcode: function(view) {
-      if (0 == cpu.X) {
-        setX(0xffff);
-      } else {
-        setX(cpu.X - 1);
-      }
-
-      // Do flag stuff
-      // Z: Set if all bits of the result are cleared; cleared otherwise.
-      if (0 == cpu.X) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
+      sub16(LOC.IMM, LOC.X, 0, 1, FLAG.DEX);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -267,8 +243,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      // V: Cleared.
-      clearStatusFlag("V");
+      clearFlag("V");
 
       //Next
       setPC(cpu.PC + this.len);
@@ -277,17 +252,43 @@ let instructionTable = {
       advanceClock(this.cycles);
     }
   },
-  0x0b: { name: "sev", len: 1, type: "IMPLIED", cycles: 0 },
-  0x0c: { name: "clc", len: 1, type: "IMPLIED", cycles: 0 },
-  0x0d: { name: "sec", len: 1, type: "IMPLIED", cycles: 0 },
+  0x0b: { name: "sev", len: 1, type: "IMPLIED", cycles: 2,
+  microcode: function(view) {
+    setFlag("V");
+
+    //Next
+    setPC(cpu.PC + this.len);
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
+  0x0c: { name: "clc", len: 1, type: "IMPLIED", cycles: 2,
+  microcode: function(view) {
+    clearFlag("C");
+
+    //Next
+    setPC(cpu.PC + this.len);
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
+  0x0d: { name: "sec", len: 1, type: "IMPLIED", cycles: 2,
+  microcode: function(view) {
+    setFlag("C");
+
+    //Next
+    setPC(cpu.PC + this.len);
+
+    //Clock
+    advanceClock(this.cycles);
+  } },
   0x0e: {
     name: "cli",
     len: 1,
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      // I: Cleared.
-      clearStatusFlag("I");
+      clearFlag("I");
 
       //Next
       setPC(cpu.PC + this.len);
@@ -302,8 +303,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      //I: Set.
-      setStatusFlag("I");
+      setFlag("I");
 
       //Next
       setPC(cpu.PC + this.len);
@@ -318,52 +318,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      const accA = cpu.A;
-      const accB = cpu.B;
-      let result = accA - accB;
-
-      if (result < 0) {
-        result += 0xff;
-      }
-
-      setA(result);
-
-      // Do flag stuff
-      /*
-      N: Set if most significant bit of the result is set; cleared otherwise.
-      Z: Set if all bits of the result are cleared; cleared otherwise.
-      V: Set if there is two's complement overflow as a result of the operation.
-      C: Carry is set if the absolute value of Accumulator B is larger than the
-      absolute value of Accumulator A; cleared otherwise.
-    */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = accA & 0x80;
-      let ob = accB & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (accB > accA) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      sub8(LOC.IMM, LOC.A, 0, cpu.B, FLAG.SUB);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -378,48 +333,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      const accA = cpu.A;
-      const accB = cpu.B;
-      const result = accA - accB;
-
-      // Do flag stuff
-      /*
-      N: Set if the most significant bit of the result of the subtraction is set; cleared
-      otherwise.
-      Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-      V: Set if the subtraction results in two's complement overflow: cleared other-
-      wise.
-      C: Set if the absolute value of the contents of memory is larger than the abso-
-      lute value of the accumulator; cleared otherwise.
-    */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = accA & 0x80;
-      const ob = accB & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (accB > accA) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp8(LOC.IMM, cpu.A, 0, cpu.B)
 
       //Next
       setPC(cpu.PC + this.len);
@@ -444,7 +358,7 @@ let instructionTable = {
 
       if (0 == result) {
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -474,11 +388,11 @@ let instructionTable = {
 
       const d = (b1 << 8) + b2; //denominator
 
-      const q = 0 == d || d <= n ? 0xff : n / d; //quotient
+      const q = 0 == d || d <= n ? 0xFF : n / d; //quotient
       const r =
-        0 == d || d <= n ? 0x0 : Math.floor((q - Math.floor(q)) / (1 / 0xff)); //remainder
+        0 == d || d <= n ? 0x0 : Math.floor((q - Math.floor(q)) / (1 / 0xFF)); //remainder
 
-      const resultA = r > 0xff ? r >> 8 : r;
+      const resultA = r > 0xFF ? r >> 8 : r;
       const resultB = Math.floor(q);
 
       setA(resultA);
@@ -486,11 +400,11 @@ let instructionTable = {
 
       // Do flag stuff
       /*
-      Z: Set if quotient is $0000; cleared otherwise.
-      V: Set if denominator was less than or equal to the numerator; cleared
-      otherwise.
-      C: Set if denominator was $0000; cleared otherwise.
-    */
+        Z: Set if quotient is $0000; cleared otherwise.
+        V: Set if denominator was less than or equal to the numerator; cleared
+        otherwise.
+        C: Set if denominator was $0000; cleared otherwise.
+      */
       if (0 == q) {
         setStatusFlag("Z");
       } else {
@@ -536,11 +450,11 @@ let instructionTable = {
 
       const d = (b1 << 8) + b2; //denominator
 
-      const q = 0 == d || d <= n ? 0xff : n / d; //quotient
+      const q = 0 == d || d <= n ? 0xFF : n / d; //quotient
       const r =
-        0 == d || d <= n ? 0x0 : Math.floor((q - Math.floor(q)) / (1 / 0xff)); //remainder
+        0 == d || d <= n ? 0x0 : Math.floor((q - Math.floor(q)) / (1 / 0xFF)); //remainder
 
-      const resultA = r > 0xff ? r >> 8 : r;
+      const resultA = r > 0xFF ? r >> 8 : r;
       const resultB = Math.floor(q);
 
       setA(resultA);
@@ -584,23 +498,25 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      setB(cpu.A);
+      const acc = cpu.A;
+
+      setB(acc);
 
       // Do flag stuff
       /*
-      N: Set if the most significant bit of the contents of the accumulator is set;
-      cleared otherwise.
-      Z: Set if all bits of the contents of the accumulator are cleared; cleared other-
-      wise.
-      V: Cleared.
+        N: Set if the most significant bit of the contents of the accumulator is set;
+        cleared otherwise.
+        Z: Set if all bits of the contents of the accumulator are cleared; cleared other-
+        wise.
+        V: Cleared.
       */
-      if (0x80 == (cpu.B & 0x80)) {
+      if (0x80 == (acc & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
-      if (0 == cpu.B) {
+      if (0 == acc) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
@@ -621,7 +537,9 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      setA(cpu.B);
+      const acc = cpu.B;
+
+      setA(acc);
 
       // Do flag stuff
       /*
@@ -631,13 +549,13 @@ let instructionTable = {
         wise.
         V: Cleared.
       */
-      if (0x80 == (cpu.A & 0x80)) {
+      if (0x80 == (acc & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
       }
 
-      if (0 == cpu.A) {
+      if (0 == acc) {
         setStatusFlag("Z");
       } else {
         clearStatusFlag("Z");
@@ -707,50 +625,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      const accA = cpu.A;
-      const accB = cpu.B;
-      const result = accA + accB;
-
-      setA(result);
-
-      // Do flag stuff
-      /*
-        N: Set if the most significant bit of the result of the subtraction is set; cleared
-        otherwise.
-        Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-        V: Set if the subtraction results in two's complement overflow: cleared other-
-        wise.
-        C: Set if the absolute value of the contents of memory is larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = accA & 0x80;
-      const ob = accB & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (accB > accA) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      add8(LOC.IMM, LOC.A, 0, cpu.B, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -765,51 +640,11 @@ let instructionTable = {
     type: "IMMEDIATE16",
     cycles: 5,
     microcode: function(view) {
-      const acc = cpu.D;
       const firstByte = view[cpu.PC - 0x8000 + 1];
       const secondByte = view[cpu.PC - 0x8000 + 2];
       const word = (firstByte << 8) + secondByte;
 
-      let result = acc - word;
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit c;>f the result of the subtraction is set; cleared
-        otherwise.
-        Z: Set if all bits of the internal result are cleared; cleared otherwise.
-        V: Set if the subtraction results in two's complement overflow; cleared other-
-        wise.
-        C: Set if the absolute value of the contents of memory is larger than the abso-
-        lute value of the index register; cleared otherwise.
-      */
-      if (0x8000 == (result & 0x8000)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x8000;
-      let ob = word & 0x8000;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (word > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp16(LOC.IMM, LOC.D, 0, word);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -819,56 +654,14 @@ let instructionTable = {
     }
   },
   0x1d: {
-    name: "cmpd1",
+    name: "cpd1",
     len: 2,
     type: "DIRECT",
     cycles: 6,
     microcode: function(view) {
-      const acc = cpu.D;
       const addr = view[cpu.PC - 0x8000 + 1];
-      const mem1 = readRAM(addr);
-      const mem2 = readRAM(addr + 1);
-      const mem = (mem1 << 8) + mem2;
-      const result = acc - mem;
 
-      // Do flag stuff
-      /*
-        N: Set if the most significant bit of the result of the subtraction is set; cleared
-        otherwise.
-        Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-        V: Set if the subtraction results in two's complement overflow: cleared other-
-        wise.
-        C: Set if the absolute value of the contents of memory is larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x8000 == (result & 0x8000)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = acc & 0x8000;
-      const ob = mem & 0x8000;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp16(LOC.MEM, LOC.D, addr, 0);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -880,52 +673,11 @@ let instructionTable = {
   0x1e: { name: "cpd", len: 2, type: "INDEXED", cycles: 0 },
   0x1f: { name: "cpd", len: 3, type: "EXTENDED", cycles: 7,
   microcode: function(view) {
-    const acc = cpu.D;
     const firstByte = view[cpu.PC - 0x8000 + 1];
     const secondByte = view[cpu.PC - 0x8000 + 2];
     const addr = (firstByte << 8) + secondByte;
-    const mem = readRAM(addr)
 
-    let result = acc - mem;
-
-    // Do flag stuff
-    /*
-      N: Set if most significant bit c;>f the result of the subtraction is set; cleared
-      otherwise.
-      Z: Set if all bits of the internal result are cleared; cleared otherwise.
-      V: Set if the subtraction results in two's complement overflow; cleared other-
-      wise.
-      C: Set if the absolute value of the contents of memory is larger than the abso-
-      lute value of the index register; cleared otherwise.
-    */
-    if (0x8000 == (result & 0x8000)) {
-      setStatusFlag("N");
-    } else {
-      clearStatusFlag("N");
-    }
-
-    if (0 == result) {
-      setStatusFlag("Z");
-    } else {
-      clearStatusFlag("Z");
-    }
-
-    // 2s compliment overflow test
-    // Get MSBs of the operands
-    let oa = acc & 0x8000;
-    let ob = mem & 0x8000;
-
-    if (oa != ob) {
-      clearStatusFlag("V");
-    } else {
-      clearStatusFlag("V");
-    }
-
-    if (mem > acc) {
-      setStatusFlag("C");
-    } else {
-      clearStatusFlag("C");
-    }
+    cmp16(LOC.MEM, LOC.D, addr, 0);
 
     //Next
     setPC(cpu.PC + this.len);
@@ -1059,7 +811,7 @@ let instructionTable = {
 
       if (cpu.status.C) {
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -1391,16 +1143,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 3,
     microcode: function(view) {
-      let result = cpu.B + cpu.X;
-
-      if (result > 0xffff) {
-        result = result - 0xffff;
-      }
-
-      setX(result);
-
-      // Do flag stuff
-      // Not affected.
+      add16(LOC.IMM, LOC.X, 0, cpu.B, FLAG.NONE);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -1462,15 +1205,15 @@ let instructionTable = {
     microcode: function(view) {
       let result = cpu.A * cpu.B;
 
-      if (result > 0xffff) {
-        result = result - 0xffff;
+      if (result > 0xFF) {
+        result = result - 0xFF;
       }
 
       setD(result);
 
       // Do flag stuff
       // C: Set if bit 7 of result (ACCB B7) is set; cleared otherwise.
-      if (0x8000 == (result & 0x8000)) {
+      if (0x80 == (result & 0x80)) {
         setStatusFlag("C");
       } else {
         clearStatusFlag("C");
@@ -1841,39 +1584,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      const acc = cpu.A;
-
-      if (0 == acc) {
-        setA(0xff);
-      } else {
-        setA(acc - 1);
-      }
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if there was two's complement overflow as a result of the operation;
-        cleared otherwise. Two's complement ·overflow occurs if and only if (ACCX)
-        or (M) was 80 before the operation.
-      */
-      if (0x80 == (acc & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == acc) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if (0x80 == acc) {
-        setStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
+      sub8(LOC.IMM, LOC.A, 0, 1, FLAG.DEC);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -1889,39 +1600,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      const acc = cpu.A;
-
-      if (0xff == acc) {
-        setA(0);
-      } else {
-        setA(acc + 1);
-      }
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if there is a two's complement overflow as a result of the operation;
-        cleared otherwise. Two's complement overflow will occur if and only if
-        (ACCX) or (M) was 7F before the operation.
-      */
-      if (0x80 == (acc & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == acc) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if (0x7f == acc) {
-        setStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
+      add8(LOC.IMM, LOC.A, 0, 1, FLAG.INC);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -2346,42 +2025,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      const acc = cpu.B;
-      let result = 0;
-
-      if (0 == acc) {
-        result = 0xff;
-      } else {
-        result = acc - 1;
-      }
-
-      setB(result);
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if there was two's complement overflow as a result of the operation;
-        cleared otherwise. Two's complement ·overflow occurs if and only if (ACCX)
-        or (M) was 80 before the operation.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if (0x80 == acc) {
-        setStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
+      sub8(LOC.IMM, LOC.B, 0, 1, FLAG.DEC);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -2397,42 +2041,7 @@ let instructionTable = {
     type: "IMPLIED",
     cycles: 2,
     microcode: function(view) {
-      const acc = cpu.B;
-      let result = 0;
-
-      if (0xff == acc) {
-        result = 0;
-      } else {
-        result = cpu.B + 1;
-      }
-
-      setB(result);
-
-      // Do flag stuff
-      /*
-      N: Set if most significant bit of the result is set; cleared otherwise.
-      Z: Set if all bits of the result are cleared; cleared otherwise.
-      V: Set if there is a two's complement overflow as a result of the operation;
-      cleared otherwise. Two's complement overflow will occur if and only if
-      (ACCX) or (M) was 7F before the operation.
-    */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if (0x7f == acc) {
-        setStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
+      add8(LOC.IMM, LOC.B, 0, 1, FLAG.INC);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -2577,37 +2186,8 @@ let instructionTable = {
     microcode: function(view) {
       const offset = view[cpu.PC - 0x8000 + 1];
       const addr = offset + cpu.X;
-      const mem = readRAM(addr);
 
-      const result = mem + 1;
-
-      writeRAM(addr, result);
-
-      // Do flag stuff
-      /*
-      N: Set if most significant bit of the result is set; cleared otherwise.
-      Z: Set if all bits of the result are cleared; cleared otherwise.
-      V: Set if there is a two's complement overflow as a result of the operation;
-      cleared otherwise. Two's complement overflow will occur if and only if
-      (ACCX) or (M) was 7F before the operation.
-    */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if (0x7f == mem) {
-        setStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
+      add8(LOC.IMM, LOC.MEM, addr, 1, FLAG.INC);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -2948,43 +2528,8 @@ let instructionTable = {
       const firstByte = view[cpu.PC - 0x8000 + 1];
       const secondByte = view[cpu.PC - 0x8000 + 2];
       const addr = (firstByte << 8) + secondByte;
-      let mem = 0;
 
-      if (RAMSize > addr) {
-        mem = readRAM(addr);
-      } else {
-        mem = readROM(addr);
-      }
-
-      const result = mem + 1;
-
-      writeRAM(addr, result);
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if there is a two's complement overflow as a result of the operation;
-        cleared otherwise. Two's complement overflow will occur if and only if
-        (ACCX) or (M) was 7F before the operation.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      if (0x7f == mem) {
-        setStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
+      add8(LOC.IMM, LOC.MEM, addr, 1, FLAG.INC);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -3098,53 +2643,9 @@ let instructionTable = {
     type: "IMMEDIATE",
     cycles: 2,
     microcode: function(view) {
-      const acc = cpu.A;
       const byte = view[cpu.PC - 0x8000 + 1];
-      let result = acc - byte;
 
-      if (0 > result) {
-        result += 0xff;
-      }
-
-      setA(result);
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if there is a two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if the absolute value of the contents of memory are larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x8000;
-      let ob = byte & 0x8000;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (byte > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      sub8(LOC.IMM, LOC.A, 0, byte, FLAG.SUB);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -3159,48 +2660,9 @@ let instructionTable = {
     type: "IMMEDIATE",
     cycles: 2,
     microcode: function(view) {
-      const acc = cpu.A;
       const byte = view[cpu.PC - 0x8000 + 1];
-      const result = acc - byte;
 
-      // Do flag stuff
-      /*
-        N: Set if the most significant bit of the result of the subtraction is set; cleared
-        otherwise.
-        Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-        V: Set if the subtraction results in two's complement overflow: cleared other-
-        wise.
-        C: Set if the absolute value of the contents of memory is larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x80;
-      let ob = byte & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (byte > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp8(LOC.IMM, LOC.A, 0, byte);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -3276,57 +2738,11 @@ let instructionTable = {
     type: "IMMEDIATE16",
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.D;
       const firstByte = view[cpu.PC - 0x8000 + 1];
       const secondByte = view[cpu.PC - 0x8000 + 2];
       const word = (firstByte << 8) + secondByte;
 
-      let result = acc - word;
-
-      if (0 > result) {
-        result += 0xffff;
-      }
-
-      setD(result);
-
-      // Do flag stuff
-      /*
-        N: Set if the most significant bit of the result of the subtraction is set; cleared
-        otherwise.
-        Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-        V: Set if the subtraction results in two's complement overflow: cleared other-
-        wise.
-        C: Set if the absolute value of the contents of memory is larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x8000 == (result & 0x8000)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x8000;
-      let ob = word & 0x8000;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (word > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      sub16(LOC.IMM, LOC.D, 0, word, FLAG.SUB);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -3463,7 +2879,7 @@ let instructionTable = {
 
       if (0 != (readRAM(addr) & bitMask)) {
         if (0b10000000 == (0b10000000 & jmpOffset)) {
-          setPC(cpu.PC - ((jmpOffset ^ 0xff) + 0x1));
+          setPC(cpu.PC - ((jmpOffset ^ 0xFF) + 0x1));
         } else {
           setPC(cpu.PC + jmpOffset);
         }
@@ -3624,53 +3040,9 @@ let instructionTable = {
     type: "IMMEDIATE",
     cycles: 2,
     microcode: function(view) {
-      const acc = cpu.A;
       const byte = view[cpu.PC - 0x8000 + 1];
-      let result = acc + byte;
 
-      if (0xff < result) {
-        result -= 0xff;
-      }
-
-      setA(result);
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if there is a two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if the absolute value of the contents of memory are larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x80;
-      let ob = byte & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (byte > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      add8(LOC.IMM, LOC.A, 0, byte, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -3685,51 +3057,11 @@ let instructionTable = {
     type: "IMMEDIATE16",
     cycles: 4,
     microcode: function(view) {
-      const index = cpu.X;
-      const b1 = view[cpu.PC - 0x8000 + 1];
-      const b2 = view[cpu.PC - 0x8000 + 2];
-      const word = (b1 << 8) + b2;
+      const firstByte = view[cpu.PC - 0x8000 + 1];
+      const secondByte = view[cpu.PC - 0x8000 + 2];
+      const word = (firstByte << 8) + secondByte;
 
-      const result = index - word;
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit c;>f the result of the subtraction is set; cleared
-        otherwise.
-        Z: Set if all bits of the internal result are cleared; cleared otherwise.
-        V: Set if the subtraction results in two's complement overflow; cleared other-
-        wise.
-        C: Set if the absolute value of the contents of memory is larger than the abso-
-        lute value of the index register; cleared otherwise.
-      */
-      if (0x8000 == (result & 0x8000)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 === result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = index & 0x8000;
-      let ob = word & 0x8000;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (work > index) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp16(LOC.IMM, LOC.X, 0, word);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -3840,54 +3172,9 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 3,
     microcode: function(view) {
-      const acc = cpu.A;
       const addr = view[cpu.PC - 0x8000 + 1];
-      const mem = readRAM(addr);
-      let result = acc - mem;
 
-      if (0 > result) {
-        result += 0xff;
-      }
-
-      setA(result);
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if there is a two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if the absolute value of the contents of memory are larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x80;
-      let ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      sub8(LOC.MEM, LOC.A, addr, 0, FLAG.SUB);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -3902,49 +3189,9 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 3,
     microcode: function(view) {
-      const acc = cpu.A;
       const addr = view[cpu.PC - 0x8000 + 1];
-      const mem = readRAM(addr);
-      const result = acc - mem;
 
-      // Do flag stuff
-      /*
-      N: Set if the most significant bit of the result of the subtraction is set; cleared
-      otherwise.
-      Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-      V: Set if the subtraction results in two's complement overflow: cleared other-
-      wise.
-      C: Set if the absolute value of the contents of memory is larger than the abso-
-      lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x80;
-      let ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp8(LOC.MEM, LOC.A, addr, 0);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -4021,48 +3268,9 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 5,
     microcode: function(view) {
-      const acc = cpu.D;
       const addr = view[cpu.PC - 0x8000 + 1];
-      const mem1 = readRAM(addr);
-      const mem2 = readRAM(addr + 1);
-      const mem = (mem1 << 8) + mem2;
-      let result = acc - mem;
 
-      if (0 > result) {
-        result += 0xffff;
-      }
-
-      setD(result);
-
-      // Do flag stuff
-      if (0x8000 == (result & 0x8000)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x8000;
-      let ob = mem & 0x8000;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      sub16(LOC.MEM, LOC.D, addr, 0, FLAG.SUB);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -4250,31 +3458,9 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 3,
     microcode: function(view) {
-      const acc = cpu.A;
       const addr = view[cpu.PC - 0x8000 + 1];
-      const mem = readRAM(addr);
-      let result = acc + mem;
 
-      if (0xff < result) {
-        result -= 0xff;
-      }
-
-      setA(result);
-
-      // Do flag stuff
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      clearStatusFlag("V");
+      add8(LOC.MEM, LOC.A, addr, 0, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -4289,49 +3475,9 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 5,
     microcode: function(view) {
-      const index = cpu.X;
       const addr = view[cpu.PC - 0x8000 + 1];
-      const mem = readRAM(addr);
-      let result = index - mem;
 
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result of the subtraction is set; cleared
-        otherwise.
-        Z: Set if all bits of the internal result are cleared; cleared otherwise.
-        V: Set if the subtraction results in two's complement overflow; cleared other-
-        wise.
-        C: Set if the absolute value of the contents of memory is larger than the abso-
-        lute value of the index register; cleared otherwise.
-      */
-      if (0x8000 == (result & 0x8000)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = index & 0x80;
-      const ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > index) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp16(LOC.MEM, LOC.X, addr, 0);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -4377,57 +3523,10 @@ let instructionTable = {
     hasSubops: true,
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.A;
       const offset = view[cpu.PC - 0x8000 + 1];
       const addr = offset + cpu.X;
-      let mem = 0;
 
-      if (RAMSize > addr) {
-        mem = readRAM(addr);
-      } else {
-        mem = readROM(addr);
-      }
-
-      const result = acc - mem;
-
-      // Do flag stuff
-      /*
-        N: Set if the most significant bit of the result of the subtraction is set; cleared
-        otherwise.
-        Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-        V: Set if the subtraction results in two's complement overflow: cleared other-
-        wise.
-        C: Set if the absolute value of the contents of memory is larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = acc & 0x80;
-      const ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp8(LOC.MEM, LOC.A, addr, 0);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -4666,72 +3765,10 @@ let instructionTable = {
     hasSubops: true,
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.A;
       const offset = view[cpu.PC - 0x8000 + 1];
       const addr = offset + cpu.X;
-      let mem = 0;
-      let carry = 0;
 
-      if (RAMSize > addr) {
-        mem = readRAM(addr);
-      } else {
-        mem = readROM(addr);
-      }
-
-      let result = acc + mem;
-
-      if (0xFF < result) {
-        carry = 1;
-        result -= 0xFF;
-      }
-
-      setA(result);
-
-      // Do flag stuff
-      /*
-        H: Set if there was a carry from bit 3; cleared otherwise.
-        I: Not affected.
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if ~here was two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if there was a carry from the most significant bit of the result; cleared
-        otherwise.
-      */
-      if (acc & 0b00000100 && result & 0b00001000) {
-        setStatusFlag("H");
-      } else {
-        clearStatusFlag("H");
-      }
-
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = acc & 0x80;
-      const ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (carry) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      add8(LOC.MEM, LOC.A, addr, 0, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -4778,63 +3815,11 @@ let instructionTable = {
     type: "EXTENDED",
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.A;
       const firstByte = view[cpu.PC - 0x8000 + 1];
       const secondByte = view[cpu.PC - 0x8000 + 2];
       const addr = (firstByte << 8) + secondByte;
-      let mem;
 
-      if (RAMSize >= addr) {
-        mem = readRAM(addr);
-      } else {
-        mem = readROM(addr);
-      }
-
-      let result = acc - mem;
-
-      if (0 > result) {
-        result += 0xFF;
-      }
-
-      setA(result);
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if there is a two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if the absolute value of the contents of memory are larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x80;
-      let ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      sub8(LOC.MEM, LOC.A, addr, 0, FLAG.SUB);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -4849,58 +3834,11 @@ let instructionTable = {
     type: "EXTENDED",
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.A;
       const firstByte = view[cpu.PC - 0x8000 + 1];
       const secondByte = view[cpu.PC - 0x8000 + 2];
       const addr = (firstByte << 8) + secondByte;
-      let mem = 0;
 
-      if (RAMSize >= addr) {
-        mem = readRAM(addr);
-      } else {
-        mem = readROM(addr);
-      }
-
-      const result = acc - mem;
-
-      // Do flag stuff
-      /*
-        N: Set if the most significant bit of the result of the subtraction is set; cleared
-        otherwise.
-        Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-        V: Set if the subtraction results in two's complement overflow: cleared other-
-        wise.
-        C: Set if the absolute value of the contents of memory is larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x80;
-      let ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp8(LOC.MEM, LOC.A, addr, 0);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -4924,7 +3862,7 @@ let instructionTable = {
       const addr = (firstByte << 8) + secondByte;
       let mem;
 
-      if (RAMSize >= addr) {
+      if (RAMSize > addr) {
         mem = readRAM(addr);
       } else {
         mem = readROM(addr);
@@ -5049,73 +3987,11 @@ let instructionTable = {
     type: "EXTENDED",
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.A;
       const firstByte = view[cpu.PC - 0x8000 + 1];
       const secondByte = view[cpu.PC - 0x8000 + 2];
       const addr = (firstByte << 8) + secondByte;
-      let mem = 0;
-      let carry = 0;
 
-      if (RAMSize >= addr) {
-        mem = readRAM(addr);
-      } else {
-        mem = readROM(addr);
-      }
-
-      let result = acc + mem;
-
-      if (0xFF < result) {
-        carry = 1;
-        result = result & 0xFF;
-      }
-
-      setA(result);
-
-      /*
-        H: Set if there was a carry from bit 3; cleared otherwise.
-        I: Not affected.
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if ~here was two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if there was a carry from the most significant bit of the result; cleared
-        otherwise.
-      */
-      if (acc & 0b00000100 && result & 0b00001000) {
-        setStatusFlag("H");
-      } else {
-        clearStatusFlag("H");
-      }
-
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = acc & 0x80;
-      const ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (carry) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
-
+      add8(LOC.MEM, LOC.A, addr, 0, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -5162,53 +4038,9 @@ let instructionTable = {
     type: "IMMEDIATE",
     cycles: 2,
     microcode: function(view) {
-      const acc = cpu.B;
       const byte = view[cpu.PC - 0x8000 + 1];
-      let result = acc - byte;
 
-      if (0 > result) {
-        result += 0xFF;
-      }
-
-      setB(result);
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if there is a two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if the absolute value of the contents of memory are larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = acc & 0x80;
-      const ob = byte & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (byte > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      sub8(LOC.IMM, LOC.B, 0, byte, FLAG.SUB);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -5223,41 +4055,9 @@ let instructionTable = {
     type: "IMMEDIATE",
     cycles: 2,
     microcode: function(view) {
-      const acc = cpu.B;
       const byte = view[cpu.PC - 0x8000 + 1];
-      const result = acc - byte;
 
-      // Do flag stuff
-      /*
-      */
-      if (0x80 == (0x80 == result)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = acc & 0x80;
-      const ob = byte & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (byte > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp8(LOC.IMM, LOC.B, 0, byte);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -5333,57 +4133,11 @@ let instructionTable = {
     type: "IMMEDIATE16",
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.D;
       const firstByte = view[cpu.PC - 0x8000 + 1];
       const secondByte = view[cpu.PC - 0x8000 + 2];
       const word = (firstByte << 8) + secondByte;
-      let result = acc + word;
-      let carry = 0;
 
-      if (0xFFFF < result) {
-        carry = 1;
-        result -= 0xFFFF;
-      }
-
-      setD(result);
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if ~here was two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if there was a carry from the most significant bit of the result; cleared
-        otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = acc & 0x80;
-      const ob = word & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (carry) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      add16(LOC.IMM, LOC.D, 0, word, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -5649,63 +4403,9 @@ let instructionTable = {
     type: "IMMEDIATE",
     cycles: 2,
     microcode: function(view) {
-      const acc = cpu.B;
       const byte = view[cpu.PC - 0x8000 + 1];
-      let result = acc + byte;
-      let carry = 0;
 
-      if (0xFF < result) {
-        carry = 1;
-        result -= 0xFF;
-      }
-
-      setB(result);
-
-      // Do flag stuff
-      /*
-        H: Set if there was a carry from bit 3; cleared otherwise.
-        I: Not affected.
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if ~here was two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if there was a carry from the most significant bit of the result; cleared
-        otherwise.
-      */
-      if (acc & 0b00000100 && result & 0b00001000) {
-        setStatusFlag("H");
-      } else {
-        clearStatusFlag("H");
-      }
-
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = acc & 0x80;
-      const ob = byte & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (carry) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      add8(LOC.IMM, LOC.B, 0, byte, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -5825,54 +4525,9 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 3,
     microcode: function(view) {
-      const acc = cpu.B;
       const addr = view[cpu.PC - 0x8000 + 1];
-      const mem = readRAM(addr);
-      let result = acc - mem;
 
-      if (0 > result) {
-        result += 0xFF;
-      }
-
-      setB(result);
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if there is a two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if the absolute value of the contents of memory are larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x80;
-      let ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      sub8(LOC.MEM, LOC.B, addr, 0, FLAG.SUB);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -5887,42 +4542,9 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 3,
     microcode: function(view) {
-      const acc = cpu.B;
-      const byte = view[cpu.PC - 0x8000 + 1];
-      const mem = readRAM(byte);
-      const result = acc - mem;
+      const addr = view[cpu.PC - 0x8000 + 1];
 
-      // Do flag stuff
-      /*
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x80;
-      let ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp8(LOC.MEM, LOC.B, addr, 0);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -5999,35 +4621,9 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 5,
     microcode: function(view) {
-      const acc = cpu.D;
       const addr = view[cpu.PC - 0x8000 + 1];
-      const mem1 = readRAM(addr);
-      const mem2 = readRAM(addr + 1);
-      const mem = (mem1 << 8) + mem2;
-      let result = acc + mem;
 
-      if (0xFFFF < result) {
-        result -= 0xFFFF;
-      }
-
-      setD(result);
-
-      // Do flag stuff
-      /*
-      */
-      if (0x8000 == (result & 0x8000)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      clearStatusFlag("V");
+      add16(LOC.MEM, LOC.D, addr, 0, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -6192,64 +4788,9 @@ let instructionTable = {
     type: "DIRECT",
     cycles: 3,
     microcode: function(view) {
-      const acc = cpu.B;
       const addr = view[cpu.PC - 0x8000 + 1];
-      const mem = readRAM(addr);
-      let result = acc + mem;
-      let carry = 0;
 
-      if (0xFF < result) {
-        carry = 1;
-        result -= 0xFF;
-      }
-
-      setB(result);
-
-      // Do flag stuff
-      /*
-        H: Set if there was a carry from bit 3; cleared otherwise.
-        I: Not affected.
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if ~here was two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if there was a carry from the most significant bit of the result; cleared
-        otherwise.
-      */
-      if (acc & 0b00000100 && result & 0b00001000) {
-        setStatusFlag("H");
-      } else {
-        clearStatusFlag("H");
-      }
-
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = acc & 0x80;
-      const ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (carry) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      add8(LOC.MEM, LOC.B, addr, 0, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -6411,41 +4952,10 @@ let instructionTable = {
     hasSubops: true,
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.B;
       const offset = view[cpu.PC - 0x8000 + 1];
       const addr = offset + cpu.X;
-      let mem = 0;
 
-      if (RAMSize > addr) {
-        mem = readRAM(addr);
-      } else {
-        mem = readROM(addr);
-      }
-
-      let result = acc - mem;
-
-      if (0 > result) {
-        result += 0xFF;
-      }
-
-      setB(result);
-
-      // Do flag stuff
-      /*
-      */
-      if (0x8000 == (result & 0x8000)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      clearStatusFlag("V");
+      sub8(LOC.MEM, LOC.B, addr, 0, FLAG.SUB);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -6461,50 +4971,10 @@ let instructionTable = {
     hasSubops: true,
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.B;
       const offset = view[cpu.PC - 0x8000 + 1];
       const addr = offset + cpu.X;
-      let mem = 0;
 
-      if (RAMSize > addr) {
-        mem = readRAM(addr);
-      } else {
-        mem = readROM(addr);
-      }
-
-      const result = acc - mem;
-
-      // Do flag stuff
-      /*
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x80;
-      let ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp8(LOC.MEM, LOC.B, addr, 0);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -6539,7 +5009,7 @@ let instructionTable = {
       // Do flag stuff
       /*
       */
-      if (0x8000 == (mem & 0x8000)) {
+      if (0x80 == (mem & 0x80)) {
         setStatusFlag("N");
       } else {
         clearStatusFlag("N");
@@ -6687,73 +5157,10 @@ let instructionTable = {
     hasSubops: true,
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.B;
       const offset = view[cpu.PC - 0x8000 + 1];
       const addr = offset + cpu.X;
-      let mem = 0;
-      let carry = 0;
 
-      if (RAMSize > addr) {
-        mem = readRAM(addr);
-      } else {
-        mem = readROM(addr);
-      }
-
-      let result = acc + mem;
-
-      if (0xFF < result) {
-        carry = 1;
-        result -= 0xFF;
-      }
-
-      setA(result);
-
-      // Do flag stuff
-      /*
-        H: Set if there was a carry from bit 3; cleared otherwise.
-        I: Not affected.
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if ~here was two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if there was a carry from the most significant bit of the result; cleared
-        otherwise.
-      */
-      if (acc & 0b00000100 && result & 0b00001000) {
-        setStatusFlag("H");
-      } else {
-        clearStatusFlag("H");
-      }
-
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = acc & 0x80;
-      const ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (carry) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
-
+      add8(LOC.MEM, LOC.B, addr, 0, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -6918,58 +5325,11 @@ let instructionTable = {
     type: "EXTENDED",
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.B;
       const firstByte = view[cpu.PC - 0x8000 + 1];
       const secondByte = view[cpu.PC - 0x8000 + 2];
       let addr = (firstByte << 8) + secondByte;
-      let mem = 0;
 
-      if (RAMSize >= addr) {
-        mem = readRAM(addr);
-      } else {
-        mem = readROM(addr);
-      }
-
-      const result = acc - mem;
-
-      // Do flag stuff
-      /*
-        N: Set if the most significant bit of the result of the subtraction is set; cleared
-        otherwise.
-        Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-        V: Set if the subtraction results in two's complement overflow: cleared other-
-        wise.
-        C: Set if the absolute value of the contents of memory is larger than the abso-
-        lute value of the accumulator; cleared otherwise.
-      */
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = acc & 0x80;
-      let ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (mem > acc) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      cmp8(LOC.MEM, LOC.B, addr, 0);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -6985,70 +5345,11 @@ let instructionTable = {
     type: "EXTENDED",
     cycles: 6,
     microcode: function(view) {
-      const acc = cpu.D;
       const firstByte = view[cpu.PC - 0x8000 + 1];
       const secondByte = view[cpu.PC - 0x8000 + 2];
       const addr = (firstByte << 8) + secondByte;
-      let mem1 = 0;
-      let mem2 = 0;
-      let carry = 0;
 
-      if (RAMSize > addr) {
-        mem1 = readRAM(addr);
-        mem2 = readRAM(addr + 1);
-      } else {
-        mem1 = readROM(addr);
-        mem2 = readROM(addr + 1);
-      }
-
-      const mem = (mem1 << 8) + mem2;
-
-      let result = acc + mem;
-
-      if (0xFFFF < result) {
-        carry = 1;
-        result -= 0xFFFF;
-      }
-
-      setD(result);
-
-      // Do flag stuff
-      /*
-        N: Set if most significant bit of result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if there was two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if there was a carry from the most significant bit of the result; cleared
-        otherwise.
-      */
-      if (0x8000 == (result & 0x8000)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      let oa = index & 0x80;
-      let ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (carry) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      add16(LOC.MEM, LOC.D, addr, 0, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -7070,7 +5371,7 @@ let instructionTable = {
       const addr = (firstByte << 8) + secondByte;
       let mem = 0;
 
-      if (RAMSize >= addr) {
+      if (RAMSize > addr) {
         mem = readRAM(addr);
       } else {
         mem = readROM(addr);
@@ -7155,73 +5456,11 @@ let instructionTable = {
     type: "EXTENDED",
     cycles: 4,
     microcode: function(view) {
-      const acc = cpu.B;
       const firstByte = view[cpu.PC - 0x8000 + 1];
       const secondByte = view[cpu.PC - 0x8000 + 2];
       const addr = (firstByte << 8) + secondByte;
-      let mem;
-      let carry = 0;
 
-      if (RAMSize >= addr) {
-        mem = readRAM(addr);
-      } else {
-        mem = readROM(addr);
-      }
-
-      let result = acc + mem;
-
-      if (0xFF < result) {
-        carry = 1;
-        result -= 0xFF;
-      }
-
-      setA(result);
-
-      // Do flag stuff
-      /*
-        H: Set if there was a carry from bit 3; cleared otherwise.
-        I: Not affected.
-        N: Set if most significant bit of the result is set; cleared otherwise.
-        Z: Set if all bits of the result are cleared; cleared otherwise.
-        V: Set if ~here was two's complement overflow as a result of the operation;
-        cleared otherwise.
-        C: Set if there was a carry from the most significant bit of the result; cleared
-        otherwise.
-      */
-      if (acc & 0b00000100 && result & 0b00001000) {
-        setStatusFlag("H");
-      } else {
-        clearStatusFlag("H");
-      }
-
-      if (0x80 == (result & 0x80)) {
-        setStatusFlag("N");
-      } else {
-        clearStatusFlag("N");
-      }
-
-      if (0 == result) {
-        setStatusFlag("Z");
-      } else {
-        clearStatusFlag("Z");
-      }
-
-      // 2s compliment overflow test
-      // Get MSBs of the operands
-      const oa = acc & 0x80;
-      const ob = mem & 0x80;
-
-      if (oa != ob) {
-        clearStatusFlag("V");
-      } else {
-        clearStatusFlag("V");
-      }
-
-      if (carry) {
-        setStatusFlag("C");
-      } else {
-        clearStatusFlag("C");
-      }
+      add8(LOC.MEM, LOC.B, addr, 0, FLAG.ADD);
 
       //Next
       setPC(cpu.PC + this.len);
@@ -7423,22 +5662,7 @@ let subOps = {
       type: "IMPLIED",
       cycles: 4,
       microcode: function(view) {
-        const index = cpu.Y;
-        let result = index + 1;
-
-        if (0xFFFF == index) {
-          result = 0;
-        }
-
-        setY(result);
-
-        // Do flag stuff
-        // Z: Set if all bits of the result are cleared; cleared otherwise.
-        if (0 == result) {
-          setStatusFlag("Z");
-        } else {
-          clearStatusFlag("Z");
-        }
+        add16(LOC.IMM, LOC.Y, 0, 1, FLAG.INX);
 
         //Next
         setPC(cpu.PC + this.len);
@@ -7453,22 +5677,7 @@ let subOps = {
       type: "IMPLIED",
       cycles: 4,
       microcode: function(view) {
-        const index = cpu.Y;
-        let result = index - 1;
-
-        if (0 == index) {
-          result = 0xFFFF;
-        }
-
-        setY(result);
-
-        // Do flag stuff
-        // Z: Set if all bits of the result are cleared; cleared otherwise.
-        if (0 == result) {
-          setStatusFlag("Z");
-        } else {
-          clearStatusFlag("Z");
-        }
+        sub16(LOC.IMM, LOC.Y, 0, 1, FLAG.DEX);
 
         //Next
         setPC(cpu.PC + this.len);
@@ -7507,18 +5716,7 @@ let subOps = {
       type: "IMPLIED",
       cycles: 3,
       microcode: function(view) {
-        const acc = cpu.B;
-        const index = cpu.Y;
-        let result = acc + index;
-
-        if (0xFFFF < result) {
-          result &= 0xFFFF;
-        }
-
-        setY(result);
-
-        // Do flag stuff
-        // Not affected.
+        add16(LOC.IMM, LOC.Y, 0, cpu.B, FLAG.NONE);
 
         //Next
         setPC(cpu.PC + this.len);
@@ -7528,56 +5726,16 @@ let subOps = {
       }
     },
     0x8c: {
-      name: "cmpy",
+      name: "cpy",
       len: 4,
       type: "IMMEDIATE16",
       cycles: 1,
       microcode: function(view) {
-        const index = cpu.Y;
         const firstByte = view[cpu.PC - 0x8000 + 2];
         const secondByte = view[cpu.PC - 0x8000 + 3];
         const word = (firstByte << 8) + secondByte;
 
-        const result = index - word;
-
-        // Do flag stuff
-        /*
-          N: Set if the most significant bit of the result of the subtraction is set; cleared
-          otherwise.
-          Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-          V: Set if the subtraction results in two's complement overflow: cleared other-
-          wise.
-          C: Set if the absolute value of the contents of memory is larger than the abso-
-          lute value of the accumulator; cleared otherwise.
-        */
-        if (0x8000 == (result & 0x8000)) {
-          setStatusFlag("N");
-        } else {
-          clearStatusFlag("N");
-        }
-
-        if (0 == result) {
-          setStatusFlag("Z");
-        } else {
-          clearStatusFlag("Z");
-        }
-
-        // 2s compliment overflow test
-        // Get MSBs of the operands
-        let oa = index & 0x8000;
-        let ob = word & 0x8000;
-
-        if (oa != ob) {
-          clearStatusFlag("V");
-        } else {
-          clearStatusFlag("V");
-        }
-
-        if (word > index) {
-          setStatusFlag("C");
-        } else {
-          clearStatusFlag("C");
-        }
+        cmp16(LOC.IMM, LOC.Y, 0, word);
 
         //Next
         setPC(cpu.PC + this.len);
@@ -7783,65 +5941,9 @@ let subOps = {
       type: "INDEXEDY",
       cycles: 4,
       microcode: function(view) {
-        const acc = cpu.A;
-        const addr = cpu.Y;
-        let mem = 0;
+        sub8(LOC.MEM, LOC.A, cpu.Y, 0, FLAG.SUB);
 
-        if (RAMSize > addr) {
-          mem = readRAM(addr);
-        } else {
-          mem = readROM(addr);
-        }
-
-        let result = acc - mem;
-
-        if (0 > result) {
-          result += 0xFF;
-        }
-
-        setA(result);
-
-        setY(addr + 1);
-
-        // Do flag stuff
-        /*
-          N: Set if most significant bit of the result is set; cleared otherwise.
-          Z: Set if all bits of the result are cleared; cleared otherwise.
-          V: Set if there is a two's complement overflow as a result of the operation;
-          cleared otherwise.
-          C: Set if the absolute value of the contents of memory are larger than the abso-
-          lute value of the accumulator; cleared otherwise.
-        */
-        if (0x80 == (result & 0x80)) {
-          setStatusFlag("N");
-        } else {
-          clearStatusFlag("N");
-        }
-
-        if (0 == result) {
-          setStatusFlag("Z");
-        } else {
-          clearStatusFlag("Z");
-        }
-
-
-
-        // 2s compliment overflow test
-        // Get MSBs of the operands
-        let oa = acc & 0x80;
-        let ob = mem & 0x80;
-
-        if (oa != ob) {
-          clearStatusFlag("V");
-        } else {
-          clearStatusFlag("V");
-        }
-
-        if (mem > acc) {
-          setStatusFlag("C");
-        } else {
-          clearStatusFlag("C");
-        }
+        incY(1);
 
         //Next
         setPC(cpu.PC + this.len);
@@ -7858,58 +5960,9 @@ let subOps = {
       type: "INDEXEDY",
       cycles: 4,
       microcode: function(view) {
-        const acc = cpu.A;
-        const addr = cpu.Y;
-        let mem = 0;
+        cmp8(LOC.MEM, LOC.A, cpu.Y, 0);
 
-        if (RAMSize > addr) {
-          mem = readRAM(addr);
-        } else {
-          mem = readROM(addr);
-        }
-
-        const result = acc - mem;
-
-        setY(addr + 1);
-
-        // Do flag stuff
-        /*
-          N: Set if the most significant bit of the result of the subtraction is set; cleared
-          otherwise.
-          Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-          V: Set if the subtraction results in two's complement overflow: cleared other-
-          wise.
-          C: Set if the absolute value of the contents of memory is larger than the abso-
-          lute value of the accumulator; cleared otherwise.
-        */
-        if (0x80 == (result & 0x80)) {
-          setStatusFlag("N");
-        } else {
-          clearStatusFlag("N");
-        }
-
-        if (0 == result) {
-          setStatusFlag("Z");
-        } else {
-          clearStatusFlag("Z");
-        }
-
-        // 2s compliment overflow test
-        // Get MSBs of the operands
-        let oa = acc & 0x80;
-        let ob = mem & 0x80;
-
-        if (oa != ob) {
-          clearStatusFlag("V");
-        } else {
-          clearStatusFlag("V");
-        }
-
-        if (mem > acc) {
-          setStatusFlag("C");
-        } else {
-          clearStatusFlag("C");
-        }
+        incY(1);
 
         //Next
         setPC(cpu.PC + this.len);
@@ -7949,7 +6002,7 @@ let subOps = {
 
         setA(mem);
 
-        setY(cpu.Y + 1);
+        incY(1);
 
         // Do flag stuff
         /*
@@ -7991,7 +6044,7 @@ let subOps = {
 
         writeRAM(addr, acc);
 
-        setY(cpu.Y + 1);
+        incY(1);
 
         // Do flag stuff
         /*
@@ -8052,7 +6105,7 @@ let subOps = {
 
         setA(result);
 
-        setY(cpu.Y + 1);
+        incY(1);
 
         // Do flag stuff
         /*
@@ -8119,74 +6172,9 @@ let subOps = {
       type: "INDEXEDY",
       cycles: 1,
       microcode: function(view) {
-        const acc = cpu.A;
-        const addr = cpu.Y;
-        let mem = 0;
-        let carry = 0;
+        add8(LOC.MEM, LOC.A, cpu.Y, 0, FLAG.ADD);
 
-        if (RAMSize > addr) {
-          mem = readRAM(addr);
-        } else {
-          mem = readROM(addr);
-        }
-
-        let result = acc + mem;
-
-        if (0xFF < result) {
-          carry = 1;
-          result -= 0xFF;
-        }
-
-        setA(result);
-
-        setY(cpu.Y + 1);
-
-        // Do flag stuff
-        /*
-          H: Set if there was a carry from bit 3; cleared otherwise.
-          H = X3.M3 + M3.R3 + R3.X3
-          I: Not affected.
-          N: Set if most significant bit of the result is set; cleared otherwise.
-          Z: Set if all bits of the result are cleared; cleared otherwise.
-          V: Set if there was two's complement overflow as a result of the operation;
-          cleared otherwise.
-          C: Set if there was a carry from the most significant bit of the result; cleared
-          otherwise.
-        */
-        if (acc & 0b00000100 && result & 0b00001000) {
-          setStatusFlag("H");
-        } else {
-          clearStatusFlag("H");
-        }
-
-        if (0x80 == (result & 0x80)) {
-          setStatusFlag("N");
-        } else {
-          clearStatusFlag("N");
-        }
-
-        if (0 == result) {
-          setStatusFlag("Z");
-        } else {
-          clearStatusFlag("Z");
-        }
-
-        // 2s compliment overflow test
-        // Get MSBs of the operands
-        const oa = acc & 0x80;
-        const ob = mem & 0x80;
-
-        if (oa != ob) {
-          clearStatusFlag("V");
-        } else {
-          clearStatusFlag("V");
-        }
-
-        if (carry) {
-          setStatusFlag("C");
-        } else {
-          clearStatusFlag("C");
-        }
+        incY(1);
 
         //Next
         setPC(cpu.PC + this.len);
@@ -8244,58 +6232,9 @@ let subOps = {
       type: "INDEXEDY",
       cycles: 4,
       microcode: function(view) {
-        const acc = cpu.B;
-        const addr = cpu.Y;
-        let mem = 0;
+        cmp8(LOC.MEM, LOC.B, cpu.Y, 0);
 
-        if (RAMSize > addr) {
-          mem = readRAM(addr);
-        } else {
-          mem = readROM(addr);
-        }
-
-        const result = acc - mem;
-
-        setY(cpu.Y + 1);
-
-        // Do flag stuff
-        /*
-          N: Set if the most significant bit of the result of the subtraction is set; cleared
-          otherwise.
-          Z: Set if all bits of the result of the subtraction are cleared; cleared otherwise.
-          V: Set if the subtraction results in two's complement overflow: cleared other-
-          wise.
-          C: Set if the absolute value of the contents of memory is larger than the abso-
-          lute value of the accumulator; cleared otherwise.
-        */
-        if (0x80 == (result & 0x80)) {
-          setStatusFlag("N");
-        } else {
-          clearStatusFlag("N");
-        }
-
-        if (0 == result) {
-          setStatusFlag("Z");
-        } else {
-          clearStatusFlag("Z");
-        }
-
-        // 2s compliment overflow test
-        // Get MSBs of the operands
-        let oa = acc & 0x80;
-        let ob = mem & 0x80;
-
-        if (oa != ob) {
-          clearStatusFlag("V");
-        } else {
-          clearStatusFlag("V");
-        }
-
-        if (mem > acc) {
-          setStatusFlag("C");
-        } else {
-          clearStatusFlag("C");
-        }
+        incY(1);
 
         //Next
         setPC(cpu.PC + this.len);
@@ -8332,7 +6271,7 @@ let subOps = {
 
         writeRAM(addr, acc);
 
-        setY(cpu.Y + 1);
+        incY(1);
 
         // Do flag stuff
         /*
@@ -8393,7 +6332,7 @@ let subOps = {
 
         setB(result);
 
-        setY(cpu.Y + 1);
+        incY(1);
 
         /*
           H: Set if there was a carry from bit 3; cleared otherwise.
@@ -8458,73 +6397,9 @@ let subOps = {
       type: "INDEXEDY",
       cycles: 1,
       microcode: function(view) {
-        const acc = cpu.B;
-        const addr = cpu.Y;
-        let mem = 0;
-        let carry = 0;
+        add8(LOC.MEM, LOC.B, cpu.Y, 0, FLAG.ADD);
 
-        if (RAMSize > addr) {
-          mem = readRAM(addr);
-        } else {
-          mem = readROM(addr);
-        }
-
-        let result = acc + mem;
-
-        if (0xFF < result) {
-          carry = 1;
-          result -= 0xFF;
-        }
-
-        setA(result);
-
-        setY(cpu.Y + 1);
-
-        // Do flag stuff
-        /*
-          H: Set if there was a carry from bit 3; cleared otherwise.
-          I: Not affected.
-          N: Set if most significant bit of the result is set; cleared otherwise.
-          Z: Set if all bits of the result are cleared; cleared otherwise.
-          V: Set if ~here was two's complement overflow as a result of the operation;
-          cleared otherwise.
-          C: Set if there was a carry from the most significant bit of the result; cleared
-          otherwise.
-        */
-        if (acc & 0b00000100 && result & 0b00001000) {
-          setStatusFlag("H");
-        } else {
-          clearStatusFlag("H");
-        }
-
-        if (0x80 == (result & 0x80)) {
-          setStatusFlag("N");
-        } else {
-          clearStatusFlag("N");
-        }
-
-        if (0 == result) {
-          setStatusFlag("Z");
-        } else {
-          clearStatusFlag("Z");
-        }
-
-        // 2s compliment overflow test
-        // Get MSBs of the operands
-        const oa = acc & 0x80;
-        const ob = byte & 0x80;
-
-        if (oa != ob) {
-          clearStatusFlag("V");
-        } else {
-          clearStatusFlag("V");
-        }
-
-        if (carry) {
-          setStatusFlag("C");
-        } else {
-          clearStatusFlag("C");
-        }
+        incY(1);
 
         //Next
         setPC(cpu.PC + this.len);
@@ -8550,7 +6425,7 @@ let subOps = {
         writeRAM(addr, acc >> 8);
         writeRAM(addr + 1, acc & 0xFF);
 
-        setY(cpu.Y + 2);
+        incY(2);
 
         // Do flag stuff
         /*
@@ -8602,9 +6477,13 @@ let subOps = {
 
         const mem = (mem1 << 8) + mem2;
 
+        if(!(mem > 0 && mem < 0xFFFF)) {
+          console.warn("Danger!");
+        }
+
         setX(mem);
 
-        setY(cpu.Y + 2);
+        incY(2);
 
         // Do flag stuff
         /*

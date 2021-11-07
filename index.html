@@ -5065,7 +5065,35 @@
                 Break on op
               </label>
             </div>
+          </div>
 
+          <div class="col-sm">
+            <div class="input-group">
+              <label class="form-label" for="write-breakpoint-input">Memory Write Breakpoint:</label>
+
+              <div class="input-group-prepend"><span class="input-group-text">0x</span></div>
+
+              <input
+                id="write-breakpoint-input"
+                class="form-control"
+                type="text"
+                value="0012"/>
+            </div>
+
+            <div class="input-group">
+              <input
+                id="write-break-input"
+                class="form-check-input"
+                type="checkbox"/>
+              <label
+                class="form-check-label"
+                for="write-break-input">
+                Break on mem write
+              </label>
+            </div>
+          </div>
+
+          <div class="col-sm">
             <div class="input-group">
               <input
                 id="ignoreInterrupts-input"
@@ -5141,29 +5169,29 @@
               id="dsm-key"
               class="input-group">
               <input
-                id="dsm-key-off"
+                id="dsm-key-off-input"
                 class="btn btn-primary"
                 type="button"
                 value="OFF"/>
               <input
-                id="dsm-key-acc"
+                id="dsm-key-acc-input"
                 class="btn btn-primary"
                 type="button"
                 value="ACC."/>
               <input
-                id="dsm-key-run"
+                id="dsm-key-run-input"
                 class="btn btn-primary"
                 type="button"
                 value="RUN"/>
               <input
-                id="dsm-key-start"
+                id="dsm-key-start-input"
                 class="btn btn-primary"
                 type="button"
                 value="START"/>
             </div>
 
             <input
-              id="dsm-clear-cas-inputs"
+              id="dsm-clear-cas-input"
               class="btn btn-primary"
               type="button"
               value="Clear CAS flag"/>
@@ -5689,7 +5717,11 @@
     dsmO2Input:         $("#dsm-o2-input"),       dsmEgrtInput:       $("#dsm-egrt-input"),
     dsmBattInput:       $("#dsm-batt-input"),       dsmBaroInput:       $("#dsm-baro-input"),
     dsmKnockCntInput:   $("#dsm-knock-count-input"),       dsmTpsInput:        $("#dsm-tps-input"),
-    srcTextarea:        $('#src-output'), ignoreInterrupts: $('#ignoreInterrupts-input')
+    srcTextarea:        $('#src-output'), ignoreInterrupts: $('#ignoreInterrupts-input'),
+    instruction:        $("#instruction"), logFollowInput: $("#log-follow-input"),
+    opBreakpointInput:  $("#op-breakpoint-input"), opBreakInput: $("#op-break-input"),
+    breakInput:         $("#break-input"), breakpointInput: $("#breakpoint-input"),
+    writeBreakInput:    $("#write-break-input"), writeBreakpointInput: $("#write-breakpoint-input")
     };
   </script>
 
@@ -5706,11 +5738,15 @@
 
   <script src="helpers.js"></script>
 
+  <script src="is-helpers.js"></script>
+
   <script src="instruction_set.js"></script>
 
   <script src="cpu.js"></script>
 
   <script src="sci.js"></script>
+
+  <script src="input-capture.js"></script>
 
   <script src="4G63.js"></script>
 
