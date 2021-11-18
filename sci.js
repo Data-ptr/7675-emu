@@ -66,7 +66,7 @@ function sciCheck(){
 
   if(andA || andB) {
     ret = 1;
-    interruptStack.push(0xFFE0);
+    interruptStack.push(vectors.output_compare_1);
   }
 
   return ret;

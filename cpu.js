@@ -1,5 +1,5 @@
 let logEnabled = $('#updateLogOutput-input').is(":checked");
-const RAMSize = 0x0200;
+const RAMSize = 0x01C0;
 const logElement = $("#log-output-div > ul");
 
 let subroutineLevel = 0;
@@ -31,6 +31,21 @@ let cpu = {
   clockSpeed: 2, //mhz,
   mode: 0
 };
+
+const vectors = {
+  reset: 0xFFFE,
+  nmi: 0xFFFC,
+  swi: 0xFFFA,
+  irq: 0xFFF8,
+  input_capture_1: 0xFFF6,
+  input_capture_2: 0xFFF4,
+  output_compare_1: 0xFFF0,
+  output_compare_2: 0xFFEE,
+  output_compare_3: 0xFFEC,
+  timer_1_overflow: 0xFFEA,
+  rti: 0xFFE4,
+  sci_rx: 0xFFE0
+}
 
 // Initialize memory
 cpu.memory.data = new ArrayBuffer(RAMSize);
@@ -168,11 +183,13 @@ function setX(bytes) {
 }
 
 function incY(bytes) {
-  if(0xFFFF < cpu.Y + bytes) {
-    bytes = (cpu.Y + bytes) - 0xFFFF;
+  let incr = cpu.Y + bytes;
+
+  if(0xFFFF < incr) {
+    incr -= 0xFFFF;
   }
 
-  setY(bytes);
+  setY(incr);
 }
 
 function setY(bytes) {

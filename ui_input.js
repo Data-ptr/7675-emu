@@ -202,27 +202,27 @@ $('#trigger-stby-pwr-fail-input').bind('click', function(){
 });
 
 $('#trigger-sci-input').bind('click', function(){
-  interruptStack.push(0xFFE0);
+  interruptStack.push(vectors.sci_rx);
 });
 
 $('#trigger-rti-input').bind('click', function(){
-  interruptStack.push(0xFFE4);
+  interruptStack.push(vectors.rti);
 });
 
 $('#trigger-irq-input').bind('click', function(){
-  interruptStack.push(0xFFF8);
+  interruptStack.push(vectors.irq);
 });
 
 $('#trigger-swi-input').bind('click', function(){
-  interruptStack.push(0xFFFA);
+  interruptStack.push(vectors.swi);
 });
 
 $('#trigger-nmi-input').bind('click', function(){
-  interruptStack.push(0xFFFC);
+  interruptStack.push(vectors.nmi);
 });
 
 $('#trigger-reset-input').bind('click', function(){
-  interruptStack.push(0xFFFE);
+  interruptStack.push(vector.reset);
 });
 
 // DSM

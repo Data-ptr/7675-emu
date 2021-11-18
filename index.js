@@ -198,6 +198,8 @@ function advanceClock(cycles) {
 
   ic_check(); // Input compare
 
+  workRti(cpu.clock.cycleCount);
+
   // New clocks values
   cpu.timer_1_2 += (timer1Freq / cpu.clockSpeed) * cycles;
   cpu.timer_3 += (timer3Freq / cpu.clockSpeed) * cycles;
@@ -271,7 +273,7 @@ function workOutputCompare(cycles, ignoreInterrupts) {
 
       writeRAM(0x0008, readRAM(0x0008, 1) | 0b01000000, 1);
 
-      interruptStack.push(0xFFF0);
+      interruptStack.push(vectors.output_compare_1);
     }
 
     // Output compare 2 vector = 0xFFEE
@@ -280,21 +282,15 @@ function workOutputCompare(cycles, ignoreInterrupts) {
 
       writeRAM(0x0018, readRAM(0x0018, 1) | 0b01000000, 1);
 
-      interruptStack.push(0xFFEE);
+      interruptStack.push(vectors.output_compare_2);
     }
 
     // Output compare 3 vector = 0xFFEC
     if (!ignoreInterrupts && t3 + i == t3OutCmp) {
-      console.log("Timer 3 output compare match!");
+      //console.log("Timer 3 output compare match!");
 
-      interruptStack.push(0xFFEC);
+      interruptStack.push(vectors.output_compare_3);
     }
-  }
-}
-
-function workInterrupts() {
-  if(interruptStack.length > 0 && !cpu.status.I) {
-    interrupt(interruptStack.pop());
   }
 }
 
@@ -307,7 +303,7 @@ function workTimerOverflows(ignoreInterrupts) {
 
     // check if enabled
     if (!ignoreInterrupts && t1OverflowEnabled) {
-      interruptStack.push(0xFFEA);
+      interruptStack.push(vectors.timer_1_overflow);
       // set overflow interrupt flag
       writeRAM(readRAM(0x0008, 1) & 0b00100000, 1);
     }
@@ -347,29 +343,4 @@ function storeTimers() {
   writeRAM(0x002a, t3B2, 1);
   writeRAM(0x002d, t3B1, 1);
   writeRAM(0x002e, t3B2, 1);
-}
-
-function interrupt(vector) {
-  let firstByte = cpu.ROM.view[vector - 0x8000];
-  let secondByte = cpu.ROM.view[vector + 1 - 0x8000];
-  let addr = (firstByte << 8) + secondByte;
-
-  stackPC();
-  stackY();
-  stackX();
-  stackD();
-  stackFlags();
-
-  setD(0);
-  setX(0);
-  setY(0);
-
-  setPC(addr);
-
-  clearStatusFlag("H");
-  setStatusFlag("I");
-  clearStatusFlag("N");
-  clearStatusFlag("Z");
-  clearStatusFlag("V");
-  clearStatusFlag("C");
 }

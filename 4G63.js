@@ -383,4 +383,17 @@ function doTdcCasChart() {
   });
 }
 
-doTdcCasChart()
+doTdcCasChart();
+
+function o2Simulation(t) {
+  let ret = 0;
+  const time = Math.floor(t * 1000);
+
+  if(time % 2) {
+    ret = 0.3;
+  } else {
+    ret = 0.7;
+  }
+
+  return ret;
+}

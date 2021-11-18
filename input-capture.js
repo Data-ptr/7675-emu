@@ -51,7 +51,7 @@ function ic_check() {
       //Hit IC flag in data register
       writeRAM(0x08, (readRAM(0x08, 1) & 0b01111111) + 0b10000000, 1);
 
-      interrupt(0xFFF6);
+      interruptStack.push(vectors.input_capture_1);
     }
   }
 }
