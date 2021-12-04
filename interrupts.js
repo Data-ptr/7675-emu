@@ -16,9 +16,9 @@ function workInterrupts() {
 }
 
 function interrupt(vector) {
-  let firstByte = cpu.ROM.view[vector - 0x8000];
-  let secondByte = cpu.ROM.view[vector + 1 - 0x8000];
-  let addr = (firstByte << 8) + secondByte;
+  const firstByte = cpu.ROM.view[vector - 0x8000];
+  const secondByte = cpu.ROM.view[vector + 1 - 0x8000];
+  const addr = (firstByte << 8) + secondByte;
 
   stackPC();
   stackY();

@@ -40,7 +40,7 @@ function checkBytes(bytes, size) {
   }
 
   if(error) {
-    console.warn("Offending value: 0x", bytes.toString(16))
+    console.warn("Offending value: 0x" + bytes.toString(16))
     clearInterval(stepInterval);
     clearInterval(clockUpdateInterval);
   }

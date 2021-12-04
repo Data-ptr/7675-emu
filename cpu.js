@@ -141,7 +141,7 @@ function setD(bytes) {
 
   cpu.D = bytes;
   cpu.A = bytes >> 8;
-  cpu.B = bytes & 0xff;
+  cpu.B = bytes & 0xFF;
 
   if(updateUI) {
     elementCache.dRegisterOutput.val(
